@@ -1,23 +1,22 @@
-# S-plus/R library for the Skew-Normal (SN) distribution,
-# and skew-t distribution (the latter since version 0.30).
+# R package for the Skew-Normal (SN)  and the skew-t (ST) distributions
+# (the ST distribution since version 0.30).
 #
-# Author: A.Azzalini <azzalini@stat.unipd.it> 
+# Author: A.Azzalini 
 # Home-page: http://azzalini.stat.unipd.it/SN
 # major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 01/04/1999, 
 # 15/06/2002. 
-# It requires R 1.0.1, plus library mvtnorm for some (few) functions
+# It requires R 1.0.1, plus library mvtnorm for a few functions
 #
 #------- 
 
 dsn <- function(x, location=0, scale=1, shape=0, log=FALSE)
  {
    z <- (x-location)/scale
-   if(!log)
-     y <- 2*dnorm(z)*pnorm(z*shape)/scale
-   else
+   if(log)
      y <- (-0.9189385332046727-logb(scale)-z^2/2+zeta(0,shape*z))
+   else
+     y <- 2*dnorm(z)*pnorm(z*shape)/scale
    replace(y, scale<= 0, NaN)
-
  }
 
 psn <- function(x, location=0, scale=1, shape=0, ...)
@@ -395,7 +394,7 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
             xlab=xlab, ylab="profile relative 2(logL)")
     else contour(param1, param2, f, labcex=0.75, 
             xlab=xlab, ylab=ylab,
-            levels=-c(0.57, 1.37, 2.77, 4.6, 5.99, 9.2))
+            levels=-c(0.575, 1.386, 2.773, 4.605, 5.991, 9.210))
             # qchisq(c(0.25,0.5,0.75,0.90,0.95,0.99),2)
     title(main=paste("dataset:", deparse(substitute(y)),
         "\nProfile relative 2(logLikelihood)", sep= " "))	
@@ -436,20 +435,20 @@ sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
   else{ 
     if(length(cp)!= (m+2)) stop("ncol(X)+2 != length(cp)")}
   opt<- optim(cp, fn=sn.dev, gr=sn.dev.gh, method=method,
-          lower=c(-rep(Inf,m), 1e-10, -0.99527), 
+          lower=c(-rep(Inf,m), 10*.Machine$double.eps, -0.99527), 
           upper=c(rep(Inf,m), Inf, 0.99527), 
           control=control, X=X, y=y, trace=trace, hessian=FALSE)
   cp <- opt$par
   if(trace) {
      cat(paste("Message from optimization routine:", opt$message,"\n"))
-     cat("cp: ", cp, "\n")
+     cat("estimates (cp): ", cp, "\n")
      }
-  if(abs(cp[m+2])> 0.9952717){   
+  if(abs(cp[m+2])> 0.9952717){
      if(trace) cat("optim searched outside admissible range - restarted\n")
-     cp[m+2]<- sign(cp[m+2])*runif(1)
-     mle <- sn.mle(X, y, cp, plot.it, trace, method, control)
-     cp  <- mle$cp
-     }
+      cp[m+2]<- sign(cp[m+2])*runif(1)
+      mle <- sn.mle(X, y, cp, plot.it, trace, method, control)
+      cp  <- mle$cp
+      }
   logL <- (-opt$value)/2
   info <- attr(sn.dev.gh(cp, X, y, trace=FALSE, hessian=TRUE),"hessian")/2
   # se <- sqrt(diag(solve(info)))
@@ -500,9 +499,10 @@ sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
 sn.dev <- function(cp, X, y, trace=FALSE)
 { # -2*logL for centred parameters  
   m <- ncol(X)
-  if(abs(cp[m+2])> 0.9952717){    # this should not happen
-      cp[m+2]<- sign(cp[m+2])*0.99527174
-    }
+  if(abs(cp[m+2])> 0.9952717){
+    warning("optim search in abs(cp[m+2])> 0.9952717, value adjusted")
+    cp[m+2] <- 0.9952717*sign(cp[m+2])
+  }
   dp <- as.vector(cp.to.dp(cp))
   location <- as.vector(X %*% as.matrix(dp[1:m]))
   logL <- sum(dsn(y, location, dp[m+1], dp[m+2], log=TRUE))
@@ -517,10 +517,10 @@ sn.dev.gh <- function(cp, X, y, trace=FALSE, hessian=FALSE)
   m  <- ncol(X)
   n  <- nrow(X)
   np <- m+2
-  if(abs(cp[m+2])> 0.9952717) {
-    # this should not happen
-    cp[m+2]<- sign(cp[m+2])*0.99527174
-    }
+  if(abs(cp[m+2])> 0.9952717){
+    warning("optim search in abs(cp[m+2])> 0.9952717, value adjusted")
+    cp[m+2] <- 0.9952717*sign(cp[m+2])
+  }
   score <- rep(NA,np)
   info  <- matrix(NA,np,np)
   beta  <- cp[1:m]
@@ -595,7 +595,7 @@ dmsn <- function(x, xi=rep(0,d), Omega, alpha)
   # d <- diag(qr(Omega)[[1]])
   Det <- prod(abs( diag(qr(Omega)[[1]]) ))
   pdf   <- 2*exp(-0.5*Q) * pnorm(t(z)%*%as.matrix(alpha))/sqrt((2*pi)^d * Det)
-  pdf
+  as.vector(pdf)
 }
 
 
@@ -949,6 +949,7 @@ msn.mle <-function(X, y, freq, start, trace=FALSE, method="BFGS",
 {
   y <- as.matrix(y)
   if(missing(X)) X <- rep(1,nrow(y))
+    else {if(!is.numeric(X)) stop("X must be numeric")}
   if(missing(freq)) freq <- rep(1,nrow(y))
   X <- as.matrix(X) 
   k <- ncol(y)  
@@ -1087,23 +1088,31 @@ rst <- function (n=1, location = 0, scale = 1, shape = 0, df=Inf)
 }
 
 
-pst <- function (x,  location=0, scale=1, shape=0, df=Inf)
-  {
+
+pst <- function (x, location = 0, scale = 1, shape = 0, df = Inf, ...) 
+{
     if (df == Inf) 
-       p <-  psn(x,location,scale,shape)
+        p <- psn(x, location, scale, shape)
     else {
-       fp <- function(v,shape,df, t)
-            psn(sqrt(v)*t,0,1,shape)*dchisq(v*df, df=df)*df
-       z <- (x-location)/scale
-       p <- numeric(length(z))
-       for (i in 1:length(z))
-         p[i] <- integrate(fp, 0, Inf, shape=shape, df=df, t=z[i])$value
-     }
-    p
-  }
+        if(df<= 0) stop("df must be non-negative")
+        z <- (x-location)/scale
+        p <- numeric(length(z))
+        fp <- function(v, shape, df, t.value) psn(sqrt(v) * t.value, 0, 1, 
+                    shape) * dchisq(v * df, df = df) * df
+        for (i in 1:length(z)) {          
+          if(z[i] < 10+50/df)  
+            p[i]<- integrate(dst, -Inf, z[i], shape = shape, df = df,
+                             ...)$value
+          else           
+            p[i] <- integrate(fp, 0, Inf, shape = shape, df = df,
+                              t.value = z[i], ...)$value
+          }
+      }
+  pmax(0,pmin(1,p))
+}
 
-
-qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,  tol = 1e-08)
+qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,  
+                 tol = 1e-08, ...)
 { 
     if (df == Inf) 
         return(qsn(p, location, scale, shape))
@@ -1126,7 +1135,7 @@ qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,  tol = 1e-08)
     x <- cum[1] + sqrt(cum[2]) * x
     max.err <- 1
     while (max.err > tol) {
-        x1 <- x - (pst(x, 0, 1, shape, df) - p)/dst(x, 0, 1, shape, df)
+        x1 <- x - (pst(x, 0, 1, shape, df, ...) - p)/dst(x, 0, 1, shape, df)
         x1 <- pmin(x1, max.q)
         x1 <- pmax(x1, min.q)
         max.err <- max(abs(x1 - x)/(1 + abs(x)))
@@ -1140,18 +1149,19 @@ qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,  tol = 1e-08)
 
 st.cumulants <- function(shape=0, df=Inf, n=4)
 {
-  if(df==Inf) return(sn.cumulants(shape, n=n))
+  if(df == Inf) return(sn.cumulants(shape, n=n))
   n<- as.integer(n)
-  if( df <= n) stop("need df>n")
-  delta <- shape/sqrt(1 + shape^2)
+  if(df <= n) stop("need df>n")
+  if(length(shape)>1) warning("only shape[1] will be used")
+  delta <- shape[1]/sqrt(1 + shape[1]^2)
   cum<- numeric(min(n,4))
   if(n<1) return(cum)
   mu <- delta*sqrt(df/pi)*exp(lgamma((df-1)/2)-lgamma(df/2))
   cum[1]<- mu
-  if(n>1) cum[2]  <- df/(df-2) - mu^2
-  if(n>2) cum[3] <- mu*(df*(3-delta^2)/(df-3)-3*df/(df-2)+2*mu^2)
-  if(n>3) cum[4] <- (3*df^2/((df-2)*(df-4))-4*mu^2*df*(3-delta^2)/(df-3)
-                 +6*mu^2*df/(df-2)-3*mu^4)- 3*cum[2]^2
+  if(n>1) cum[2] <- df/(df-2) - mu^2
+  if(n>2) cum[3] <- mu*(df*(3-delta^2)/(df-3) - 3*df/(df-2)+2*mu^2)
+  if(n>3) cum[4] <- (3*df^2/((df-2)*(df-4)) - 4*mu^2*df*(3-delta^2)/(df-3)
+                    + 6*mu^2*df/(df-2)-3*mu^4)- 3*cum[2]^2
   cum
 }
 
@@ -1211,8 +1221,7 @@ pmst <- function(x, xi=rep(0,d), Omega=1, alpha=rep(0,d), df=Inf, ...)
 
 pmsn <- function(x, xi=rep(0,d), Omega, alpha, ...)
   { d<- length(alpha)
-    p<- pmst(x, xi, Omega, alpha, df=Inf, ...)
-    p
+    pmst(x, xi, Omega, alpha, df=Inf, ...)  
   }
 
 
@@ -1231,7 +1240,7 @@ dst2.plot <- function(x, y, xi, Omega, alpha, df, ...)
         alpha = alpha, df=df))
 }
 
-mst.fit <- function(X, y, freq, fixed.df=NA, start=NA, plot.it=TRUE, 
+mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE, 
                  trace=FALSE,  ... )
 {
   y.name <- deparse(substitute(y))
@@ -1353,7 +1362,7 @@ mst.fit <- function(X, y, freq, fixed.df=NA, start=NA, plot.it=TRUE,
 #
 
 
-st.mle <- function(X, y, freq,  start=NA, fixed.df=NA, trace=FALSE, 
+st.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE, 
               method="BFGS", control=list(iter.max=150))
 { 
   y.name  <- deparse(substitute(y))
@@ -1377,28 +1386,28 @@ st.mle <- function(X, y, freq,  start=NA, fixed.df=NA, trace=FALSE,
 }
 
 
-mst.mle <- function(X, y, freq,  start=NA, fixed.df=NA, trace=FALSE, 
+mst.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE, 
          method="BFGS", control=list(iter.max=150))
 {  
   Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
   y.name  <- deparse(substitute(y))
   y.names <- dimnames(y)[[2]] 
   y <- as.matrix(y)
-  if(missing(X))    X <- matrix(rep(1,nrow(y)),ncol=1) 
+  if(missing(X))    X <- matrix(rep(1,nrow(y)),ncol=1)
+    else {if(!is.numeric(X)) stop("X must be numeric")}
   if(missing(freq)) freq <- rep(1,nrow(y))
   x.names<-dimnames(X)[[2]]
   X <- as.matrix(X) 
   d <- ncol(y)  
   n <- sum(freq)
   m <- ncol(X)
-  if(missing(start) | is.na(start)){
+  if(missing(start)){
     qrX   <- qr(X)
     beta  <- as.matrix(qr.coef(qrX,y))
     Omega <- matrix(var(qr.resid(qrX,y)),d,d)
     omega <- sqrt(diag(Omega))
     alpha <- rep(0,d)
-    if(is.na(fixed.df)) df <- 15 
-      else df <- fixed.df
+    df <- ifelse(is.na(fixed.df), 10, fixed.df)
     if(trace) {
       cat("mst.mle: dp=","\n")
       print(c(beta,Omega,alpha))
@@ -1406,11 +1415,20 @@ mst.mle <- function(X, y, freq,  start=NA, fixed.df=NA, trace=FALSE,
       }
     }
   else {
-    beta  <- start$beta
-    Omega <- start$Omega
-    alpha <- start$alpha
-    df    <- start$df
-  } 
+    if(all(names(start)==c("beta", "Omega", "alpha", "df")))
+      {
+      beta  <- start$beta
+      Omega <- start$Omega
+      alpha <- start$alpha
+      df    <- start$df
+      }
+    else{
+      beta<- matrix(start[1:m],m,1)
+      Omega<- matrix(start[m+1]^2,1,1)
+      alpha<-start[m+2]
+      df<- start[m+3]
+    }
+  }
   eta <- alpha/sqrt(diag(Omega))
   Oinv<-solve(Omega)
   Oinv<-(Oinv+t(Oinv))/2
@@ -1865,8 +1883,8 @@ st.mle.grouped <- function(breaks, freq, trace=FALSE, start=NA)
 
 msn.affine <- function(dp, A, a=0, drop=TRUE)
 {
-# computes distribution of affine transformation of a MSN/MST variate, T=a+AY,
-# using formuale in Appendix A.2 of ESN
+# computes distribution of affine transformation of MSN/MST variate, T=a+AY,
+# using formuale in Appendix A.2 of Capitanio et al.(2003)
 #
   Diag  <- function(x) diag(x,nrow=length(x),ncol=length(x))
   if(is.null(dp$xi))  xi <- dp$beta  else  xi <- dp$xi
@@ -1900,11 +1918,11 @@ mst.affine <- function(dp, A, a=0, drop=TRUE) msn.affine(dp, A, a, drop)
         stop("This package requires R 1.0.1 or later")
     assign(".sn.home", file.path(library, pkg),
            pos=match("package:sn", search()))
-    sn.version <- "0.32-2 (2004-03-13)"
+    sn.version <- "0.33 (2005-04-07)"
     assign(".sn.version", sn.version, pos=match("package:sn", search()))
     if(interactive())
     {
-      cat("Library 'sn', version ", sn.version, ", © 1998-2004 A.Azzalini\n")
+      cat("Library 'sn', version ", sn.version, ", © 1998-2005 A.Azzalini\n")
       cat("type 'help(SN)' for summary information\n")
     }
     invisible()

@@ -17,12 +17,12 @@ rmsn(n=1, xi=rep(0,d), Omega, alpha)
 \arguments{
 \item{x}{
 for \code{dmsn}, this is either a vector of length \code{d} or a matrix 
-with \code{d} columns, where \code{d} is \code{length(alpha)}, giving 
+with \code{d} columns (where \code{d=length(alpha)}), giving 
 the coordinates of the point(s) where the density must be avaluated;
 for \code{pmsn}, only a vector of length \code{d} is allowed.
 }
 \item{Omega}{
-a postive-definite covariance matrix of dimension \code{(d,d)}.
+a positive-definite covariance matrix of dimension \code{(d,d)}.
 }
 \item{alpha}{
 a numeric vector which regulates the shape of the density.

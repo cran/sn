@@ -31,7 +31,7 @@
   John Wiley & Sons, New York.
 }
 \examples{
-data(ais)
+data(ais, package="sn")
 attach(ais)
 pairs(ais[,c(3:4,10:13)], main = "AIS data")
 plot(Wt~sport)

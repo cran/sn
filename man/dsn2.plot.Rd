@@ -61,7 +61,7 @@ Statistical applications of the multivariate skew-normal distribution.
 }
 \examples{
 x <- y <- seq(-5, 5, length=35)
-dsn2.plot(x, y, c(-1,2), diag(c(1,2.5)), c(2,-3), df=5)
+dsn2.plot(x, y, c(-1,2), diag(c(1,2.5)), c(2,-3))
 }
 \keyword{distribution}
-% Comment
+

@@ -111,7 +111,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \code{\link{dmsn}},\code{\link{sn.mle}},\code{\link{msn.fit}}, \code{\link{optim}}}
 }
 \examples{
-data(ais)
+data(ais, package="sn")
 attach(ais)
 # a simple-sample case
 b <- msn.mle(y=cbind(Ht,Wt))

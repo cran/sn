@@ -114,7 +114,7 @@ Oxford University Press, Oxford.
 \code{\link{optim}}, \code{\link{sn.mmle}}, \code{\link{sn.mle.grouped}}
 }
 \examples{
-data(ais)
+data(ais, package="sn")
 attach(ais)
 a<-sn.mle(y=bmi)
 #

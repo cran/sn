@@ -22,11 +22,10 @@ a numerical value representing the correlation;
 it must be between -1 and 1.
 }}
 \value{
-a numerical value with the required probability
+a numerical value
 }
 \details{
 The input parameters must be all scalars.
-
 
 This function is based on function \code{T.Owen}.
 }
@@ -38,4 +37,3 @@ p <- pnorm2(1.2, 0.5, 0.67)
 }
 \keyword{distribution}
 \keyword{multivariate}
-% Converted by Sd2Rd version 0.3-3.

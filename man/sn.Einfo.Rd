@@ -73,7 +73,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \examples{
 info <- sn.Einfo(dp=c(0,1,5), n=3)
 #
-data(ais)
+data(ais, package="sn")
 M <- model.matrix(~ais$"Ht")
 mle <- sn.mle(X=M, y=ais$"Wt", plot.it=FALSE)
 info <- sn.Einfo(cp=mle$cp, x=M)

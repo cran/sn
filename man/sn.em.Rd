@@ -94,7 +94,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \code{\link{dsn}}, \code{\link{sn.mle}}, \code{\link{cp.to.dp}}
 }
 \examples{
-data(ais)
+data(ais, package="sn")
 attach(ais)
 #
 a<-sn.em(y=bmi)

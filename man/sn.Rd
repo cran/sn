@@ -1,10 +1,10 @@
 \name{SN}
 \alias{SN}
 \title{
-The library `sn': summary information
+Package `sn': summary information
 }
 \description{
-This library provides functions related to the skew-normal (SN) and
+This package provides functions related to the skew-normal (SN) and
 the skew-t (ST) probability distributions, both for the univariate 
 and for the the multivariate case, including regression models.
 }
@@ -23,7 +23,7 @@ and for the the multivariate case, including regression models.
 % \code{msn.fit}, \code{msn.mle}, \code{msn.dev}, \code{msn.dev.grad},
 % \code{msn.moment.fit}, \code{num.deriv}.
 
-The library includes several functions, a number of which are intended
+The package includes several functions, a number of which are intended
 as services to other functions, not really to be called directly by the
 users. The following ones are those more relevant for practical use. 
 
@@ -54,9 +54,9 @@ R 1.0.1.  Two functions  require  \code{library(mvtnorm)}:
 \code{pmsn}, \code{pmst}.
 }
 \section{Version}{
-The version level of the library is given by the  command 
+The version level of the package is given by the  command 
 \code{print(.sn.version)}.
-The most recent version of the library can be obtained from
+The most recent version of the package can be obtained from
 the WWW page: \url{http://azzalini.stat.unipd.it/SN}
 which also contains other related material
 }
@@ -66,9 +66,10 @@ The papers listed below provide background information.
 }
 \section{Author}{
 Adelchi Azzalini, Dipart. Scienze Statistiche, Università di Padova, Italia.
-Please send comments, error reports, etc. to \email{adelchi.azzalini@unipd.it}
+Please send comments, error reports, etc. to the author whose WWW page
+is \url{http://azzalini.stat.unipd.it/}.
 }
-\section{Acknowledgements}{The library has evolved through several 
+\section{Acknowledgements}{The package has evolved through several 
 versions, developed over some years.
 
 For versions up to 0.20, the following people and institutions 
@@ -86,8 +87,9 @@ no.97.01331.CT10.
 
 Versions 0.21 to 0.30 have been supported by "MIUR", Italy, under grant 
 scheme PRIN 2000. Again, thanks to Antonella Capitanio for additional
-testing of the new version of the library.
+testing of the new version of the package.
 
+For acknowledgemets to the use of this package, see \code{citation("sn")}.
 }
 \references{
 Azzalini, A. (1985).
@@ -121,7 +123,7 @@ with emphasis on a multivariate skew-\emph{t} distribution.
 
 }
 \section{Licence}{
-This library and its documentation are usable under the terms of the 
+This package and its documentation are usable under the terms of the 
 "GNU General Public License", a copy of which is distributed with the 
 package.
 }

@@ -17,7 +17,7 @@ rmst(n=1, xi=rep(0,d), Omega, alpha, df=Inf)
 \arguments{
 \item{x}{
 for \code{dmsn}, this is either a vector of length \code{d} or a matrix 
-with \code{d} columns, where \code{d} is \code{length(alpha)}, giving 
+with \code{d} columns (where \code{d=length(alpha)}), giving 
 the coordinates of the point(s) where the density must be avaluated;
 for \code{pmsn}, only a vector of length \code{d} is allowed.
 }
@@ -44,8 +44,8 @@ to be drawn.
 additional parameters passed to \code{pmvt}
 }}
 \value{
-A vector of density values (\code{dmst}), or a matrix of random 
-points (\code{rmst}).
+A vector of density values (\code{dmst}) or a single probability 
+(\code{pmst}) or a matrix of random  points (\code{rmst}).
 }
 \section{Background}{
 The family of multivariate skew-t distributions is an extension of the 

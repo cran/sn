@@ -13,7 +13,7 @@
 \alias{sn.SFscore}
 \title{Internal sn functions}
 \description{
- Internal  functions of package \emph{sn}
+ Internal functions of package \emph{sn}
 }
 \usage{
 msn.dev(param, X, y, freq, trace=FALSE)

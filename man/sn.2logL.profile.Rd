@@ -89,14 +89,14 @@ Statistical applications of the multivariate skew-normal distribution.
 \code{\link{sn.em}}, \code{\link{sn.mle}}
 }
 \examples{
-data(ais)
+data(ais, package="sn")
 attach(ais)
 a <- sn.2logL.profile(y=bmi)
 a <- sn.2logL.profile(y=bmi, use.cp=FALSE, param.range=c(3,6,1,5))
 a <- sn.2logL.profile(X=cbind(1,lbm), y=bmi, param.range=c(0,0.9),
         npts=50)
 #
-data(frontier)
+data(frontier, package="sn")
 a <- sn.2logL.profile(y=frontier, param.range=c(0.8,1.6,10,30),
         use.cp=FALSE, npts=11)
 }

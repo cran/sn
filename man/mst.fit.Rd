@@ -10,7 +10,7 @@ using maximum likelihood estimation. The outcome is then displayed
 in graphical form.
 }
 \usage{
-mst.fit(X, y, freq, fixed.df=NA, start=NA, plot.it=TRUE, 
+mst.fit(X, y, freq, start, fixed.df=NA,  plot.it=TRUE, 
         trace=FALSE, ...)
 }
 \arguments{
@@ -31,7 +31,7 @@ If missing, a vector of 1's is created; otherwise
 it must have the same number of rows of \code{y}.
 }
 \item{fixed.df}{
-a scalar value contaning the degrees of freedom (df), if these must
+a scalar value containing the degrees of freedom (df), if these must
 be taked as fixed, or \code{NA} (deafult value) if df is a parameter
 to be estimated.
 }
@@ -135,7 +135,7 @@ Azzalini, A. and Capitanio, A. (2003).
 \code{\link{msn.fit}}, \code{\link{mst.mle}}
 }
 \examples{
-data(ais)
+data(ais, package="sn")
 attach(ais)
 # a simple-sample case
 b <- mst.fit(y=cbind(Ht,Wt))
