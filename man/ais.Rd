@@ -1,7 +1,7 @@
 \name{ais}
 \alias{ais}
 \title{Australian Institute of Sport data}
-\usage{data(ais, package=sn)}
+\usage{data(ais)}
 \description{
   Data on 102 male and 100 female athletes collected at the Australian
   Institute of Sport, courtesy of Richard Telford and Ross Cunningham.

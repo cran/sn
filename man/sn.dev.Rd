@@ -8,7 +8,7 @@ Computes twice the negative log-likelihood (the "deviance")
 for regression models with errors having a skew-normal distribution.
 }
 \usage{
-sn.dev(cp, X, y, trace=F)
+sn.dev(cp, X, y, trace=FALSE)
 }
 \arguments{
 \item{cp}{
@@ -24,10 +24,10 @@ Missing values (\code{NA}s) are not allowed.
 }
 \item{trace}{
 logical value.
-If \code{trace=T}, details are printed. Default value is \code{F}.
+If \code{trace=TRUE}, details are printed. Default value is \code{F}.
 }}
 \value{
-a numeric value
+A numeric value.
 }
 \details{
 This is the objective function of \code{sn.mle}, whose documentation

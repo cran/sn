@@ -10,7 +10,7 @@ for multivariate regression models with errors having a multivariate
 skew-normal distribution.
 }
 \usage{
-msn.dev(param, X, y, freq, trace=F)
+msn.dev(param, X, y, freq, trace=FALSE)
 }
 \arguments{
 \item{param}{
@@ -29,14 +29,12 @@ a vector of weights, with length equal to \code{nrow(y)}.
 }
 \item{trace}{
 logical value.
-If \code{trace=T}, details are printed. Default value is \code{F}.
+If \code{trace=TRUE}, details are printed. Default value is \code{F}.
 }}
 \value{
-a numeric value.
+A numeric value.
 }
-\section{Side Effects}{
-~describe any side effects if they exist
-}
+
 \details{
 This is the objective function of \code{msn.mle}, whose documentation
 gives additional details.
@@ -46,4 +44,3 @@ gives additional details.
 }
 \keyword{multivariate}
 \keyword{regression}
-% Converted by Sd2Rd version 0.3-3.

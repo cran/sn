@@ -24,50 +24,50 @@ numeric vector of shape parameter of length \code{k}.
 Missing values are not allowed.
 }}
 \value{
-a list containing the following components
+A list containing the following components:
 
 \item{xi}{
-the input parameter \code{xi}
+the input parameter \code{xi}.
 }
 \item{Omega}{
-the input parameter  \code{Omega}
+the input parameter  \code{Omega}.
 }
 \item{alpha}{
-the input parameter  \code{alpha}
+the input parameter  \code{alpha}.
 }
 \item{omega}{
-vector of scale parameters
+vector of scale parameters.
 }
 \item{mean}{
-numeric vector representing the mean value of the distribution
+numeric vector representing the mean value of the distribution.
 }
 \item{variance}{
-variance matrix of the distribution
+variance matrix of the distribution.
 }
 \item{Omega.conv}{
-concentration matrix associated to \code{Omega}, i.e. its inverse
+concentration matrix associated to \code{Omega}, i.e. its inverse.
 }
 \item{Omega.cor}{
-correlation matrix associated to \code{Omega}
+correlation matrix associated to \code{Omega}.
 }
 \item{Omega.pcor}{
-partial correlations matrix associated to \code{Omega}
+partial correlations matrix associated to \code{Omega}.
 }
 \item{lambda}{
 shape parameters of the marginal distributions, in two equivalent
-forms
+forms.
 }
 \item{Psi}{
-correlation matrix of the equivalent \code{(lambda,Psi)} parametrization
+correlation matrix of the equivalent \code{(lambda,Psi)} parametrization.
 }
 \item{delta}{
 the parameter \code{delta} which determines the shape of the marginal 
-distributions
+distributions.
 }
 
 \item{skewness}{
 numeric vector with marginal indices of skewness (the standardised
-third cumulant)
+third cumulant).
 }}
 \details{
 The meaning of the parameters is explained in the references below,

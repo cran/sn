@@ -1,32 +1,49 @@
-ais                      Australian Institute of Sport data
-cp.to.dp                 Conversion between equivalent parametrizations
-dmsn                     Multivariate skew-normal distribution
-dsn                      Skew-Normal Distribution
-frontier                 Simulated sample from a skew-normal distribution
-gamma1.to.lambda         Converts skewness to shape parameter of skew-
-                         normal distribution
-msn.conditional          Cumulants and distribution of a skew-normal
-                         variate after conditioning
-msn.dev                  Deviance for multivariate skew-normal
-                         distributions
-msn.fit                  Fitting multivariate skew-normal distributions
-msn.marginal             Marginal compontents of a multivariate skew-
-                         normal distribution
-msn.mle                  Maximum likelihood estimation for a multivariate
-                         skew-normal distribution
-msn.quantities           Quantities related to the multivariate skew-
-                         normal distribution.
-plot.msn.cond            Plot of the density of a conditional skew-normal
-                         variate
-pnorm2                   Bivariate normal integral
-sn.2logL.profile         Profile twice loglikelihood for skew-normal
-                         models
-sn.cumulants             cumulants of the skew-normal distribution
-sn.dev                   Deviance for skew-normal distributions
-sn.em                    Fitting Skew-normal variables using the EM
-                         algorithm
-sn.mle                   Maximum likelihood estimation for skew-normal
-                         models
-SN                       The library `sn': summary information
-T.Owen                   Owen's function
-zeta                     Function `log(2*P(x))' and its derivatives
+T.Owen                  Owen's function 
+ais                     Australian Institute of Sport data
+cp.to.dp                Conversion between equivalent parametrizations 
+dmsn                    Multivariate skew-normal distribution 
+dmst                    Multivariate skew-t distribution 
+dsn                     Skew-Normal Distribution 
+dsn2.plot               Plot of Bivariate Skew-normal Density Function 
+dst                     Skew-t Distribution 
+dst2.plot               Plot of Bivariate Skew-t Density Function 
+frontier                Simulated sample from a skew-normal
+                        distribution
+gamma1.to.lambda        Converts skewness to shape parameter of
+                        skew-normal distribution 
+msn.cond.plot           Plot of the density of a conditional
+                        skew-normal variate 
+msn.conditional         Cumulants and distribution of a skew-normal
+                        variate after conditioning 
+msn.dev                 Deviance for multivariate skew-normal
+                        distributions 
+msn.dev.grad            Gradient of the deviance for multivariate
+                        skew-normal distributions 
+msn.fit                 Fitting multivariate skew-normal distributions 
+msn.marginal            Marginal components of a multivariate
+                        skew-normal distribution 
+msn.mle                 Maximum likelihood estimation for a
+                        multivariate skew-normal distribution 
+msn.moment.fit          Fitting multivariate skew-normal distributions
+                        with method of moments 
+msn.quantities          Quantities related to the multivariate
+                        skew-normal distribution. 
+mst.fit                 Fitting multivariate skew-t distributions 
+mst.mle                 Maximum likelihood estimation for a
+                        (multivariate) skew-t distribution 
+num.deriv               Numerical derivatives 
+pnorm2                  Bivariate normal integral 
+sn-internal             Internal sn functions
+sn.2logL.profile        Profile twice loglikelihood for skew-normal
+                        models 
+SN                      The library `sn': summary information 
+sn.cumulants            Cumulants of the skew-normal distribution 
+sn.dev                  Deviance for skew-normal distributions 
+sn.dev.gh               Derivatives of deviance for skew-normal
+                        distributions 
+sn.em                   Fitting Skew-normal variables using the EM
+                        algorithm 
+sn.mle                  Maximum likelihood estimation for skew-normal
+                        models 
+st.2logL.profile        Profile twice loglikelihood for skew-t models 
+zeta                    Function `log(2*P(x))' and its derivatives 

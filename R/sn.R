@@ -1,18 +1,23 @@
-# S-plus library for the Skew-Normal (SN) distribution 
+# S-plus/R library for the Skew-Normal (SN) distribution,
+# and skew-t distribution, from version 0.30
+#
 # Author: A.Azzalini <azzalini@stat.unipd.it> 
 # Home-page: http://www.stat.unipd.it/~azzalini/SN
-# major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 1/4/99
-# This is version 0.22.2 of the library (2002-01-05) for R 1.0.1.
+# major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 01/04/1999, 
+# 15/06/2002 
+# This is version 0.3 of the library (2002-06-30) 
+# It requires R 1.0.1, plus library mvtnorm for some (few) functions
 #
 #------- 
-# This is the working version;  updated on:
-# 2001-12-12 (msn.mle, use of optim, qsn changed, rsn/attr)
 
 dsn <- function(x, location=0, scale=1, shape=0)
   2*dnorm((x-location)/scale)*pnorm((shape*(x-location)/scale))/scale
 
-psn <- function(x, location=0, scale=1, shape=0) 
-  pnorm((x-location)/scale) - 2*T.Owen((x-location)/scale, shape)
+psn <- function(x, location=0, scale=1, shape=0, ...)
+ { 
+   z <- (x-location)/scale
+   pmin(1, pmax(0, pnorm(z) - 2*T.Owen(z, shape,...)))
+ }
  
 rsn <- function(n=1, location=0, scale=1, shape=0){
   u1 <- rnorm(n)
@@ -24,7 +29,7 @@ rsn <- function(n=1, location=0, scale=1, shape=0){
   return(y)
   }
 
-qsn <- function (p, location = 0, scale = 1, shape = 0, tol = 1e-08) 
+qsn <- function (p, location = 0, scale = 1, shape = 0, tol = 1e-08, ...) 
 {
     max.q <- sqrt(qchisq(p,1))
     min.q <- -sqrt(qchisq(1-p,1))
@@ -43,7 +48,7 @@ qsn <- function (p, location = 0, scale = 1, shape = 0, tol = 1e-08)
     x <- cum[1] + sqrt(cum[2]) * x
     max.err <- 1
     while (max.err > tol) {
-        x1 <- x - (psn(x, 0, 1, shape) - p)/dsn(x, 0, 1, shape)
+        x1 <- x - (psn(x, 0, 1, shape, ...) - p)/dsn(x, 0, 1, shape)
         x1 <- pmin(x1,max.q)
         x1 <- pmax(x1,min.q)
         max.err <- max(abs(x1 - x)/(1 + abs(x)))
@@ -79,7 +84,7 @@ sn.cumulants <- function(shape=0, n=4)
   kv <- cumulants.half.norm(n)
   if(length(kv)>n) kv<-kv[-(n+1)]
   kv[2] <- kv[2]-1
-  kappa <- outer(delta,1:n,"^")*matrix(rep(kv,length(shape)),ncol=n,byrow=T)
+  kappa <- outer(delta,1:n,"^")*matrix(rep(kv,length(shape)),ncol=n,byrow=TRUE)
   kappa[,2] <- kappa[,2]+1
   kappa
 }
@@ -208,12 +213,12 @@ zeta <- function(k,x){# k integer \in (0,4)
       else{ if(k==3)  y<-(-zeta(2,x)*(x+zeta(1,x))-zeta(1,x)*(1+zeta(2,x)))
         else{ if(k==4)  
            y<-(-zeta(3,x)*(x+2*zeta(1,x))-2*zeta(2,x)*(1+zeta(2,x)))
-        else {warning("k>4"); y<-rep(NA,length(x)) }}}}}
+        else stop("k>4") }}}}
   replace(y,na,NA)
 }
 
 
-sn.em <-function(X, y, fixed, p.eps=1e-4, l.eps=1.e-2, trace=F, data=F){
+sn.em <-function(X, y, fixed, p.eps=1e-4, l.eps=1.e-2, trace=FALSE, data=FALSE){
 #
 #  1/10/1998 (elaborando dal em.lm.sn del 2-12-97)
 #
@@ -301,13 +306,13 @@ gamma1.to.lambda<- function(gamma1){
 
 # Examples:
 #  a<-sn.2logL.profile(y=otis)
-#  a<-sn.2logL.profile(y=otis, use.cp=F)
+#  a<-sn.2logL.profile(y=otis, use.cp=FALSE)
 #  a<-sn.2logL.profile(X=cbind(1,lbm), y=bmi, npts=50)
-#  a<-sn.2logL.profile(y=frontier,param.range=c(0.8,1.6,10,30),use.cp=F,npts=11)
+#  a<-sn.2logL.profile(y=frontier,param.range=c(0.8,1.6,10,30),use.cp=FALSE,npts=11)
 
 sn.2logL.profile<-function(X=matrix(rep(1,n)), y, 
       param.range=c(sqrt(var(y))*c(2/3, 3/2), -0.95, 0.95),
-      use.cp=T, npts= 31 %/% d, plotit=T, ...)
+      use.cp=TRUE, npts= 31 %/% d, plotit=TRUE, ...)
 {# plot 1D or 2D profile deviance (=-2logL) using either parameters
    # if(plotit & !exists(.Device)) stop("Device not active")
    n<-length(y)
@@ -383,7 +388,7 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
 }
 
   
-sn.mle <- function(X, y, cp, plotit=T, trace=F, method="L-BFGS-B",
+sn.mle <- function(X, y, cp, plotit=TRUE, trace=FALSE, method="L-BFGS-B",
                control=list(iter.max=100, abs.tol=1e-5)) 
 {
   xlab<-deparse(substitute(y))
@@ -406,11 +411,11 @@ sn.mle <- function(X, y, cp, plotit=T, trace=F, method="L-BFGS-B",
   opt<- optim(cp, fn=sn.dev, gr=sn.dev.gh, method=method,
          lower=c(-rep(Inf,m),1e-10,-0.99527), 
          upper=c(rep(Inf,m),Inf,0.99527), 
-         control=control, X=X, y=y, trace=trace, hessian=F)
+         control=control, X=X, y=y, trace=trace, hessian=FALSE)
   cp <- opt$par
   cat(paste("Message from optimization routine:", opt$message,"\n"))
   logL <- (-opt$value)/2
-  info <- attr(sn.dev.gh(cp, X, y, trace=F, hessian=T),"hessian")/2
+  info <- attr(sn.dev.gh(cp, X, y, trace=FALSE, hessian=TRUE),"hessian")/2
   se <- sqrt(diag(solve(info)))
   # if(plotit & !exists(".Device")) warning("Device not active")
   # if(exists(".Device") & plotit) {
@@ -432,7 +437,7 @@ sn.mle <- function(X, y, cp, plotit=T, trace=F, method="L-BFGS-B",
       {
       x<-seq(min(pretty(y0,10)),max(pretty(y0,10)),length=100)
       magic <- n^(1/3)+sqrt(n)
-      hist(y0, prob=T, nclass=magic, xlim=c(min(x),max(x)), xlab=xlab, main=xlab)      
+      hist(y0, prob=TRUE, nclass=magic, xlim=c(min(x),max(x)), xlab=xlab, main=xlab)      
       }
     if(n<101) points(y0,rep(0,n),pch=1)
     # title(deparse(substitute(y)))
@@ -442,7 +447,7 @@ sn.mle <- function(X, y, cp, plotit=T, trace=F, method="L-BFGS-B",
 }
 
 
-sn.dev <- function(cp, X, y, trace=F)
+sn.dev <- function(cp, X, y, trace=FALSE)
 { # -2*logL for centred parameters  
   m <- ncol(X)
   dp <- as.vector(cp.to.dp(cp))
@@ -534,7 +539,7 @@ dmsn <- function(x, xi=rep(0,k), Omega, alpha)
   X     <- t(matrix(x,nrow=n,ncol=k))-xi
   z     <- X/scale
   Q     <- apply((solve(Omega)%*% X)* X,2,sum) #diagonal of (x Omega^(-1) x^T)
-  # Det   <- as.numeric(det.Hermitian(as.Matrix(Omega),logarithm=F)$modulus)
+  # Det   <- as.numeric(det.Hermitian(as.Matrix(Omega),logarithm=FALSE)$modulus)
   d <- diag(qr(Omega)[[1]])
   Det <- prod(abs(d))
   pdf   <- 2*exp(-0.5*Q)*pnorm(t(z)%*%as.matrix(alpha))/sqrt((2*pi)^k*Det)
@@ -557,17 +562,17 @@ rmsn <- function(n=1, xi=rep(0,k), Omega, alpha){
   }
 
 
-plot.dsn2 <- function(x, y, xi, Omega, alpha, ...)
+dsn2.plot <- function(x, y, xi, Omega, alpha, ...)
 {# plot bivariate density SN_2(xi,Omega,alpha) computed at (x,y) grid
   if(any(dim(Omega)!=c(2,2))) stop("dim(Omega) != c(2,2)")
   nx <- length(x)
   ny <- length(y)
-  xoy <- cbind(rep(x,ny), as.vector(matrix(y,nx,ny,byrow=T)))
-  X <- matrix(xoy, nx*ny, 2, byrow=F)
+  xoy <- cbind(rep(x,ny), as.vector(matrix(y,nx,ny,byrow=TRUE)))
+  X <- matrix(xoy, nx*ny, 2, byrow=FALSE)
   pdf<-dmsn(X, xi, Omega, alpha)
   pdf<-matrix(pdf, nx, ny)
   contour(x, y, pdf, ...)
-  invisible(list(x=x,y=x,density=pdf,xi=xi,Omega=Omega,alpha=alpha))
+  invisible(list(x=x, y=y, density=pdf, xi=xi, Omega=Omega, alpha=alpha))
 }
 
 msn.quantities <- function(xi,Omega,alpha){
@@ -614,14 +619,14 @@ msn.conditional <- function(xi, Omega, alpha, fixed.comp, fixed.values)
         stop("dimensions of parameters do not match")
   fc <- fixed.comp
   O  <- as.matrix(Omega)
-  O11<- O[fc,fc, drop=F]
-  O12<- O[fc,-fc, drop=F]
-  O21<- O[-fc,fc, drop=F]
-  O22<- O[-fc,-fc, drop=F]
+  O11<- O[fc,fc, drop=FALSE]
+  O12<- O[fc,-fc, drop=FALSE]
+  O21<- O[-fc,fc, drop=FALSE]
+  O22<- O[-fc,-fc, drop=FALSE]
   o22<- sqrt(diag(O22))
   inv.O11 <- solve(O11)
-  xi1 <- xi[fc, drop=F]
-  xi2 <- xi[-fc, drop=F]
+  xi1 <- xi[fc, drop=FALSE]
+  xi2 <- xi[-fc, drop=FALSE]
   alpha1 <- matrix(alpha[fc])
   alpha2 <- matrix(alpha[-fc]) 
   O22.1 <- O22 - O21 %*% inv.O11 %*% O12
@@ -661,12 +666,12 @@ msn.marginal <- function(xi,Omega,alpha,comp)
     if(any(comp>k | comp<1)) stop("comp makes no sense")
     scale<- sqrt(diag(Omega))
     O   <- Diag(1/scale) %*% Omega %*% Diag(1/scale)
-    O11 <- O[comp,comp, drop=F]
-    O12 <- O[comp,-comp, drop=F]
-    O21 <- O[-comp,comp, drop=F]
-    O22 <- O[-comp,-comp, drop=F]
-    alpha1<- as.matrix(alpha[comp, drop=F])
-    alpha2<- as.matrix(alpha[-comp, drop=F])
+    O11 <- O[comp,comp, drop=FALSE]
+    O12 <- O[comp,-comp, drop=FALSE]
+    O21 <- O[-comp,comp, drop=FALSE]
+    O22 <- O[-comp,-comp, drop=FALSE]
+    alpha1<- as.matrix(alpha[comp, drop=FALSE])
+    alpha2<- as.matrix(alpha[-comp, drop=FALSE])
     O22.1 <- O22 - O21 %*% solve(O11) %*% O12
     a.sum <- as.vector(t(alpha2) %*% O22.1 %*% alpha2)
     a.new <- as.vector(alpha1+solve(O11) %*% O12 %*% alpha2)/sqrt(1+a.sum)
@@ -676,22 +681,22 @@ msn.marginal <- function(xi,Omega,alpha,comp)
   else {
    if(any(sort(comp)!=(1:k))) stop("comp makes no sense")
    result <-
-    list(xi=xi[comp], Omega=as.matrix(Omega[comp,comp, drop=F]), alpha=alpha[comp]) 
+    list(xi=xi[comp], Omega=as.matrix(Omega[comp,comp, drop=FALSE]), alpha=alpha[comp]) 
    }
   result
 }
 
-plot.msn.cond <- function(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
+msn.cond.plot <- function(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
 {# fa il grafico di Y_2|Y_1; assumiamo che dim(Y_2)= 2 
   msn.pdf2.aux <- function(x,y,xi,Omega,alpha,fc,fv)
    {
      nx <- length(x)
      ny <- length(y)
-     FV <- matrix(rep(fv,nx*ny), nx*ny, length(fv), byrow=T)
+     FV <- matrix(rep(fv,nx*ny), nx*ny, length(fv), byrow=TRUE)
      X <- matrix(NA, nx*ny, length(alpha))
      X[,fc] <- FV
-     xoy <- cbind(rep(x,ny), as.vector(matrix(y,nx,ny,byrow=T)))
-     X[,-fc] <- matrix(xoy, nx*ny, 2, byrow=F)
+     xoy <- cbind(rep(x,ny), as.vector(matrix(y,nx,ny,byrow=TRUE)))
+     X[,-fc] <- matrix(xoy, nx*ny, 2, byrow=FALSE)
      pdf<-dmsn(X,xi,Omega,alpha)
      matrix(pdf,nx,ny)
    }
@@ -723,14 +728,14 @@ plot.msn.cond <- function(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
                 (scale1*scale2)
   cond$pdf<-list(x=x,y=y,f.fitted=pdf.fit)
   levels<-pretty(pdf.fit,5)
-  contour(x,y,pdf.fit,levels=levels,add=T,col=2)
+  contour(x,y,pdf.fit,levels=levels,add=TRUE,col=2)
   # fino a qui per il calcolo della densità approx;
   # ora otteniamo quella esatta
   numer <- msn.pdf2.aux(x, y, xi, Omega, alpha, fc, fv)
   marg  <- msn.marginal(xi, Omega, alpha, fc)
   denom <- dmsn(fv, marg$xi, marg$Omega, marg$alpha)
   pdf.exact<- numer/as.vector(denom)
-  contour(x, y, pdf.exact, add=T, levels=levels, col=1, lty=4, labcex=0)
+  contour(x, y, pdf.exact, add=TRUE, levels=levels, col=1, lty=4, labcex=0)
   legend(x[1],y[length(y)],c("approx","exact"), lty=c(1,4),col=c(2,1))
   cond$pdf$f.exact<-pdf.exact
   cond$rel.error<-summary((pdf.fit-pdf.exact)/pdf.exact)
@@ -760,13 +765,14 @@ msn.moment.fit <- function(y){
   O.cor <- (t(O.cor)+O.cor)/2
   O.inv <- solve(O.cor)
   tmp   <- as.vector(1-t(delta) %*% O.inv %*% delta)
-  if(tmp<=0) {tmp <- 0.0001; admissible <- F} else admissible<-T
+  if(tmp<=0) {tmp <- 0.0001; admissible <- FALSE} 
+        else admissible<-TRUE
   alpha <-as.vector(O.inv%*%delta)/sqrt(tmp)
   list(xi=xi, Omega=Omega, alpha=alpha, Omega.cor=O.cor, omega=omega, 
        delta=delta, skewness=gamma1, admissible=admissible) 
 }
 
-msn.fit <- function(X, y, freq, plotit=T, trace=F, ... )
+msn.fit <- function(X, y, freq, plotit=TRUE, trace=FALSE, ... )
 {
   y.name <- deparse(substitute(y))
   y.names<- dimnames(y)[[2]] 
@@ -802,8 +808,11 @@ msn.fit <- function(X, y, freq, plotit=T, trace=F, ... )
       xi0 <- rep(0,k)
       }
     if(k>1) {
+       opt<-options()
+       options(warn=-1)
        pairs(y0, labels=y.names,
-        panel=function(x, y, Y, y.names, xi, Omega, alpha){
+        panel=function(x, y, Y, y.names, xi, Omega, alpha)
+         {
           for(i in 1:length(alpha)){
             # if(y.names[i]==deparse(substitute(x))) Ix<-i
             # if(y.names[i]==deparse(substitute(y))) Iy<-i
@@ -817,9 +826,11 @@ msn.fit <- function(X, y, freq, plotit=T, trace=F, ... )
           alpha.marg<-marg$alpha     
           x1 <- seq(min(x), max(x), length=30)
           x2 <- seq(min(y), max(y), length=30)
-          plot.dsn2(x1, x2, xi.marg, Omega.marg, alpha.marg, add=T, col=2)
-        },  # end "panel" function
-      Y=y0, y.names=y.names, xi=xi0, Omega=Omega, alpha=alpha)}
+          dsn2.plot(x1, x2, xi.marg, Omega.marg, alpha.marg, add=TRUE, col=2)},  
+          # end "panel" function
+      Y=y0, y.names=y.names, xi=xi0, Omega=Omega, alpha=alpha)
+      options(opt) 
+      }
     else{ # plot for case k=1
       y0<-as.vector(y0)
       x<-seq(min(pretty(y0,10)),max(pretty(y0,10)),length=100)
@@ -829,7 +840,7 @@ msn.fit <- function(X, y, freq, plotit=T, trace=F, ... )
       else {
          dp0<-c(0,omega,alpha)
          xlab <- "residuals"}
-      hist(y0, prob=T, nclass=n^(1/3)+sqrt(n), xlab=xlab, ylab="density")
+      hist(y0, prob=TRUE, nclass=n^(1/3)+sqrt(n), xlab=xlab, ylab="density")
       lines(x, dsn(x,dp0[1],dp0[2],dp0[3]))
       if(length(y)<101) points(y0, rep(0,n), pch=1)
       title(y.name)
@@ -872,7 +883,7 @@ msn.fit <- function(X, y, freq, plotit=T, trace=F, ... )
 }
 
 
-msn.mle <-function(X, y, freq, start, trace=F, method="BFGS",
+msn.mle <-function(X, y, freq, start, trace=FALSE, method="BFGS",
                 control=list(iter.max=150) )
 {
   y <- as.matrix(y)
@@ -882,12 +893,12 @@ msn.mle <-function(X, y, freq, start, trace=F, method="BFGS",
   k <- ncol(y)  
   n <- sum(freq)
   m <- ncol(X)
-  qrX <- qr(X)
   y.names<-dimnames(y)[[2]] 
   x.names<-dimnames(X)[[2]]
   if(missing(start)) {
-      beta  <- qr.coef(qrX, y)
-      res   <- qr.resid(qrX, y)
+      fit0  <- lm.fit(X, y, method="qr")
+      beta  <- as.matrix(coef(fit0))
+      res   <- resid(fit0)
       a     <- msn.moment.fit(res)
       Omega <- a$Omega
       omega <- a$omega
@@ -935,7 +946,7 @@ msn.mle <-function(X, y, freq, start, trace=F, method="BFGS",
   list(call=match.call(), dp=dp, logL=logL, se=se, optim=opt)
 }
  
-msn.dev<-function(param, X, y, freq, trace=F){
+msn.dev<-function(param, X, y, freq, trace=FALSE){
   k <- ncol(y)
   # if(missing(freq)) freq<-rep(1,nrow(y))
   n <- sum(freq)
@@ -954,7 +965,7 @@ msn.dev<-function(param, X, y, freq, trace=F){
   dev
 }
 
-msn.dev.grad <- function(param, X, y, freq, trace=F){
+msn.dev.grad <- function(param, X, y, freq, trace=FALSE){
   k <- ncol(y)
   # if(missing(freq)) freq<-rep(1,nrow(y))
   n <- sum(freq)
@@ -975,7 +986,7 @@ msn.dev.grad <- function(param, X, y, freq, trace=F){
 
 num.deriv <- function(coefficients, FUN, ...)
 {# da rm.fit: derivate seconde numeriche, se FUN da` il gradiente
-   FUN <- get(FUN, inherit = T)
+   FUN <- get(FUN, inherit = TRUE)
    values <- FUN(coefficients, ...)
    p <- length(values)
    H <- matrix(0, p, p)
@@ -991,13 +1002,561 @@ num.deriv <- function(coefficients, FUN, ...)
    (H+t(H))/2
 }
 
+#---
+# Portion added in June 2002 (skew-t and sn.mle.grouped)
+
+
+dst <-  function (x, location = 0, scale = 1, shape = 0, df=Inf)
+{ 
+  if(df==Inf) return(dsn(x,location,scale,shape))
+  z   <- (x - location)/scale
+  pdf <- dt(z, df=df)/scale
+  cdf <- pt(shape*z*sqrt((df+1)/(z^2+df)), df=df+1)
+  2 * pdf * cdf
+}
+
+
+rst <- function (n=1, location = 0, scale = 1, shape = 0, df=Inf)
+{ 
+  z <- rsn(n,location=0,scale,shape)
+  if(df==Inf) return(z+location)
+  v <- rchisq(n,df)/df
+  y <- z/sqrt(v)+location
+  attr(y,"parameters")<- c(location,scale,shape,df)
+  return(y)
+}
+
+pst <- function(x, location=0, scale=1, shape=0, df=Inf,...){
+   p <- numeric(length(x))
+   for(i in 1:length(x)) 
+     if(x[i] == -Inf) p[i]<- 0
+     else{ 
+       if(x[i]==Inf) p[i]<- 1
+          else
+       p[i] <- pmst(x[i], xi=location, Omega=scale^2, alpha=shape, df=df,...)
+    }
+   p
+}
+
+dmst <- function(x, xi=rep(0,d), Omega, alpha, df=Inf)
+{
+# Density of Multivariate ST rv with parameters (xi, Omega, alpha, df) 
+# evaluated at x, which is either a d-vector or (n,d) matrix
+  if(df==Inf) return(dmsn(xi,xi,Omega,alpha))
+  omega <- sqrt(diag(Omega))
+  if(is.vector(x)) {
+    n <- 1
+    d <- length(x)
+  }
+  else {
+    n <- dim(x)[1]
+    d <- dim(x)[2]
+  }
+  X <- t(matrix(x, nrow = n, ncol = d)) - xi
+  z <- X/omega
+  Q <- apply((solve(Omega) %*% X) * X, 2, sum) # diag of (x Omega^(-1) x^T)
+  # Det <- as.numeric(det.Hermitian(as.Matrix(Omega), logarithm = F)$modulus)
+  Det <- abs(prod(diag(qr(Omega)$qr)))
+  L <- as.vector(t(z) %*% as.matrix(alpha))
+  pdf.mt <- (gamma((df+d)/2)/
+            (sqrt((pi*df)^d*Det) * gamma(df/2) * (1+Q/df)^((df+d)/2)))
+  cdf.T <- pt(L*sqrt((df+d)/(Q+df)), df+d)
+  2 * pdf.mt * cdf.T
+}
+
+rmst <- function(n=1, xi=rep(0,d), Omega, alpha, df=Inf)
+{ 
+  d <- ncol(Omega)
+  if(df==Inf) x<-1 
+    else x <- rchisq(n,df)/df
+  z <- rmsn(n,rep(0,d),Omega,alpha)
+  y <- t(xi+t(sqrt(x)*z))
+  return(y)
+}
+
+pmst <- function(x, xi=rep(0,d), Omega=1, alpha=rep(0,d), df=Inf, ...)
+{
+  Diag <- function(x) diag(x,nrow=length(x),ncol=length(x))
+  d <- ifelse(is.matrix(Omega),nrow(Omega),1)
+  Omega<- matrix(Omega,d,d) 
+  omega<- sqrt(diag(Omega))
+  Ocor <- Diag(1/omega) %*% Omega %*% Diag(1/omega)
+  #  t(Omega /omega)/omega
+  O.alpha <- as.vector(Ocor %*% alpha)
+  delta <- O.alpha/sqrt(1+sum(alpha*O.alpha))
+  A <- matrix(rbind(c(1,-delta),cbind(-delta,Ocor)),d+1,d+1)
+  if(df==Inf) 
+    2 * pmvnorm(upper=c(0,(x-xi)/omega), corr=A, ...)
+  else 
+    2 * pmvt(upper=c(0,(x-xi)/omega), corr=A, df=df, ...)
+}
+
+pmsn <- function(x, xi, Omega, alpha, ...) 
+        pmst(x, xi, Omega, alpha, df=Inf, ...)
+
+dst2.plot <- function(x, y, xi, Omega, alpha, df, ...)
+{
+# plot bivariate density ST_2(xi,Omega,alpha,df) computed at (x,y) grid
+    if(any(dim(Omega) != c(2, 2))) stop("dim(Omega) != c(2,2)")
+    nx <- length(x)
+    ny <- length(y)
+    xoy <- cbind(rep(x, ny), as.vector(matrix(y, nx, ny, byrow = TRUE)))
+    X <- matrix(xoy, nx * ny, 2, byrow = FALSE)
+    pdf <- dmst(X, xi, Omega, alpha, df)
+    pdf <- matrix(pdf, nx, ny)
+    contour(x, y, pdf, ...)
+    invisible(list(x = x, y = y, density = pdf, xi = xi, Omega = Omega,
+        alpha = alpha, df=df))
+}
+
+mst.fit <- function(X, y, freq, fixed.df=NA, start=NA, plot.it=TRUE, 
+                 trace=FALSE,  ... )
+{
+  y.name <- deparse(substitute(y))
+  y.names<- dimnames(y)[[2]] 
+  y <- as.matrix(y)
+  d <- ncol(y)
+  if(is.null(d)) d<- 1
+  if(d>1){
+    if(length(y.names)==0){ 
+      dimnames(y) <- list(dimnames(y)[[1]], outer("V",as.character(1:d),paste,sep=""))
+      colnames(y) <- y.names
+      }}
+  else 
+    colnames(y)<-y.name
+  if(missing(freq)) freq <- rep(1,nrow(y))  
+  n <- sum(freq)
+  if(missing(X)) {
+     X <- rep(1,nrow(y)) 
+     missing.X <- TRUE }
+  else 
+     missing.X <- FALSE
+  # X <- as.matrix(X)
+  m <- ncol(X)
+  mle <- mst.mle(X=X, y=y, freq=freq,  fixed.df=fixed.df, start=start, 
+            trace=trace,...)
+  mle$call <- match.call()
+  beta  <- mle$dp$beta
+  Omega <- mle$dp$Omega
+  alpha <- mle$dp$alpha
+  omega <- sqrt(diag(Omega))
+  df    <- mle$dp$df
+  xi    <- X %*% beta
+  if(plot.it & all(freq==rep(1,length(y)))) {
+    if(missing.X) { 
+      y0  <-y 
+      xi0 <- apply(xi,2,mean)} 
+    else  {
+      y0  <- y-xi 
+      xi0 <- rep(0,d)
+      }
+    if(d>1) {
+       opt<-options()
+       options(warn=-1)
+       pairs(y0, labels=y.names,
+        panel=function(x, y, Y, y.names, xi, Omega, alpha)
+          {
+          for(i in 1:length(alpha)){
+            if(all(Y[,i]==x)) Ix<-i
+            if(all(Y[,i]==y)) Iy<-i
+            }
+          points(x,y)
+          marg <- msn.marginal(xi, Omega ,alpha, c(Ix,Iy))
+          xi.marg <- marg$xi
+          Omega.marg <- marg$Omega
+          alpha.marg <- marg$alpha     
+          x1 <- seq(min(x), max(x), length=30)
+          x2 <- seq(min(y), max(y), length=30)
+          dst2.plot(x1, x2, xi.marg, Omega.marg, alpha.marg, df, 
+                    add=TRUE, col=2)
+         },  # end "panel" function
+      Y=y0, y.names=y.names, xi=xi0, Omega=Omega, alpha=alpha)
+      options(opt)
+      }
+    else{ # plot for case d=1
+      y0<-as.vector(y0)
+      x<-seq(min(pretty(y0,10)),max(pretty(y0,10)),length=100)
+      if(missing.X){
+         dp0<-c(xi0,omega,alpha,df)
+         xlab<-y.name}
+      else {
+         dp0<-c(0,omega,alpha,df)
+         xlab <- "residuals"}
+      hist(y0, prob=TRUE, nclass=5*n^(1/3), xlab=xlab, ylab="density", main="")
+      lines(x, dst(x,dp0[1],dp0[2],dp0[3],dp0[4]),  col=2)
+      if(length(y)<101) points(y0, rep(0,n), pch=1)
+      title(y.name)
+      }
+    # if(print.it) dev.print(file=paste(y.name,"-fit.ps", sep=""), horizontal=FALSE)
+    cat("Press <Enter> to continue..."); readline()
+    par(mfrow=c(1,2))
+    pp  <- d*qf((1:n)/(n+1),d,df)
+    qrX <- qr(as.matrix(X))
+    Xb  <- qr.fitted(qrX,y)
+    res <- qr.resid(qrX,y)
+    rad.n  <- apply(res    * (res %*% solve(var(res))), 1, sum)
+    rad.sn <- apply((y-xi) * ((y-xi) %*% solve(Omega)), 1, sum)
+    plot(pp, sort(rad.n), pch=1, ylim=c(0,max(rad.n,rad.sn)),
+        xlab="Percentiles of chi-square distribution", 
+        ylab="Mahalanobis distances")
+    abline(0,1,lty=3)
+    title(main="QQ-plot for normal distribution", sub=y.name)
+    plot(pp, sort(rad.sn), pch=1, ylim=c(0,max(rad.n,rad.sn)),
+        xlab="Percentiles of chi-square distribution", 
+        ylab="Mahalanobis distances")
+    abline(0,1,lty=3)
+    title(main="QQ-plot for skew-t distribution", sub=y.name)
+    # if(print.it) dev.print(file=paste(y.name,"-QQ.ps", sep=""), horizontal=FALSE)                
+    cat("Press <Enter> to continue..."); readline()
+    plot((1:n)/(n+1), sort(pchisq(rad.n,d)), xlab="", ylab="")
+    abline(0,1,lty=3)
+    title(main="PP-plot for normal distribution", sub=y.name)
+    plot((1:n)/(n+1), sort(pf(rad.sn/d,d,df)), xlab="", ylab="")
+    abline(0,1,lty=3)
+    title(main="PP-plot for skew-t distribution", sub=y.name)
+    # if(print.it) dev.print(file=paste(y.name,"-PP.ps", sep=""),  horizontal=FALSE)              
+    par(mfrow=c(1,1))
+    } # end ploting
+  dev.norm<- msn.dev(c(qr.coef(qrX,y),rep(0,d)), as.matrix(X), y, freq)
+  test <- dev.norm + 2*mle$logL
+  p.value <-  1-pchisq(test,d+1)
+  if(trace) {
+    cat("LRT for normality (test-function, p-value): ")
+    print(c(test,p.value))
+    }
+  mle$test.normality <- list(LRT=test, df=d+1, p.value=p.value, 
+                             normal.logL=dev.norm/(-2))
+  invisible(mle)
+}
+
+
+#
+
+
+st.mle <- function(X, y, freq,  start=NA, fixed.df=NA, trace=FALSE, 
+              method="BFGS", control=list(iter.max=150))
+{ 
+  y.name  <- deparse(substitute(y))
+  y <- as.matrix(y)
+  dimnames(y)[[2]] <- list(y.name) 
+  out<- mst.mle(X, y, freq, start=start, fixed.df=fixed.df, trace=trace, 
+              method=method, control=control)
+  out$call<- match.call()
+  invisible(out)
+}
+
+
+mst.mle <- function(X, y, freq,  start=NA, fixed.df=NA, trace=FALSE, 
+         method="BFGS", control=list(iter.max=150))
+{  
+  Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
+  y.name  <- deparse(substitute(y))
+  y.names <- dimnames(y)[[2]] 
+  y <- as.matrix(y)
+  if(missing(X))    X <- matrix(rep(1,nrow(y)),ncol=1) 
+  if(missing(freq)) freq <- rep(1,nrow(y))
+  x.names<-dimnames(X)[[2]]
+  X <- as.matrix(X) 
+  d <- ncol(y)  
+  n <- sum(freq)
+  m <- ncol(X)
+  if(missing(start) | is.na(start)){
+    qrX   <- qr(X)
+    beta  <- as.matrix(qr.coef(qrX,y))
+    Omega <- matrix(var(qr.resid(qrX,y)),d,d)
+    omega <- sqrt(diag(Omega))
+    alpha <- rep(0,d)
+    if(is.na(fixed.df)) df <- 15 
+      else df <- fixed.df
+    if(trace) {
+      cat("mst.mle: dp=","\n")
+      print(c(beta,Omega,alpha))
+      cat("df:", df,"\n")
+      }
+    }
+  else {
+    beta  <- start$beta
+    Omega <- start$Omega
+    alpha <- start$alpha
+    df    <- start$df
+  } 
+  eta <- alpha/sqrt(diag(Omega))
+  Oinv<-solve(Omega)
+  Oinv<-(Oinv+t(Oinv))/2
+  upper <- chol(Oinv)
+  D <- diag(upper)
+  A<- upper/D
+  D <- D^2
+  if(d>1) param <- c(beta, -0.5*log(D), A[!lower.tri(A,diag=TRUE)], eta) 
+     else param <- c(beta, -0.5*log(D), eta)
+  if(is.na(fixed.df)) param <- c(param,log(df))
+  opt  <- optim(param, fn=mst.dev,  gr=mst.dev.grad, 
+              method=method,  control=control, hessian=TRUE, 
+              X=X, y=y, freq=freq, trace=trace, fixed.df=fixed.df)
+  dev  <- opt$value
+  param<- opt$par
+  if(trace){
+    cat("Message from optimization routine:", opt$message,"\n")
+    cat("deviance:", dev,"\n")
+    }
+  beta <- matrix(param[1:(m*d)],m,d)
+  D    <- exp(-2*param[(m*d+1):(m*d+d)])
+  if(d>1) {
+    A <- diag(d)
+    A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):(m*d+d+d*(d-1)/2)]
+    i0 <- m*d+d+d*(d-1)/2
+    }
+  else{
+    i0 <- m+1
+    A  <- as.matrix(1)
+    }
+  eta  <- param[(i0+1):(i0+d)]
+  if(is.na(fixed.df)) df <- exp(param[i0+d+1])
+    else df <- fixed.df
+  # Omega <- solve(t(A) %*% diag(D) %*% A)
+  Ainv <- backsolve(A,diag(d))
+  Omega<- Ainv %*% Diag(1/D) %*% t(Ainv)
+  omega<-sqrt(diag(Omega))
+  alpha<- eta*omega
+  dimnames(beta) <- list(x.names,y.names)
+  dimnames(Omega) <- list(y.names, y.names)
+  if(length(y.names)>0) names(alpha) <- y.names
+  info <- opt$hessian/2
+  if(all(is.finite(info))) 
+    {
+      qr.info <- qr(info)
+      info.ok <- (qr.info$rank == length(param))
+     }
+  else info.ok <- FALSE
+  if(info.ok) {
+    se2     <- diag(solve(qr.info))
+    if(min(se2) < 0 )
+      se<-NA
+    else{
+      se      <- sqrt(se2)
+      se.beta <- matrix(se[1:(m*d)],m,d)
+      se.alpha<- se[(i0+1):(i0+d)] * omega
+      dimnames(se.beta)[2] <- list(y.names)
+      dimnames(se.beta)[1] <- list(x.names)
+      names(se.alpha) <- y.names
+      se.df   <- df*se[i0+d+1]
+      se      <- list(beta=se.beta, alpha=se.alpha, df=se.df, info=info)
+    }}
+  else
+    se <- NA
+  dp <- list(beta=beta, Omega=Omega,  alpha=alpha, df=df)
+  list(call=match.call(), logL=-0.5*dev, deviance=dev, dp=dp, se=se, optim=opt)
+}
+
+
+mst.dev <- function(param, X, y, freq=rep(1,nrow(X)), fixed.df=NA, trace=FALSE)
+{
+  Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
+  d <- ncol(y)
+  # if(missing(freq)) freq<-rep(1,nrow(y))
+  n <- sum(freq)
+  m <- ncol(X)
+  beta<-matrix(param[1:(m*d)],m,d)
+  D <- exp(-2*param[(m*d+1):(m*d+d)])
+  if(d>1) {
+    A <- diag(d)
+    A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):(m*d+d+d*(d-1)/2)]
+    i0 <- m*d+d+d*(d-1)/2
+    }
+  else {
+    i0<- m+1
+    A <- as.matrix(1)
+    }
+  eta <- param[(i0+1):(i0+d)]
+  if(is.na(fixed.df)) df <- exp(param[i0+d+1])
+     else df <- fixed.df
+  Oinv <- t(A) %*% Diag(D) %*% A
+  # Omega <- solve(Oinv)
+  u <-  y - X %*% beta
+  Q <- apply((u %*% Oinv)*u,1,sum)
+  L <- as.vector(u %*% eta) 
+  logDet<- sum(log(df*pi/D))
+  dev <- (n*(2*lgamma(df/2) + logDet - 2*lgamma((df+d)/2)) 
+          + (df+d) * sum(freq * log(1+Q/df))
+         -2*sum(freq * log(2*pt( L * sqrt((df+d)/(Q+df)),df+d))))
+  if(trace) cat("mst.dev: ",dev, "\n")
+  dev
+}
+
+
+mst.dev.grad <- function(param, X, y, freq, fixed.df=NA, trace=FALSE)
+{
+  Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
+  d <- ncol(y)
+  # if(missing(freq)) freq<-rep(1,nrow(y))
+  n   <- sum(freq)
+  m   <- ncol(X)
+  beta<- matrix(param[1:(m*d)],m,d)
+  D   <- exp(-2*param[(m*d+1):(m*d+d)])
+  if(d>1) {
+    A  <- diag(d)
+    A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):(m*d+d+d*(d-1)/2)]
+    i0 <- m*d+d+d*(d-1)/2
+    }
+  else{
+    i0 <- m*d+d
+    A  <- as.matrix(1)
+    }
+  eta   <- param[(i0+1):(i0+d)]
+  if(is.na(fixed.df)) df <- exp(param[i0+d+1])
+     else df <- fixed.df
+  tA    <- t(A)
+  Oinv  <- tA %*% Diag(D) %*% A
+  u     <- y-X %*% beta
+  Q     <- as.vector(apply((u %*% Oinv)*u,1,sum))
+  L     <- as.vector(u %*% eta) 
+  t.    <- L*sqrt((df+d)/(Q+df))
+  dlogft<- -(df+d)/(2*df*(1+Q/df))
+  dt.dL <- sqrt((df+d)/(Q+df))
+  dt.dQ <- (-0.5)*L*sqrt(df+d)/(Q+df)^1.5
+  T.    <- pt(t.,df+d)
+  dlogT.<- dt(t.,df+d)/T.
+  u.freq <- u*freq
+  Dbeta <- (-2* t(X) %*% (u.freq*dlogft) %*% Oinv 
+            - outer(as.vector(t(X) %*% (dlogT. * dt.dL* freq)), eta)
+            - 2* t(X) %*% (dlogT.* dt.dQ * u.freq) %*% Oinv )
+  Deta  <- apply(dlogT.*sqrt((df+d)/(Q+df))*u.freq, 2, sum)
+  if(d>1){
+     M  <- 2*( Diag(D) %*% A %*% t(u * dlogft) %*% u.freq
+              + Diag(D) %*% A %*% t(u * dlogT. * dt.dQ) %*% u.freq)
+     DA <- M[!lower.tri(M,diag=TRUE)]
+     }
+  else DA<- NULL
+  M     <- ( A %*% t(u*dlogft) %*% u.freq %*% tA
+             + A %*% t(u*dlogT.*dt.dQ) %*% u.freq %*% tA)
+  if(d>1) DD <- diag(M) + 0.5*n/D
+     else DD <- as.vector(M+0.5*n/D) 
+  grad <- (-2)*c(Dbeta,DD*(-2*D),DA,Deta)
+  if(is.na(fixed.df)) {  
+    dlogft.ddf <- 0.5 * (digamma((df+d)/2) - digamma(df/2) - d/df
+                        + (df+d)*Q/((1+Q/df)*df^2) - log(1+Q/df))
+    eps   <- 1.0e-4
+    T.eps <- pt(L*sqrt((df+eps+d)/(Q+df+eps)), df+eps+d)
+    dlogT.ddf <- (log(T.eps)-log(T.))/eps
+    Ddf   <- sum((dlogft.ddf + dlogT.ddf)*freq)
+    grad <- c(grad, -2*Ddf*df)
+    }
+  if(trace)  cat("mst.dev.grad: norm is ",sqrt(sum(grad^2)),"\n")  
+ return(grad)
+}
+#-------------
+
+st.2logL.profile<-function(X=matrix(rep(1,n)), y, freq, trace=FALSE,
+          fixed.comp = c(ncol(X)+2, ncol(X)+3), 
+          fixed.values = cbind(c(-4,4), log(c(1,25))),
+          npts=30/length(fixed.comp), plotit=TRUE, ...)
+{# plot2D profile deviance (=2(max.logL-logL)) using either parameters
+ # if(plotit & !exists(.Device)) stop("Device not active")
+ #
+   if(missing(freq)) freq <- rep(1,length(y))
+   n <- sum(freq)
+   if(length(fixed.comp) == 1){
+      param1 <- seq(fixed.values[1], fixed.values[2], length=npts)
+      logL <- param2 <- rep(NA,npts)}
+   else{ 
+      param1 <- seq(fixed.values[1,1], fixed.values[2,1], length=npts)
+      param2 <- seq(fixed.values[1,2], fixed.values[2,2], length=npts)
+      logL   <- matrix(NA,npts,npts)}
+   ls<-lm.fit(X,y)
+   omega<-sqrt(var(resid(ls)))
+   param <- c(coef(ls), log(omega), 0, log(20))[-fixed.comp]
+   # mle<- mst.mle(X=X, y=y)
+   # param <- mle$optim$par[-fixed.comp]
+   max.logL <- (-Inf)
+   cat(c("Running up to",npts,":"))
+   for(i in 1:npts){
+     cat(" ",i)
+     if(length(fixed.comp) == 1) {
+       opt  <- optim(param, fn=st.dev.fixed, method="Nelder-Mead",
+                 X=X, y=y, freq=freq, trace=trace, 
+                 fixed.comp=fixed.comp, fixed.values=param1[i])
+       logL[i] <- opt$value/(-2)
+       param <- opt$par
+       if(logL[i] > max.logL) {
+         max.logL<- logL[i]
+         best <- list(fixed.comp1=param1[i], fixed.comp2=NA, opt=opt)
+       }}
+     else{
+     for(j in 1:npts){     
+       opt  <- optim(param, fn=st.dev.fixed, method="Nelder-Mead",
+                 X=X, y=y, freq=freq, trace=trace, 
+                 fixed.comp=fixed.comp,
+                 fixed.values=c(param1[i], param2[j] ))
+       logL[i,j] <- opt$value/(-2)
+       if(j==1) param0 <- opt$par
+       if(j<npts) 
+         param <- opt$par
+       else
+         param <- param0
+       if(logL[i,j] > max.logL) {
+         max.logL<- logL[i,j]
+         best <- list(fixed.comp1=param1[i], fixed.comp2=param2[j], opt=opt)
+       }   
+     }}
+   }
+  cat("\n") 
+  dev <- 2 * (max(logL) - logL)
+  if(plotit){
+    if(length(fixed.comp) == 1){ 
+      plot(param1, dev, type="l", ...)
+      points(x=best$fixed.comp1, y=0, pch=1)
+      }
+    else{
+      contour(param1, param2, dev,   labcex=0.75, 
+          levels=c(0.57, 1.37, 2.77, 4.6, 5.99, 9.2), 
+          labels=c(0.25, 0.5,  0.75, 0.90,0.95, 0.99),
+          ...)
+    points(x=best$fixed.comp1, y=best$fixed.comp2, pch=1)  
+    }
+  }    
+  title(main=paste("dataset:", deparse(substitute(y)),
+        "\nProfile deviance", sep= " "))
+  invisible(list(call=match.call(), param1=param1, param2=param2,
+            deviance=dev, max.logL=max.logL, best=best))
+}
+
+
+st.dev.fixed <- function(free.param, X, y, freq, trace=FALSE, 
+                fixed.comp=NA,  fixed.values=NA)
+{# param components: beta, log(omega), alpha, log(df)
+  n <- sum(freq)
+  m <- ncol(X)
+  param <- numeric(length(free.param)+length(fixed.comp))
+  param[fixed.comp]  <- fixed.values
+  param[-fixed.comp] <- free.param
+  beta  <- param[1:m]
+  omega <- exp(param[m+1])
+  eta <- param[m+2]/omega
+  df  <- exp(param[m+3])
+  u <-  y - X %*% beta
+  Q <- freq*(u/omega)^2
+  L <- u*eta 
+  logDet <- log(df*pi*omega^2)
+  dev <- (n*(2*lgamma(df/2) + logDet - 2*lgamma((df+1)/2)) 
+          + (df+1) * sum(log(1+Q/df))
+         -2*sum(log(2*pt(L * sqrt((df+1)/(Q+df)),df+1))))
+  if(trace) cat("st.dev.fixed (param, dev): ", param, dev,"\n")
+  dev
+}
+
+#-- MLE for grouped data, dropped
+
+
+#---
 .First.lib <- function(library, pkg)
 {
     if(version$major == 0 |(version$major == 1 && version$minor < 0.1))
         stop("This package requires R 1.0.1 or later")
-    assign(".sm.home", file.path(library, pkg),
+    assign(".sn.home", file.path(library, pkg),
            pos=match("package:sn", search()))
-    cat("Library `sn', version 0.22.2; Copyright (C) 1998-2001 A.Azzalini\n")
+    version <- "0.30 (2002-06-30)"
+    assign(".sn.version", version, pos=match("package:sn", search()))
+    cat("Library `sn'", version, " - Copyright (C) 1998-2002 A.Azzalini\n")
     cat("type `help(SN,package=sn)' for summary information\n")
     invisible()
 }

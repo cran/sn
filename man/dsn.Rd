@@ -12,15 +12,12 @@ generation for the skew-normal (SN) distribution.
 }
 \usage{
 dsn(x, location=0, scale=1, shape=0)
-psn(q, location=0, scale=1, shape=0)
-qsn(p, location=0, scale=1, shape=0, tol=1e-8)
+psn(x, location=0, scale=1, shape=0, ...)
+qsn(p, location=0, scale=1, shape=0, tol=1e-8, ...)
 rsn(n=1, location=0, scale=1, shape=0)
 }
 \arguments{
 \item{x}{
-vector of quantiles. Missing values (\code{NA}s) are allowed.
-}
-\item{q}{
 vector of quantiles. Missing values (\code{NA}s) are allowed.
 }
 \item{p}{
@@ -33,14 +30,17 @@ vector of location parameters.
 vector of (positive) scale parameters.
 }
 \item{shape}{
-vector of shape parameters. With \code{psn} and `qsn", it must be of
+vector of shape parameters. With \code{psn} and \code{qsn}, it must be of
 length 1.
 }
 \item{n}{
 sample size.
 }
 \item{tol}{
-a scal value which regulates the accuracy of the result.
+a scalar value which regulates the accuracy of the result of \code{qsn}.
+}
+\item{...}{
+additional parameters passed to \code{T.Owen}
 }}
 \value{
 density (\code{dsn}), probability (\code{psn}),
@@ -58,7 +58,7 @@ A multivariate version of the distribution exists.
 See the references below for additional information.
 }
 \details{
-\code{psn} make use of function \code{T.Owen}
+\code{psn} a \code{qsn} make use of function \code{T.Owen}
 }
 \references{
 Azzalini, A. (1985).

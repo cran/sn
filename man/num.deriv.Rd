@@ -4,7 +4,7 @@
 Numerical derivatives
 }
 \description{
-Computes numerical derivatives of a vector-valued function
+Computes numerical derivatives of a vector-valued function.
 }
 \usage{
 num.deriv(coefficients, FUN, ...)
@@ -12,13 +12,13 @@ num.deriv(coefficients, FUN, ...)
 \arguments{
 \item{coefficients}{
 a vector containing the coordinates of the point where the
-derivatives must be evaluated
+derivatives must be evaluated.
 }
 \item{FUN}{
-a vector-valued function accepting a vector argument of the same length
+a vector-valued function accepting a vector argument of the same length.
 }
 \item{...}{
-additional arguments to \code{FUN}
+additional arguments to \code{FUN}.
 }}
 \details{
 The function is intended for numerical evaluation of the Hessian

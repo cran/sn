@@ -4,7 +4,7 @@
 Owen's function
 }
 \description{
-Evaluates funtion T(h,a) studied by D.B.Owen
+Evaluates function \emph{T(h,a)} studied by D.B.Owen
 }
 \usage{
 T.Owen(h, a, jmax=50, cut.point=6)
@@ -21,8 +21,8 @@ an integer scalar value which regulates the accuracy of the result.
 See DETAILS below for explanation.
 }
 \item{cut.point}{
-a scalar value which regulates the behaviour of the algorithm.
-See DETAILS below for explanation.
+a scalar value which regulates the behaviour of the algorithm, as
+explained by the details below.
 }}
 \value{
 a numerical vector
@@ -34,10 +34,11 @@ If \code{a>1} and \code{h>cut.point}, an asymptotic approximation is used.
 In the other cases, various reflection properties of the function
 are exploited. See the reference below for more information.
 }
-\section{BACKROUND}{
-The function T(h,a) is useful for the computation of the bivariate
-normal distribution function and related quantities.
-See the reference below for more information.
+\section{Background}{
+The function \emph{T(h,a)} is useful for the computation of the bivariate
+normal distribution function and related quantities, including the 
+distribution function of a skew-normal variate, \code{psn}.
+See the reference below for more information on  \emph{T(h,a)}.
 }
 \references{
 Owen, D. B. (1956).
@@ -52,4 +53,3 @@ Tables for computing bivariate normal probabilities.
 owen <- T.Owen(1:10, 2)
 }
 \keyword{math}
-% Converted by Sd2Rd version 0.3-3.

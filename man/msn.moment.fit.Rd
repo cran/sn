@@ -5,50 +5,50 @@ Fitting multivariate skew-normal distributions with method of moments
 }
 \description{
 Fits a multivariate skew-normal (MSN) distribution to data 
-using the method of moments
+using the method of moments.
 }
 \usage{
 msn.moment.fit(y)
 }
 \arguments{
 \item{y}{
-a matrix or a vector.  In \code{y} is a matrix, its rows refer to
+a matrix or a vector.  If \code{y} is a matrix, its rows refer to
 observations, and its columns to components of the multivariate
-distribution. In \code{y} is a vector, it is converted to a one-column
+distribution. If \code{y} is a vector, it is converted to a one-column
 matrix, and a scalar skew-normal distribution is fitted.
 }}
 \value{
-a list containing the following components:
+A list containing the following components:
 
 \item{xi}{
-a vector with the location parameter 
+a vector with the location parameter. 
 }
 \item{Omega}{
-a variance matrix  representing the association parameter
+a variance matrix  representing the association parameter.
 }
 \item{alpha}{
-a vector of shape  parameters
+a vector of shape  parameters.
 }
 \item{omega}{
-vector of scale parameters corresponding to \code{Omega}
+vector of scale parameters corresponding to \code{Omega}.
 }
 \item{delta}{
 the parameter \code{delta} which determines the shape of the marginal 
-distributions
+distributions.
 }
 \item{skewness}{
 numeric vector with marginal indices of skewness (the standardised
-third cumulant)
+third cumulant).
 }
 \item{admissible}{
 a logical value indicating if the estimated parameters lie in 
-the admissible region
+the admissible region.
 }}
 
 \details{
 This function is used by \code{msn.mle} to obtain preliminary
-estimates if it is not provided starting values. After removing
-the regression component, estimated by ordinary least squares, 
+estimates, if starting values are not provided. 
+After removing the regression component, estimated by ordinary least squares, 
 \code{msn.moment.fit} is used to obtain preliminary estimate of 
 the other parameters from the least squares residuals.
 
@@ -75,4 +75,3 @@ Statistical applications of the multivariate skew-normal distribution.
 \code{\link{msn.mle}}, \code{\link{sn.mle}}
 }
 \keyword{distribution}
-

@@ -6,7 +6,7 @@ Conversion between equivalent parametrizations
 }
 \description{
 Convert direct to centred parameters of the skew-normal distribution,
-and viceversa
+and viceversa.
 }
 \usage{
 cp.to.dp(param)

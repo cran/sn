@@ -1,23 +1,24 @@
-\name{msn.fit}
-\alias{msn.fit}
+\name{mst.fit}
+\alias{mst.fit}
 \title{
-Fitting multivariate skew-normal distributions
+Fitting multivariate skew-t distributions
 }
 \description{
-Fits a multivariate skew-normal (MSN) distribution to data, or fits a
-linear regression model with multivariate skew-normal errors,
+Fits a multivariate skew-t (MST) distribution to data, or fits a
+linear regression model with multivariate skew-t errors,
 using maximum likelihood estimation. The outcome is then displayed
 in graphical form.
 }
 \usage{
-msn.fit(X, y, freq, plotit=TRUE, trace=FALSE,  \dots )
+mst.fit(X, y, freq, fixed.df=NA, start=NA, plot.it=TRUE, 
+        trace=FALSE, ...)
 }
 \arguments{
 \item{y}{
 a matrix or a vector.  If \code{y} is a matrix, its rows refer to
 observations, and its columns to components of the multivariate
 distribution. If \code{y} is a vector, it is converted to a one-column
-matrix, and a scalar skew-normal distribution is fitted.
+matrix, and a scalar skew-t distribution is fitted.
 }
 \item{X}{
 a matrix of covariate values.
@@ -26,10 +27,20 @@ it must have the same number of rows of \code{y}.
 }
 \item{freq}{
 a vector of weights.
-If missing, a one-column matrix of 1's is created; otherwise
+If missing, a vector of 1's is created; otherwise
 it must have the same number of rows of \code{y}.
 }
-\item{plotit}{
+\item{fixed.df}{
+a scalar value contaning the degrees of freedom (df), if these must
+be taked as fixed, or \code{NA} (deafult value) if df is a parameter
+to be estimated.
+}
+\item{start}{
+a list contaning the components \code{beta},\code{Omega}, \code{alpha},
+\code{df} of the type described below. The \code{dp} component of the returned
+list from a previous call has the required format.
+}
+\item{plot.it}{
 logical value which controls the graphical output (default=TRUE);
 see below for description.
 }
@@ -37,8 +48,12 @@ see below for description.
 logical value which controls printing of the algorithm convergence.
 If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
 }
+\item{control}{
+this parameter is passed to the optimizer \code{optim}; 
+see the documentation of this function for its usage.
+}
 \item{...}{
-additional paramters passed to \code{msn.mle}; in practice, the \code{start}
+additional parameters passed to \code{mst.mle}; in practice, the \code{start}
 parameter can be passed.
 }}
 \value{
@@ -48,11 +63,12 @@ A list containing the following components:
 a string containing the calling statement.
 }
 \item{dp}{
-a list containing the direct parameters \code{beta}, \code{Omega}, \code{alpha}.
+a list containing the direct parameters \code{beta}, \code{Omega}, \code{alpha},
+code{df}.
 Here, \code{beta} is a matrix of regression coefficients with
 \code{dim(beta)=c(nrow(X),ncol(y))}, \code{Omega} is a covariance matrix of
 order \code{ncol(y)}, \code{alpha} is a vector of shape parameters of length
-\code{ncol(y)}.
+\code{ncol(y)}, code{df} is a positive scalar.
 }
 \item{logL}{
 log-likelihood evaluated at \code{dp}.
@@ -69,9 +85,9 @@ the list returned by the optimizer \code{optim}; see the documentation
 of this function for explanation of its components.
 }
 \item{test.normality}{
-a list of with elements \code{test} and \code{p.value}, which are the value
+a list with elements \code{test} and \code{p.value}, which are the value
 of the likelihood ratio test statistic for normality (i.e. test that
-all components of the shape parameter are 0), and the corresponging
+all components of the shape parameter are 0), and the corresponding
 p-value.
 }}
 \section{Side Effects}{
@@ -81,11 +97,12 @@ pauses between each two of them, waiting for the <Enter> key to be pressed.
 
 The first plot uses the variable \code{y} if \code{X} is missing, otherwise
 it uses the residuals from the regression.
-The form of this plot depends on the value of \code{k=ncol(y)};
-if \code{k=1}, an histogram is plotted with the fitted distribution
-superimposed. If \code{k>1}, a matrix of scatterplots is produced, with
+The form of this plot depends on the value of \code{d=ncol(y)};
+if \code{d=1}, an histogram is plotted with the fitted distribution
+superimposed. If \code{d>1}, a matrix of scatterplots is produced, with
 superimposed the corresponding bivariate densities of the fitted
 distribution.
+
 
 The second plot has two panels, each representing a QQ-plot of
 Mahalanobis distances. The first of these refers to the fitting of a
@@ -93,53 +110,46 @@ multivariate normal distribution, a standard statistical procedure;
 the second panel gives the corresponding QQ-plot of suitable Mahalanobis 
 distances for the multivariate skew-normal fit.
 
+
 The third plot is similar to the previous one, except that PP-plots
 are produced.
 }
 \details{
-For computing the maximum likelihood estimates, \code{msn.fit}
-invokes \code{msn.mle} which does the actual computational work;
-then, \code{msn.fit} displays the results in graphical form.
-The documentation of \code{msn.mle} gives details of the numerical
+For computing the maximum likelihood estimates, \code{mst.fit}
+invokes \code{mst.mle} which does the actual computational work;
+then, \code{mst.fit} displays the results in graphical form.
+The documentation of \code{mst.mle} gives details of the numerical
 procedure for maximum likelihood estimation.
-
-
-Although the function accepts a vector \code{y} as input, the use of
-\code{sn.mle} is recommended in the scalar case.
-
 
 }
 \section{Background}{
-The multivariate skew-normal distribution is discussed by
-Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)} parametrization
-adopted here is the one of Azzalini and Capitanio (1999).
+The family of multivariate skew-t distributions is an extension of the 
+multivariate Student's t family, via the introduction of a \code{shape} 
+parameter which regulates skewness; when \code{shape=0}, the skew-t 
+distribution reduces to the usual t distribution. 
+When \code{df=Inf} the distribution reduces to the multivariate skew-normal 
+one; see \code{dmsn}. See the reference below for additional information.
 }
 \references{
-Azzalini, A. and Dalla Valle, A. (1996).
-The multivariate skew-normal distribution.
-\emph{Biometrika}
-\bold{83}, 715--726.
-
-
-Azzalini, A. and Capitanio, A. (1999).
-Statistical applications of the multivariate skew-normal distribution.
-\emph{J.Roy.Statist.Soc. B}
-\bold{61}, 579--602.
+Azzalini, A. and Capitanio, A. (2002).
+  Distributions generated by perturbation of symmetry 
+  with emphasis on a multivariate skew \emph{t} distribution.
+  Submitted to \emph{J.Roy. Statist. Soc.}
 }
 \seealso{
-\code{\link{msn.mle}}, \code{\link{mst.fit}}
+\code{\link{msn.fit}}, \code{\link{mst.mle}}
 }
 \examples{
 data(ais,package=sn)
 attach(ais)
 # a simple-sample case
-b <- msn.fit(y=cbind(Ht,Wt))
+b <- mst.fit(y=cbind(Ht,Wt))
 #
 # a regression case:
-a <- msn.fit(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-6))
+a <- mst.fit(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-6))
 #
 # refine the previous outcome
-a1 <- msn.fit(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-9), start=a$dp)
+a1 <- mst.fit(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-9), start=a$dp)
 }
 \keyword{distribution}
 \keyword{regression}

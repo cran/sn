@@ -9,13 +9,13 @@ linear regression model with multivariate skew-normal errors,
 using maximum likelihood estimation.
 }
 \usage{
-msn.mle(X, y, freq, start, data=F, trace=F, control=list(iter.max=150, x.tol=1e-8) )
+msn.mle(X, y, freq, start, trace=FALSE,  method="BFGS", control=list(iter.max=150, x.tol=1e-8) )
 }
 \arguments{
 \item{y}{
-a matrix or a vector.  In \code{y} is a matrix, rows refer to
+a matrix or a vector.  If \code{y} is a matrix, rows refer to
 observations, and columns to components of the multivariate
-distribution. In \code{y} is a vector, it is converted to a one-column
+distribution. If \code{y} is a vector, it is converted to a one-column
 matrix, and a scalar skew-normal distribution is fitted.
 }
 \item{X}{
@@ -35,17 +35,22 @@ list from a previous call has the required format.
 }
 \item{trace}{
 logical value which controls printing of the algorithm convergence.
-If \code{trace=T}, details are printed. Default value is \code{F}.
+If \code{trace=TRUE}, details are printed. Default value is \code{F}.
+}
+\item{method}{
+this parameter is just passed to the optimizer \code{optim}; 
+see the documentation of this function for its usage. Default value is
+\code{"BFGS"}.
 }
 \item{control}{
 this parameter is passed to the optimizer \code{optim}; 
 see the documentation of this function for its usage.
 }}
 \value{
-a list containing the following components:
+A list containing the following components:
 
 \item{call}{
-a string containing the calling statement
+a string containing the calling statement.
 }
 \item{dp}{
 a list containing the direct parameters \code{beta}, \code{Omega}, \code{alpha}.
@@ -108,14 +113,14 @@ Statistical applications of the multivariate skew-normal distribution.
 \examples{
 data(ais,package=sn)
 attach(ais)
-# a simple case
-b <- msn.mle(y=cbind(wcc,rcc,Hc))
+# a simple-sample case
+b <- msn.mle(y=cbind(Ht,Wt))
 #
 # a regression case:
-a <- msn.mle(X=cbind(1,wcc,rcc), y=Hc, control=list(x.tol=1e-6))
+a <- msn.mle(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-6))
 #
 # refine the previous outcome
-a1 <- msn.mle(X=cbind(1,wcc,rcc), y=Hc, control=list(x.tol=1e-9), start=a$dp)
+a1 <- msn.mle(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-9), start=a$dp)
 }
 \keyword{distribution}
 \keyword{regression}

@@ -16,7 +16,7 @@ gamma1.to.lambda(gamma1)
 a numeric vector of indices of skewness.
 }}
 \value{
-a numeric vector of the corresponding shape parameters.
+A numeric vector of the corresponding shape parameters.
 }
 \details{
 Feasible values for input must have \code{abs(gamma1)<0.5*(4-pi)*(2/(pi-2))^1.5},

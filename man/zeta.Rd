@@ -12,7 +12,7 @@ zeta(k, x)
 }
 \arguments{
 \item{k}{
-an integer scalar.
+an integer scalar between 0 and 4.
 }
 \item{x}{
 a vector. Missing values (\code{NA}s) are allowed, but \code{Inf}s are not.
@@ -24,8 +24,7 @@ a vector; this is the \code{k}-th order derivative evaluated at \code{x}
 \code{k} denotes the order of the derivative. If \code{k} is 0, the function
 is evaluated, using \code{pnorm(x)} for \code{x>-35},  an asymptotic expansion
 otherwise. For \code{k} between 1 and 4, the derivative of that order is
-evaluated. For \code{k>4}, a warning message is issued, and a vector of
-\code{NA}s is returned.
+evaluated. If \code{k>4}, an error message is issued.
 
 
 This function is used by \code{sn.dev} and \code{msn.dev}, among others.
@@ -37,7 +36,7 @@ This function is used by \code{sn.dev} and \code{msn.dev}, among others.
 y <- zeta(2,seq(-20,20,by=0.5))
 
 for(i in 0:4) 
-      curve(zeta(i,x),-3, 4, ylim = c(-1,2), col = i+1, add = i > 0)
+      curve(zeta(i,x),-1, 4, col = i+1, add = i > 0)
 }
 \keyword{math}
 % Converted by Sd2Rd version 0.3-3.

@@ -9,7 +9,7 @@ for multivariate regression models with errors having a multivariate
 skew-normal distribution.
 }
 \usage{
-msn.dev.grad(param, X, y, freq, trace=F)
+msn.dev.grad(param, X, y, freq, trace=FALSE)
 }
 \arguments{
 \item{param}{
@@ -28,10 +28,10 @@ a vector of weights, with length equal to \code{nrow(y)}.
 }
 \item{trace}{
 logical value.
-If \code{trace=T}, details are printed. Default value is \code{F}.
+If \code{trace=TRUE}, details are printed. Default value is \code{F}.
 }}
 \value{
-a vector contaning the gradient
+A vector contaning the gradient.
 }
 \details{
 This is the gradient function of \code{msn.dev}, 
@@ -43,5 +43,3 @@ refer to its documentation for additional details.
 }
 \keyword{multivariate}
 \keyword{regression}
-
-

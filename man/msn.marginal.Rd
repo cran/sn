@@ -1,7 +1,7 @@
 \name{msn.marginal}
 \alias{msn.marginal}
 \title{
-Marginal compontents of a multivariate skew-normal distribution
+Marginal components of a multivariate skew-normal distribution
 }
 \description{
 Computes the marginal distribution of a subset of components of a
@@ -23,10 +23,10 @@ a numeric vector of length \code{k}, which regulates the shape of the density.
 \item{comp}{
 a vector containing a subset of \code{1:k} which selects the components
 whose values are to be fixed. A permutation of \code{1:k} is allowed, and
-the components of comp' do not need to be sorted.
+the components of \code{comp} do not need to be sorted.
 }}
 \value{
-a list containing the \code{xi, Omega, alpha} parameters for the marginal
+A list containing the \code{xi, Omega, alpha} parameters for the marginal
 distribution.
 }
 \details{

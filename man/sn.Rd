@@ -4,39 +4,59 @@
 The library `sn': summary information
 }
 \description{
-This library provides functions related to the skew-normal probability
-distribution, both for the univariate and the the multivariate case.
+This library provides functions related to the skew-normal (SN) and
+the skew-t (ST) probability distributions, both for the univariate 
+and for the the multivariate case.
 }
 \section{Functions}{
-The functions of the scalar case section are:
-\code{dsn}, \code{psn}, \code{qsn}, \code{rsn}, \code{T.Owen}, 
-\code{cp.to.dp}, \code{dp.to.cp}, \code{zeta},
-\code{gamma1.to.lambda}, \code{sn.cumulants}, \code{sn.em}, 
-\code{sn.2logL.profile}, \code{sn.mle}, \code{sn.dev}, 
-\code{sn.dev.gh}.
+% The functions of the scalar case section are:
+% \code{dsn}, \code{psn}, \code{qsn}, \code{rsn}, \code{T.Owen}, 
+% \code{cp.to.dp}, \code{dp.to.cp}, \code{zeta},
+% \code{gamma1.to.lambda}, \code{sn.cumulants}, \code{sn.em}, 
+% \code{sn.2logL.profile}, \code{sn.mle}, \code{sn.dev}, 
+% \code{sn.dev.gh}.
+% 
+% 
+% The functions of the multivariate section are: \code{dmsn},
+% \code{rmsn}, \code{plot.dsn2}, \code{msn.quantities},
+% \code{msn.conditional}, \code{msn.marginal}, \code{plot.msn.cond},
+% \code{msn.fit}, \code{msn.mle}, \code{msn.dev}, \code{msn.dev.grad},
+% \code{msn.moment.fit}, \code{num.deriv}.
 
+The library includes several functions, a number of which are intended
+as services to other functions, not really to be called directly by the
+users. The following ones are those more relevant for practical use. 
 
-The functions of the multivariate section are: \code{dmsn},
-\code{rmsn}, \code{plot.dsn2}, \code{msn.quantities},
-\code{msn.conditional}, \code{msn.marginal}, \code{plot.msn.cond},
-\code{msn.fit}, \code{msn.mle}, \code{msn.dev}, \code{msn.dev.grad},
-\code{msn.moment.fit}, \code{num.deriv}.
-
-Some of these functions are there to be used mostly by other functions
-of the library.  Those more relevant for practical use by a user are:
+\emph{SN distribution:}
 \code{\link{dsn}}, \code{\link{psn}}, \code{\link{qsn}},
 \code{\link{rsn}}, \code{\link{cp.to.dp}}, \code{\link{dp.to.cp}},
-\code{\link{sn.mle}},\code{\link{sn.em}} in the univariate section,
-and \code{\link{dmsn}}, \code{\link{rmsn}}, \code{\link{msn.fit}},
-\code{\link{msn.mle}}, \code{\link{plot.dsn2}} in the multivariate
-section. It is suggested that a user starts by reading the documentation
-of (some of) these.
+\code{\link{sn.mle}}, \code{\link{sn.em}}, 
+%\code{\link{sn.mle.grouped}} 
+for the univariate case, and 
+\code{\link{dmsn}}, \code{\link{pmsn}}, \code{\link{rmsn}}, 
+\code{\link{msn.fit}}, \code{\link{msn.mle}}, \code{\link{dsn2.plot}} 
+for the multivariate case. 
+
+
+\emph{ST distribution:}
+\code{\link{dst}}, \code{\link{pst}}, \code{\link{rst}}, \code{\link{st.mle}}, 
+%\code{\link{st.mle.grouped}} 
+for the univariate case,
+and \code{\link{dmst}},\code{\link{pmst}}, \code{\link{rmst}}, 
+\code{\link{mst.fit}}, \code{\link{mst.mle}}, \code{\link{dst2.plot}} 
+for the multivariate case. 
+
+It is suggested that a user starts by reading the  documentation of 
+(some of) these.
 }
 \section{Requirements}{
-R 1.0.1
+R 1.0.1.  A few functions  require  \code{library(mvtnorm)}; these are: 
+\code{pmsn}, \code{pmst}, \code{pst}, 
+%\code{st.mle.grouped}.  
 }
 \section{Version}{
-You are using version 0.22.2 (2002-01-05).
+The version level of the library is given by the  command 
+\code{print(.sn.version)}.
 The most recent version of the library can be obtained from
 the WWW page: \url{http://azzalini.stat.unipd.it/SN}
 which also contains other related material
@@ -47,13 +67,16 @@ The papers listed below provide background information.
 }
 \section{Author}{
 Adelchi Azzalini, Dipart. Scienze Statistiche, Università di Padova, Italia.
-Please send comments, error reports, etc. to \email{azzalini@stat.unipd.it}
+Please send comments, error reports, etc. to \email{adelchi.azzalini@unipd.it}
 }
-\section{Acknowledgements}{
-Many thanks go to Antonella Capitanio for testing the procedures,
-and to Brian Ripley and Martin Maechler for useful advice on R. 
-The function \code{num.deriv} is based on a similar function written 
-by Monica Chiogna. 
+\section{Acknowledgements}{The library has evolved through several 
+version developed over some years.
+
+For versions up to 0.20, the following people and institutions 
+have contributed. Many thanks go to Antonella Capitanio for testing 
+the procedures, and to Brian Ripley and Martin Maechler for useful 
+advice on R.  The function \code{num.deriv} is based on a similar 
+function written  by Monica Chiogna. 
 This software and part of the associated theoretical work has been developed 
 while the author was at the Nuffield College, Oxford, under the Jemolo 
 Fellowship scheme; the generous support of the  college is gratefully 
@@ -61,6 +84,11 @@ acknowledged.
 Additional support for the development of the theoretical research work has 
 been  provided by the "Consiglio Nazionale delle Ricerche" of Italy, grant 
 no.97.01331.CT10.
+
+Versions 0.21 to 0.30 have been supported by "MIUR", Italy, under grant 
+scheme PRIN 2000. Again, thanks to Antonella Capitanio for additional
+testing of the new version of the library.
+
 }
 \references{
 Azzalini, A. (1985).
@@ -86,6 +114,12 @@ Azzalini, A. and Capitanio, A. (1999).
 Statistical applications of the multivariate skew-normal distribution.
 \emph{J.Roy.Statist.Soc. B}
 \bold{61}, 579--602.
+
+Azzalini, A. and Capitanio, A. (2002).
+  Distributions generated by perturbation of symmetry 
+  with emphasis on a multivariate skew-\emph{t} distribution.
+  Submitted to \emph{J.Roy. Statist. Soc.}
+
 }
 \section{LICENCE}{
 This library and its documentation are usable under the terms of the 

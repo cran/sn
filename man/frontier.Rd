@@ -1,7 +1,7 @@
 \name{frontier}
 \alias{frontier}
 \title{Simulated sample from a skew-normal distribution}
-\usage{data(frontier, package=sn)}
+\usage{data(frontier)}
 \description{
   A sample simulated from the SN(0,1,5) distribution having sample
   index of skewness in the admissible range (-0.9952719,0.9952719) but
@@ -18,6 +18,6 @@
 data(frontier)
 a <- sn.2logL.profile(y=frontier)
 a <- sn.2logL.profile(y=frontier, param.range=c(0.8,1.6,10,30),
-        use.cp=F, npts=11)
+        use.cp=FALSE, npts=11)
 }
 \keyword{datasets}

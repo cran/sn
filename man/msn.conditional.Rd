@@ -31,7 +31,7 @@ a numeric vector of values taken on by the components \code{fixed.comp};
 it must be of the same length of \code{fixed.comp}.
 }}
 \value{
-a list containing the following elements:
+A list containing the following elements:
 
 \item{cumulants}{
 a list containing mean vector, variance matrix, and indices of 
@@ -52,7 +52,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \bold{61}, 579--602.
 }
 \seealso{
-\code{\link{plot.msn.cond}}, \code{\link{msn.marginal}}
+\code{\link{msn.cond.plot}}, \code{\link{msn.marginal}}
 }
 \examples{
 Omega <- diag(3)+0.5*outer(rep(1,3),rep(1,3))

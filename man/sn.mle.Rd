@@ -8,8 +8,8 @@ Fits a skew-normal (SN) distribution to data, or fits a linear regression
 model with skew-normal errors, using maximum likelihood estimation.
 }
 \usage{
-sn.mle(X, y, cp, plotit=T, trace=F,
-       control=list(iter.max=100, abs.tol=1e-5))
+sn.mle(X, y, cp, plotit=TRUE, trace=FALSE, method="L-BFGS-B",
+          control=list(iter.max=100, abs.tol=1e-5))
 }
 \arguments{
 \item{y}{
@@ -28,17 +28,21 @@ a vector of initial values for the centred parameters,
 with \code{length(cp)=ncol(X)+2}
 }
 \item{plotit}{
-logical value, If \code{plotit=T} (default) and a graphical device is active,
+logical value, If \code{plotit=TRUE} (default) and a graphical device is active,
 a plot of the nonparametric estimate of variable \code{y} (or the residuals,
 in the case of regression), and the parametric fit is superimposed.
 See below for details.
 }
 \item{trace}{
 logical value which controls printing of the algorithm convergence.
-If \code{trace=T}, details are printed. Default value is \code{F}.
+If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
 }
+\item{method}{
+this parameter is just passed to the optimizer \code{optim}; see the 
+documentation of this function for its usage. Default value is 
+\code{"L-BFGS-B"}.}
 \item{control}{
-this parameter is jusr passed to the optimizer \code{optim}; 
+this parameter is just passed to the optimizer \code{optim}; 
 see the documentation of this function for its usage.
 }}
 \value{
@@ -64,7 +68,7 @@ the list returned by the optimizer \code{optim}; see the documentation
 of this function for explanation of its components.
 }}
 \section{Side Effects}{
-If \code{plotit=T} and a graphical device is active, a plot is produced,
+If \code{plotit=TRUE} and a graphical device is active, a plot is produced,
 as described above.
 }
 \details{
@@ -74,10 +78,13 @@ the returned \code{message} from \code{optim} is always appropriate.
 In suspect cases, re-run the function changing the starting \code{cp}
 vector.
 
-
 If plotting operates, the function \code{sm.density} of the library \code{sm}
 is searched; this library is associated with the book by Bowman and
 Azzalini (1997).  If \code{sm.density} is not found, an histogram is plotted.
+
+% To fit a skew-notmal distribution to grouped data by exact
+% maximum likelihood estimation, use \code{sn.mle.grouped}.
+
 }
 \section{Background}{
 Background information on the SN distribution is given by Azzalini (1985).
@@ -103,7 +110,8 @@ Bowman, A.W. and Azzalini, A. (1997).
 Oxford University Press, Oxford.
 }
 \seealso{
-\code{\link{dsn}}, \code{\link{sn.mle}}, \code{\link{msn.mle}}, \code{\link{optim}}}
+\code{\link{dsn}}, \code{\link{sn.em}}, \code{\link{msn.mle}}, \code{\link{optim}}
+% \code{\link{sn.mle.grouped}}
 }
 \examples{
 data(ais,package=sn)

@@ -9,7 +9,7 @@ Computes first and second derivatives of twice the negative log-likelihood
 for regression models with errors having a skew-normal distribution.
 }
 \usage{
-sn.dev.gh(cp, X, y, trace=F, hessian=F)
+sn.dev.gh(cp, X, y, trace=FALSE, hessian=FALSE)
 }
 \arguments{
 \item{cp}{
@@ -25,15 +25,15 @@ Missing values (\code{NA}s) are not allowed.
 }
 \item{trace}{
 logical value.
-If \code{trace=T}, details are printed. Default value is \code{F}.
+If \code{trace=TRUE}, details are printed. Default value is \code{F}.
 }
 \item{hessian}{
 logical value.
-If \code{hessian=T}, the Hessian is computed. Default value is \code{F}.
+If \code{hessian=TRUE}, the Hessian is computed. Default value is \code{F}.
 }}
 \value{
 a vector containing the gradient; 
-if \code{hessian=T}, this is given an attribute containing the Hessian matrix
+if \code{hessian=TRUE}, this is given an attribute containing the Hessian matrix
 }
 \details{
 This function produces of derivatives of the objective function of \code{sn.mle}, 

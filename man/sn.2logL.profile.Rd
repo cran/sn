@@ -10,14 +10,14 @@ Computation and plot of 1-dimensional and 2-dimensional profile
 \usage{
 sn.2logL.profile(X=matrix(rep(1, n)), y,
     param.range=c(sqrt(var(y)) * c(0.67, 1.5), -0.95, 0.95),
-    use.cp=T, npts=31 \%/\% d, plotit=T, \dots)
+    use.cp=TRUE, npts=31 \%/\% d, plotit=TRUE, ...)
 }
 \arguments{
 \item{y}{
 a numeric vector. Missing values (\code{NA}s) are not allowed.
 }
 \item{X}{
-a matrix of explantory variables; must have \code{col(X)} equal to
+a matrix of explanatory variables; must have \code{col(X)} equal to
 \code{length(y). Missing values (`NA}s) are not allowed.
 If \code{X} is missing, a one-comun matrix of 1's is created.
 }
@@ -34,7 +34,7 @@ the range of the shape (or skewness) parameter; in this case, \code{d=2}.
 }
 \item{use.cp}{
 logical value which selects the parametrization adopted.
-If \code{use.cp=T} (default value), the centred parametrization is used,
+If \code{use.cp=TRUE} (default value), the centred parametrization is used,
 otherwise the direct parametrization is adopted.
 }
 \item{npts}{
@@ -42,17 +42,17 @@ number of points (in the scalar case) or grid size (in the
 2-dimensional case).
 }
 \item{plotit}{
-logical value which determines is plotting takes place; default
+logical value which determines if plotting takes place; default
 is \code{T}.
 }
 \item{...}{
 any additional parameter is passed to \code{sn.em}.
 }}
 \value{
-a list containing the following components
+A list containing the following components
 
-\item{param1,}{
-vectors of the paramters values where the function has been
+\item{param1}{
+vectors of the parameters values where the function has been
 evaluated. If \code{d=2}, the second vector contains \code{NA}s.
 }
 \item{param.names}{
@@ -69,7 +69,7 @@ a numeric value with the maximum which has been subtracted to
 obtain the "relative" version of \code{2logL}.
 }}
 \section{Side Effects}{
-If \code{plotit=T}, a plot of the profile twice relative loglikeliood is
+If \code{plotit=TRUE}, a plot of the profile twice relative loglikeliood is
 produced on a graphical device.
 }
 \details{
@@ -92,13 +92,13 @@ Statistical applications of the multivariate skew-normal distribution.
 data(ais,package=sn)
 attach(ais)
 a <- sn.2logL.profile(y=bmi)
-a <- sn.2logL.profile(y=bmi, use.cp=F)
+a <- sn.2logL.profile(y=bmi, use.cp=FALSE, param.range=c(3,6,1,5))
 a <- sn.2logL.profile(X=cbind(1,lbm), y=bmi, param.range=c(0,0.9),
         npts=50)
 #
 data(frontier)
 a <- sn.2logL.profile(y=frontier, param.range=c(0.8,1.6,10,30),
-        use.cp=F, npts=11)
+        use.cp=FALSE, npts=11)
 }
 \keyword{distribution}
 % Converted by Sd2Rd version 0.3-3.

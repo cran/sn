@@ -1,24 +1,24 @@
 \name{sn.cumulants}
 \alias{sn.cumulants}
 \title{
-cumulants of the skew-normal distribution
+Cumulants of the skew-normal distribution
 }
 \description{
-cumulants of the skew-normal distribution
+Cumulants of the skew-normal distribution.
 }
 \usage{
 sn.cumulants(shape=0, n=4)
 }
 \arguments{
 \item{shape}{
-a vector of shape parameter
+a vector of shape parameter.
 }
 \item{n}{
-a scalar integer
+a scalar integer.
 }}
 \value{
 the cumulants up to order \code{n} of the skew-normal distribution
-with \code{location=0}, \code{scale=1} and \code{shape} as selected
+with \code{location=0}, \code{scale=1} and \code{shape} as selected.
 }
 \details{
 The moment generating function (hence the cumulant generating function)
