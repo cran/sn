@@ -2,7 +2,7 @@
 # and skew-t distribution (the latter since version 0.30).
 #
 # Author: A.Azzalini <azzalini@stat.unipd.it> 
-# Home-page: http://www.stat.unipd.it/~azzalini/SN
+# Home-page: http://azzalini.stat.unipd.it/SN
 # major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 01/04/1999, 
 # 15/06/2002. 
 # It requires R 1.0.1, plus library mvtnorm for some (few) functions
@@ -592,8 +592,8 @@ dmsn <- function(x, xi=rep(0,d), Omega, alpha)
   X     <- t(matrix(x, nrow=n,ncol=d))- xi
   z     <- X/scale
   Q     <- apply((solve(Omega)%*% X)* X,2,sum) # diag of (x Omega^(-1) x^T)
-  d <- diag(qr(Omega)[[1]])
-  Det <- prod(abs(d))
+  # d <- diag(qr(Omega)[[1]])
+  Det <- prod(abs( diag(qr(Omega)[[1]]) ))
   pdf   <- 2*exp(-0.5*Q) * pnorm(t(z)%*%as.matrix(alpha))/sqrt((2*pi)^d * Det)
   pdf
 }
@@ -1212,7 +1212,8 @@ pmst <- function(x, xi=rep(0,d), Omega=1, alpha=rep(0,d), df=Inf, ...)
 pmsn <- function(x, xi=rep(0,d), Omega, alpha, ...)
   { d<- length(alpha)
     p<- pmst(x, xi, Omega, alpha, df=Inf, ...)
-    p}
+    p
+  }
 
 
 dst2.plot <- function(x, y, xi, Omega, alpha, df, ...)
@@ -1836,7 +1837,7 @@ sn.mle.grouped <- function(breaks, freq, trace=FALSE, start=NA)
 
 st.logL.grouped <- function(param, breaks, freq, trace=FALSE)
 {
-  if(param[4] > 5)
+  if(param[4] > 5.5214609)
       cdf<- psn(breaks, param[1], exp(param[2]), param[3])
     else
       cdf<- pst(breaks, param[1], exp(param[2]), param[3], exp(param[4]))
@@ -1851,7 +1852,7 @@ st.mle.grouped <- function(breaks, freq, trace=FALSE, start=NA)
   if(any(is.na(start))){
     a <- sn.mle.grouped(breaks, freq)
     start <- c(a$end, log(15))
-    if(trace)  cat("Initial parameters set to:", start,"\n")
+    if(trace)  cat("Initial parameters set to:", format(start),"\n")
     }
   opt <- optim(start,  st.logL.grouped, 
             control=list(fnscale=-1),
@@ -1899,7 +1900,7 @@ mst.affine <- function(dp, A, a=0, drop=TRUE) msn.affine(dp, A, a, drop)
         stop("This package requires R 1.0.1 or later")
     assign(".sn.home", file.path(library, pkg),
            pos=match("package:sn", search()))
-    sn.version <- "0.32-1 (2004-02-10)"
+    sn.version <- "0.32-2 (2004-03-13)"
     assign(".sn.version", sn.version, pos=match("package:sn", search()))
     if(interactive())
     {

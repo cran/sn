@@ -49,7 +49,7 @@ a vector of length \code{ncol(X)+2} with estimates of the direct parameters
 \item{se}{
 a vector of standard errors for the parameters
 }
-\item{info}{
+\item{Einfo}{
 the expected Fisher information matrix for the parameters
 }
 }

@@ -50,10 +50,18 @@ If \code{x} is set, then the supplied vector of parameters must have
 length \code{ncol(x)+2}.
 }
 \section{Background}{
-For a description of the DP and CP parametrizations,
-see the reference below.
+  For the description of the DP and CP parametrizations and
+  for the expression of the exptected Fisher information of the DP
+  parametrizations, see Azzalini (1985). Further discussion is in
+  Azzalini and Capitanio (1999).
 }
 \references{
+Azzalini, A. (1985).
+A class of distributions which includes the normal ones.
+\emph{Scand. J. Statist.}
+\bold{12}, 171-178.
+
+
 Azzalini, A. and Capitanio, A. (1999).
 Statistical applications of the multivariate skew-normal distribution.
 \emph{J.Roy.Statist.Soc. B}
