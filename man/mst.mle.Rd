@@ -24,9 +24,10 @@ If \code{y} is a matrix, rows refer to observations, and columns to
 components of the multivariate distribution. 
 }
 \item{X}{
-a matrix of covariate values.
-If missing, a one-column matrix of 1's is created; otherwise,
-it must have the same number of rows of \code{y}.
+  a matrix of covariate values.
+  If missing, a one-column matrix of 1's is created; otherwise,
+  it must have the same number of rows of \code{y}.
+  If \code{X} is supplied, then it must include a column of 1's.
 }
 \item{freq}{
 a vector of weights.
@@ -120,10 +121,12 @@ Azzalini, A. and Capitanio, A. (2002).
 \examples{
 data(ais,package=sn)
 attach(ais)
-# a simple-sample case
+M <- model.matrix(~lbm+sex)
+b <- sn.mle(M, bmi)
+# 
 b <- mst.mle(y=cbind(Ht,Wt))
 #
-# a regression case:
+# a multivariate regression case:
 a <- mst.mle(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-6))
 #
 # refine the previous outcome

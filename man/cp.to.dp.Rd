@@ -2,11 +2,11 @@
 \alias{cp.to.dp}
 \alias{dp.to.cp}
 \title{
-Conversion between equivalent parametrizations
+Conversion between equivalent parametrizations  
 }
 \description{
-Convert direct to centred parameters of the skew-normal distribution,
-and viceversa.
+  Convert direct parameters (DP) to centred parameters (CP) of the
+  one-dimensional skew-normal distribution and \emph{vice versa}
 }
 \usage{
 cp.to.dp(param)
@@ -25,9 +25,8 @@ a vector of the same length of \code{param}, representing \code{param} in the
 alternative parametrization; \code{cp.to.dp} converts centred to direct
 parameters, \code{dp.to.cp} converts direct to centred parameters.
 }
-\details{
-The advantages of using the centred parametrization, rather than the
-direct one, are discussed in the reference below.
+\details{For a description of the two parametrizations, 
+see the reference below.
 }
 \references{
 Azzalini, A. and Capitanio, A. (1999).
@@ -43,4 +42,3 @@ cp <- dp.to.cp(c(30,30,2,4))
 dp <- cp.to.dp(cp)
 }
 \keyword{distribution}
-% Converted by Sd2Rd version 0.3-3.

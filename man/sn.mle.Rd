@@ -8,7 +8,7 @@ Fits a skew-normal (SN) distribution to data, or fits a linear regression
 model with skew-normal errors, using maximum likelihood estimation.
 }
 \usage{
-sn.mle(X, y, cp, plotit=TRUE, trace=FALSE, method="L-BFGS-B",
+sn.mle(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
           control=list(iter.max=100, abs.tol=1e-5))
 }
 \arguments{
@@ -18,17 +18,17 @@ variable in case of linear regression.
 Missing values (\code{NA}s) are not allowed.
 }
 \item{X}{
-a matrix of explanatory variables. If \code{X} is missing, then a one-column
-matrix of all 1's is created. If \code{X} is supplied, and an intercept term
-is required, then it must include a column of 1's.
-Missing values (\code{NA}s) are not allowed.
+  a matrix of explanatory variables.
+  If \code{X} is missing, then a one-column matrix of all 1's is created.
+  If \code{X} is supplied, then it must include a column of 1's.
+  Missing values (\code{NA}s) are not allowed.
 }
 \item{cp}{
 a vector of initial values for the centred parameters,
 with \code{length(cp)=ncol(X)+2}
 }
-\item{plotit}{
-logical value, If \code{plotit=TRUE} (default) and a graphical device is active,
+\item{plot.it}{
+logical value, If \code{plot.it=TRUE} (default),
 a plot of the nonparametric estimate of variable \code{y} (or the residuals,
 in the case of regression), and the parametric fit is superimposed.
 See below for details.
@@ -68,7 +68,7 @@ the list returned by the optimizer \code{optim}; see the documentation
 of this function for explanation of its components.
 }}
 \section{Side Effects}{
-If \code{plotit=TRUE} and a graphical device is active, a plot is produced,
+If \code{plot.it=TRUE} and a graphical device is active, a plot is produced,
 as described above.
 }
 \details{
@@ -118,11 +118,9 @@ data(ais,package=sn)
 attach(ais)
 a<-sn.mle(y=bmi)
 #
-a<-sn.mle(X=cbind(1,lbm,lbm^2),y=bmi)
+a<-sn.mle(X=cbind(1,lbm),y=bmi)
 #
-M<-model.matrix(~lbm+I(ais$sex))
-b<-sn.mle(M,bmi)
+b<-sn.mle(X=model.matrix(~lbm+sex), y=bmi)
 }
 \keyword{regression}
 \keyword{distribution}
-% Converted by Sd2Rd version 0.3-3.

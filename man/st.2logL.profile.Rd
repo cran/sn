@@ -11,7 +11,7 @@ Computation and plot of 1-dimensional and 2-dimensional profile
 st.2logL.profile(X=matrix(rep(1, n)), y, freq, trace=FALSE,
           fixed.comp = c(ncol(X)+2, ncol(X)+3), 
           fixed.values = cbind(c(-4,4), log(c(1,25))),
-          npts=30/length(fixed.comp), plotit=TRUE, ...)
+          npts=30/length(fixed.comp), plot.it=TRUE, ...)
 }
 \arguments{
 \item{X}{
@@ -46,8 +46,8 @@ range spanned by the selected parameters.
 number of points on each parameter interval for which the function
 must be evaluated.
 }
-\item{plotit}{
-logical value; if \code{plotit=TRUE} (default value) a graphical display
+\item{plot.it}{
+logical value; if \code{plot.it=TRUE} (default value) a graphical display
 is produced.
 }
 \item{...}{
@@ -81,7 +81,7 @@ a list with the output of \code{optim} at the best evaluated point,
 that is the one with higher log-likelihood. 
 }}
 \section{Side Effects}{
-If \code{plotit=TRUE}, a plot of the profile twice relative loglikeliood is
+If \code{plot.it=TRUE}, a plot of the profile twice relative loglikeliood is
 produced on a graphical device. 
 If \code{length(fixed.comp)=1}, a plot of the `deviance' is produced
 as a function of the chosen parameter component.

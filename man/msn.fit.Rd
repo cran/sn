@@ -10,7 +10,7 @@ using maximum likelihood estimation. The outcome is then displayed
 in graphical form.
 }
 \usage{
-msn.fit(X, y, freq, plotit=TRUE, trace=FALSE,  \dots )
+msn.fit(X, y, freq, plot.it=TRUE, trace=FALSE,  \dots )
 }
 \arguments{
 \item{y}{
@@ -29,7 +29,7 @@ a vector of weights.
 If missing, a one-column matrix of 1's is created; otherwise
 it must have the same number of rows of \code{y}.
 }
-\item{plotit}{
+\item{plot.it}{
 logical value which controls the graphical output (default=TRUE);
 see below for description.
 }
@@ -75,7 +75,7 @@ all components of the shape parameter are 0), and the corresponging
 p-value.
 }}
 \section{Side Effects}{
-Graphical output is produced if \code{(plotit \& missing(freq))=TRUE} and
+Graphical output is produced if \code{(plot.it \& missing(freq))=TRUE} and
 a suitable device is active. Three plots are produced, and the programs
 pauses between each two of them, waiting for the <Enter> key to be pressed.
 

@@ -10,7 +10,7 @@ Computation and plot of 1-dimensional and 2-dimensional profile
 \usage{
 sn.2logL.profile(X=matrix(rep(1, n)), y,
     param.range=c(sqrt(var(y)) * c(0.67, 1.5), -0.95, 0.95),
-    use.cp=TRUE, npts=31 \%/\% d, plotit=TRUE, ...)
+    use.cp=TRUE, npts=31 \%/\% d, plot.it=TRUE, ...)
 }
 \arguments{
 \item{y}{
@@ -41,7 +41,7 @@ otherwise the direct parametrization is adopted.
 number of points (in the scalar case) or grid size (in the
 2-dimensional case).
 }
-\item{plotit}{
+\item{plot.it}{
 logical value which determines if plotting takes place; default
 is \code{T}.
 }
@@ -69,7 +69,7 @@ a numeric value with the maximum which has been subtracted to
 obtain the "relative" version of \code{2logL}.
 }}
 \section{Side Effects}{
-If \code{plotit=TRUE}, a plot of the profile twice relative loglikeliood is
+If \code{plot.it=TRUE}, a plot of the profile twice relative loglikeliood is
 produced on a graphical device.
 }
 \details{
