@@ -8,8 +8,8 @@ Fits a skew-normal (SN) distribution to data, or fits a linear regression
 model with skew-normal errors, using maximum likelihood estimation.
 }
 \usage{
-sn.mle(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
-          control=list(maxit=100))
+sn.mle <- function(X, y, cp, plotit=T, trace=F,
+          control=list(iter.max=100, abs.tol=1e-5))
 }
 \arguments{
 \item{y}{
@@ -18,31 +18,27 @@ variable in case of linear regression.
 Missing values (\code{NA}s) are not allowed.
 }
 \item{X}{
-  a matrix of explanatory variables.
-  If \code{X} is missing, then a one-column matrix of all 1's is created.
-  If \code{X} is supplied, then it must include a column of 1's.
-  Missing values (\code{NA}s) are not allowed.
+a matrix of explanatory variables. If \code{X} is missing, then a one-column
+matrix of all 1's is created. If \code{X} is supplied, and an intercept term
+is required, then it must include a column of 1's.
+Missing values (\code{NA}s) are not allowed.
 }
 \item{cp}{
 a vector of initial values for the centred parameters,
 with \code{length(cp)=ncol(X)+2}
 }
-\item{plot.it}{
-logical value, If \code{plot.it=TRUE} (default),
+\item{plotit}{
+logical value, If \code{plotit=T} (default) and a graphical device is active,
 a plot of the nonparametric estimate of variable \code{y} (or the residuals,
 in the case of regression), and the parametric fit is superimposed.
 See below for details.
 }
 \item{trace}{
 logical value which controls printing of the algorithm convergence.
-If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
+If \code{trace=T}, details are printed. Default value is \code{F}.
 }
-\item{method}{
-this parameter is just passed to the optimizer \code{optim}; see the 
-documentation of this function for its usage. Default value is 
-\code{"L-BFGS-B"}.}
 \item{control}{
-this parameter is just passed to the optimizer \code{optim}; 
+this parameter is jusr passed to the optimizer \code{optim}; 
 see the documentation of this function for its usage.
 }}
 \value{
@@ -68,7 +64,7 @@ the list returned by the optimizer \code{optim}; see the documentation
 of this function for explanation of its components.
 }}
 \section{Side Effects}{
-If \code{plot.it=TRUE} and a graphical device is active, a plot is produced,
+If \code{plotit=T} and a graphical device is active, a plot is produced,
 as described above.
 }
 \details{
@@ -78,17 +74,14 @@ the returned \code{message} from \code{optim} is always appropriate.
 In suspect cases, re-run the function changing the starting \code{cp}
 vector.
 
-If plotting operates, the function \code{sm.density} of the package \code{sm}
+
+If plotting operates, the function \code{sm.density} of the library \code{sm}
 is searched; this library is associated with the book by Bowman and
 Azzalini (1997).  If \code{sm.density} is not found, an histogram is plotted.
-
-To fit a skew-normal distribution to grouped data by exact maximum likelihood
-estimation, use \code{sn.mle.grouped}.
-
 }
-\section{Background}{
+\section{BACKGROUND}{
 Background information on the SN distribution is given by Azzalini (1985).
-See also Azzalini and Capitanio (1999), for an additional discussion of
+See  Azzalini and Capitanio (1999) for a more detailed discussion of
 the centred parametrization.
 }
 \references{
@@ -110,17 +103,18 @@ Bowman, A.W. and Azzalini, A. (1997).
 Oxford University Press, Oxford.
 }
 \seealso{
-\code{\link{dsn}}, \code{\link{sn.em}}, \code{\link{msn.mle}},
-\code{\link{optim}}, \code{\link{sn.mmle}}, \code{\link{sn.mle.grouped}}
+\code{\link{dsn}}, \code{\link{sn.mle}}, \code{\link{msn.mle}}, \code{\link{optim}}}
 }
 \examples{
-data(ais, package="sn")
+data(ais,package=sn)
 attach(ais)
 a<-sn.mle(y=bmi)
 #
-a<-sn.mle(X=cbind(1,lbm),y=bmi)
+a<-sn.mle(X=cbind(1,lbm,lbm^2),y=bmi)
 #
-b<-sn.mle(X=model.matrix(~lbm+sex), y=bmi)
+M<-model.matrix(~lbm+I(ais$sex))
+b<-sn.mle(M,bmi)
 }
 \keyword{regression}
 \keyword{distribution}
+% Converted by Sd2Rd version 0.3-3.

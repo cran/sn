@@ -16,7 +16,7 @@ gamma1.to.lambda(gamma1)
 a numeric vector of indices of skewness.
 }}
 \value{
-A numeric vector of the corresponding shape parameters.
+a numeric vector of the corresponding shape parameters.
 }
 \details{
 Feasible values for input must have \code{abs(gamma1)<0.5*(4-pi)*(2/(pi-2))^1.5},
@@ -38,7 +38,6 @@ A class of distributions which includes the normal ones.
 \code{\link{dsn}}
 }
 \examples{
-gamma1.to.lambda(seq(-0.95, 0.95, length=11))
 }
 \keyword{distribution}
 % Converted by Sd2Rd version 0.3-3.

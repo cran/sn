@@ -10,13 +10,13 @@ using maximum likelihood estimation. The outcome is then displayed
 in graphical form.
 }
 \usage{
-msn.fit(X, y, freq, plot.it=TRUE, trace=FALSE,  \dots )
+msn.fit(X, y, freq, plotit=T, trace=F, control=list(iter.max=150, x.tol=1e-8), \dots )
 }
 \arguments{
 \item{y}{
-a matrix or a vector.  If \code{y} is a matrix, its rows refer to
+a matrix or a vector.  In \code{y} is a matrix, its rows refer to
 observations, and its columns to components of the multivariate
-distribution. If \code{y} is a vector, it is converted to a one-column
+distribution. In \code{y} is a vector, it is converted to a one-column
 matrix, and a scalar skew-normal distribution is fitted.
 }
 \item{X}{
@@ -29,24 +29,27 @@ a vector of weights.
 If missing, a one-column matrix of 1's is created; otherwise
 it must have the same number of rows of \code{y}.
 }
-\item{plot.it}{
-logical value which controls the graphical output (default=TRUE);
+\item{plotit}{
+logical value which controls the graphical output (default=T);
 see below for description.
 }
 \item{trace}{
 logical value which controls printing of the algorithm convergence.
-If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
+If \code{trace=T}, details are printed. Default value is \code{F}.
+}
+\item{control}{
+this parameter is passed to the optimizer \code{optim}; 
+see the documentation of this function for its usage.
 }
 \item{...}{
-  additional parameters passed to \code{msn.mle}; in practice, the
-  \code{start}, the \code{algorithm} and the \code{control} parameters
-  can be passed.
+additional paramters passed to \code{msn.mle}; in practice, the \code{start}
+parameter can be passed.
 }}
 \value{
-A list containing the following components:
+a list containing the following components:
 
 \item{call}{
-a string containing the calling statement.
+a string containing the calling statement
 }
 \item{dp}{
 a list containing the direct parameters \code{beta}, \code{Omega}, \code{alpha}.
@@ -65,40 +68,37 @@ corresponding point estimates;
 \code{info} is the observed information matrix for the working parameter,
 as explained below.
 }
-\item{algorithm}{
-  see the documentation of \code{msn.mle} for its explanation
+\item{optim}{
+the list returned by the optimizer \code{optim}; see the documentation
+of this function for explanation of its components.
 }
 \item{test.normality}{
 a list of with elements \code{test} and \code{p.value}, which are the value
 of the likelihood ratio test statistic for normality (i.e. test that
-all components of the shape parameter are 0), and the corresponding
+all components of the shape parameter are 0), and the corresponging
 p-value.
-}
-\item{mahalanobis}{
-a list of with elements \code{distance}, \code{prob} and \code{df}, which are 
-the Mahalanobis distances of the residuals from the origin, with respect
-to the metric associated to the matrix \code{Omega}, and the values
-\code{prob} of the associated probabilities computed from the chi-square 
-distribution with \code{df=ncol(y)} degrees of freedom.
 }}
 \section{Side Effects}{
-Graphical output is produced if \code{(plot.it \& missing(freq))=TRUE} and
+Graphical output is produced if \code{(plotit \& missing(freq))=T} and
 a suitable device is active. Three plots are produced, and the programs
 pauses between each two of them, waiting for the <Enter> key to be pressed.
 
-The first plot uses the variable \code{y} if \code{X} is missing, otherwise
-it uses the residuals from the regression.
+
+The first plot uses the variable \code{y} is \code{X} is missing, otherwise
+it uses the residuals from the regression are used.
 The form of this plot depends on the value of \code{k=ncol(y)};
 if \code{k=1}, an histogram is plotted with the fitted distribution
-superimposed. If \code{k>1}, a matrix of scatterplots is produced, with
-superimposed the corresponding bivariate densities of the fitted
+suerimposed. If \code{k>1}, a matrix of scatterplots is produced, with
+superimposed the corresponging bivariate densities of the fitted
 distribution.
+
 
 The second plot has two panels, each representing a QQ-plot of
 Mahalanobis distances. The first of these refers to the fitting of a
 multivariate normal distribution, a standard statistical procedure; 
 the second panel gives the corresponding QQ-plot of suitable Mahalanobis 
 distances for the multivariate skew-normal fit.
+
 
 The third plot is similar to the previous one, except that PP-plots
 are produced.
@@ -110,14 +110,13 @@ then, \code{msn.fit} displays the results in graphical form.
 The documentation of \code{msn.mle} gives details of the numerical
 procedure for maximum likelihood estimation.
 
+
 Although the function accepts a vector \code{y} as input, the use of
 \code{sn.mle} is recommended in the scalar case.
+
+
 }
-\note{
-  This function may be removed in future versions of the package, and
-  (some of) its functionality transferred somewhere else
-  }
-\section{Background}{
+\section{BACKGROUND}{
 The multivariate skew-normal distribution is discussed by
 Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)} parametrization
 adopted here is the one of Azzalini and Capitanio (1999).
@@ -135,19 +134,20 @@ Statistical applications of the multivariate skew-normal distribution.
 \bold{61}, 579--602.
 }
 \seealso{
-\code{\link{msn.mle}}, \code{\link{mst.fit}},  \code{\link{dmsn}},
+\code{\link{msn.mle}}, \code{\link{sn.mle}}
 }
 \examples{
-data(ais, package="sn")
+data(ais,package=sn)
 attach(ais)
-# a simple-sample case
-b <- msn.fit(y=cbind(Ht,Wt))
+# a simple case
+b <- msn.mle(y=cbind(wcc,rcc,Hc))
 #
 # a regression case:
-a <- msn.fit(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-6))
+a <- msn.mle(X=cbind(1,wcc,rcc), y=Hc, control=list(x.tol=1e-6))
 #
 # refine the previous outcome
-a1 <- msn.fit(X=cbind(1,Ht,Wt), y=bmi, control=list(x.tol=1e-9), start=a$dp)
+a1 <- msn.mle(X=cbind(1,wcc,rcc), y=Hc, control=list(x.tol=1e-9), start=a$dp)
 }
 \keyword{distribution}
 \keyword{regression}
+% Converted by Sd2Rd version 0.3-3.

@@ -10,7 +10,7 @@ estimate. The estimation procedure can be global or it can fix some
 components of the parameters vector.
 }
 \usage{
-sn.em(X, y, fixed, p.eps=0.0001, l.eps=0.01, trace=FALSE, data=FALSE)
+sn.em(X, y, fixed, p.eps=0.0001, l.eps=0.01, trace=F, data=F)
 }
 \arguments{
 \item{y}{
@@ -39,11 +39,11 @@ numerical value which regulates the log-likelihood convergence tolerance.
 }
 \item{trace}{
 logical value which controls printing of the algorithm convergence.
-If \code{trace=TRUE}, details are printed. Default value is \code{F}.
+If \code{trace=T}, details are printed. Default value is \code{F}.
 }
 \item{data}{
-logical value. If \code{data=TRUE}, the returned list includes the original
-data. Default value is \code{data=FALSE}.
+logical value. If \code{data=T}, the returned list includes the original
+data. Default value is \code{data=F}.
 }}
 \value{
 a list with the following components:
@@ -58,7 +58,7 @@ a vector of the centred parameters, as explained in the references below.
 the log-likelihood at congergence.
 }
 \item{data}{
-optionally (if \code{data=TRUE}), a list containing \code{X} and \code{y,} as supplied
+optionally (if \code{data=T}), a list containing \code{X} and \code{y,} as supplied
 on input, and a vector of \code{residuals}, which should have an approximate
 SN distribution with \code{location=0} and \code{scale=1}, in the direct
 parametrization.
@@ -73,7 +73,7 @@ but it appears to be very robust.
 See \code{sn.mle} for an alternative method, which also returns standard
 errors.
 }
-\section{Background}{
+\section{BACKGROUND}{
 Background information on the SN distribution is given by Azzalini (1985).
 See  Azzalini and Capitanio (1999) for a more detailed discussion of
 the direct and centred parametrizations.
@@ -94,7 +94,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \code{\link{dsn}}, \code{\link{sn.mle}}, \code{\link{cp.to.dp}}
 }
 \examples{
-data(ais, package="sn")
+data(ais,package=sn)
 attach(ais)
 #
 a<-sn.em(y=bmi)

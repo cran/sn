@@ -1,5 +1,5 @@
-\name{msn.cond.plot}
-\alias{msn.cond.plot}
+\name{plot.msn.cond}
+\alias{plot.msn.cond}
 \title{
 Plot of the density of a conditional skew-normal variate
 }
@@ -9,7 +9,7 @@ a multivariate skew-normal variate conditionally on the values
 taken on by some components.
 }
 \usage{
-msn.cond.plot(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
+plot.msn.cond(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
 }
 \arguments{
 \item{xi}{
@@ -34,24 +34,24 @@ an integer value which determines the grid size of the density
 computations and plot.
 }}
 \value{
-A list containing the following elements:
+a list containing the following elements:
 
-\item{cumulants}{
-two lists as returned by \code{msn.conditional}.
+\item{cumulants,}{
+two lists as returned by \code{msn.conditional}
 }
 \item{pdf}{
 a list containing the coordinates \code{x} and \code{y} of the points where the 
 densities have been evaluated, and the matrices \code{f.exact} and \code{f.fitted}
-of the exact and fitted conditional densities.
+of the exact and fitted conditional desntities.
 }
-\item{rel.error}{
-summary statistics of relative and absolute error of the approximation.
+\item{rel.error,}{
+summary statistics of relative and absolute error of the approximation
 }}
 \section{Side Effects}{
 A contour plot of the exact and approximate densities is produced
 on a graphical device.
 }
-\details{See Section 4.2 of the reference given below for backgroud details
+\details{
 }
 \references{
 Azzalini, A. and Capitanio, A. (1999).
@@ -64,7 +64,8 @@ Statistical applications of the multivariate skew-normal distribution.
 }
 \examples{
 Omega <- diag(3)+0.5*outer(rep(1,3),rep(1,3))
-a<- msn.cond.plot(rep(0,3), Omega, 1:3, 3, -0.75)
+a<- plot.msn.cond(rep(0,3), Omega, 1:3, 3, -0.75)
 }
 \keyword{multivariate}
 \keyword{distribution}
+% Converted by Sd2Rd version 0.3-3.

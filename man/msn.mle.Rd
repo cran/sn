@@ -9,73 +9,61 @@ linear regression model with multivariate skew-normal errors,
 using maximum likelihood estimation.
 }
 \usage{
-msn.mle(X, y, freq, start, trace=FALSE,  
-        algorithm=c("nlminb", "Nelder-Mead", "BFGS", "CG",  "SANN"),
-        control=list())
+msn.mle(X, y, freq, start, data=F, trace=F, control=list(iter.max=150, x.tol=1e-8) )
 }
 \arguments{
 \item{y}{
-a matrix or a vector.  If \code{y} is a matrix, rows refer to
+a matrix or a vector.  In \code{y} is a matrix, rows refer to
 observations, and columns to components of the multivariate
-distribution. If \code{y} is a vector, it is converted to a one-column
+distribution. In \code{y} is a vector, it is converted to a one-column
 matrix, and a scalar skew-normal distribution is fitted.
 }
 \item{X}{
 a matrix of covariate values.
 If missing, a one-column matrix of 1's is created; otherwise,
-it must have the same number of rows of \code{y}, and it must 
-include a column of 1's if an intercept term is required.
+it must have the same number of rows of \code{y}.
 }
 \item{freq}{
 a vector of weights.
-If missing, a vector of 1's is created; otherwise
-it must have  length equal to the number of rows of \code{y}.
+If missing, a one-column matrix of 1's is created; otherwise
+it must have the same number of rows of \code{y}.
 }
 \item{start}{
-a list containing the components \code{beta},\code{Omega}, \code{alpha},
+a list contaning the components \code{beta},\code{Omega}, \code{alpha},
 of the type described below. The \code{dp} component of the returned
 list from a previous call has the required format.
 }
 \item{trace}{
 logical value which controls printing of the algorithm convergence.
-If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
-}
-\item{algorithm}{
-a character string which selects the numerical optimization procedure 
-used to maximize the log-likelihood function. If this string is set 
-equal to \code{"nlminb"}, then this function is called; in all other cases,
-\code{optim} is called, with \code{method} set equal to the given string.
-Default value is \code{"nlminb"}.
+If \code{trace=T}, details are printed. Default value is \code{F}.
 }
 \item{control}{
-this parameter is passed to the  optimizer selected via \code{algorithm};
-see the documentation of \code{nlminb} or \code{optim} for its usage.
+this parameter is passed to the optimizer \code{optim}; 
+see the documentation of this function for its usage.
 }}
 \value{
-A list containing the following components:
+a list containing the following components:
 
 \item{call}{
-a string containing the calling statement.
+a string containing the calling statement
 }
 \item{dp}{
-  a list containing terms named \code{beta}, \code{Omega}, \code{alpha},
-  where \code{beta} is a matrix of regression coefficients with
-  \code{dim(beta)=c(nrow(X),ncol(y))}, \code{Omega} is a covariance
-  matrix   of order \code{ncol(y)}, \code{alpha} is a vector of shape
-  parameters of length \code{ncol(y)}.
+a list containing the direct parameters \code{beta}, \code{Omega}, \code{alpha}.
+Here, \code{beta} is a matrix of regression coefficients with
+\code{dim(beta)=c(nrow(X),ncol(y))}, \code{Omega} is a covariance matrix of
+order \code{ncol(y)}, \code{alpha} is a vector of shape parameters of length
+\code{ncol(y)}.
 }
 \item{se}{
-  a list containing the components \code{beta}, \code{alpha}, \code{info}.
-  Here, \code{beta} and \code{alpha} are the standard errors for the
-  corresponding point estimates;
-  \code{info} is the observed information matrix for the working parameter,
-  as explained below.
+a list containing the components \code{beta}, \code{alpha}, \code{info}.
+Here, \code{beta} and \code{alpha} are the standard errors for the
+corresponding point estimates;
+\code{info} is the observed information matrix for the working parameter,
+as explained below.
 }
-\item{algorithm}{
-  the list returned by the chose optimizer, either \code{nlminb}
-  or  \code{optim}, plus an item with the \code{name} of the selected
-  algorithm; see the documentation of either \code{nlminb}
-  or  \code{optim}  for explanation  of the other components.
+\item{optim}{
+the list returned by the optimizer \code{optim}; see the documentation
+of this function for explanation of its components.
 }}
 \details{
 The parameter \code{freq} is intended for use with grouped data,
@@ -84,20 +72,20 @@ cells; in this case the resulting estimate is an approximation
 to the exact maximum likelihood estimate. If \code{freq} is not
 set, exact maximum likelihood estimation is performed.
 
+
 The working parameter used in the maximization stage is
-\code{c(beta,alpha/omega)}, since a profile `deviance'
-\code{-2*loglikelihood} for this parameter is actually used;
-see Azzalini and Capitanio (1999, section 6.1) for details.
-The selected optimizer (\code{nlminb} or \code{optim}) is called,
-supplying the gradient of the profile deviance. In case the
-optimizer is  \code{optim}),  the gradient may or may not
-be used, depending on which specific method has been selected.
+\code{c(beta,alpha/omega)}, since a profile `deviance' \code{-2*loglikelihood}
+for this parameter is actually used;
+see Azzalini and Capitanio (1999) for details.
+The optimizer \code{optim} is called, supplying the gradient of
+the profile deviance.
+
 
 The function can take a vector \code{y} as input; however the use of
 \code{sn.mle} is recommended in the scalar case.
 
 }
-\section{Background}{
+\section{BACKGROUND}{
 The multivariate skew-normal distribution is discussed by
 Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)} parametrization
 adopted here is the one of Azzalini and Capitanio (1999).
@@ -115,19 +103,20 @@ Statistical applications of the multivariate skew-normal distribution.
 \bold{61}, 579--602.
 }
 \seealso{
-\code{\link{dmsn}},\code{\link{msn.fit}}, \code{\link{nlminb}}, 
-\code{\link{optim}}  
+\code{\link{dmsn}},\code{\link{sn.mle}},\code{\link{msn.fit}}, \code{\link{optim}}}
 }
 \examples{
-data(ais, package="sn")
+data(ais,package=sn)
 attach(ais)
-# a simple-sample case
-a <- msn.mle(y=cbind(Ht,Wt))
+# a simple case
+b <- msn.mle(y=cbind(wcc,rcc,Hc))
 #
 # a regression case:
-b  <- msn.mle(X=cbind(1,Ht,Wt), y=ssf)
-b1 <- msn.mle(X=cbind(1,Ht,Wt), y=ssf, algorithm="Nelder-Mead")
-b2 <- msn.mle(X=cbind(1,Ht,Wt), y=ssf, start=b1$dp)
+a <- msn.mle(X=cbind(1,wcc,rcc), y=Hc, control=list(x.tol=1e-6))
+#
+# refine the previous outcome
+a1 <- msn.mle(X=cbind(1,wcc,rcc), y=Hc, control=list(x.tol=1e-9), start=a$dp)
 }
 \keyword{distribution}
 \keyword{regression}
+% Converted by Sd2Rd version 0.3-3.

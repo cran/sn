@@ -7,77 +7,71 @@ Quantities related to the multivariate skew-normal distribution.
 Computes mean vector, variance matrix and other relevant quantities
 of a given multivariate skew-normal distribution.
 }
-\usage{msn.quantities(xi=rep(0,length(alpha)), Omega, alpha, dp = NULL)}
-
+\usage{
+msn.quantities(xi, Omega, alpha)
+}
 \arguments{
 \item{xi}{
-numeric vector giving the location parameter, of length \code{d}, say.
+numeric vector giving the location parameter, of length \code{k}, say.
 Missing values are not allowed.
 }
 \item{Omega}{
-a covariance matrix of size \code{d} by \code{d}.
+a covariance matrix of size \code{k} by \code{k}.
 Missing values are not allowed.
 }
 \item{alpha}{
-numeric vector of shape parameter of length \code{d}.
+numeric vector of shape parameter of length \code{k}.
 Missing values are not allowed.
-}
-\item{dp}{
-  a list with three components named \code{xi}, \code{Omega},
-  \code{alpha}, containing quantities as described above.
-  If \code{dp} is set, then the component parameters must not be.
 }}
 \value{
-A list containing the following components:
+a list containing the following components
 
 \item{xi}{
-the input parameter \code{xi}.
+the input parameter \code{xi}
 }
 \item{Omega}{
-the input parameter  \code{Omega}.
+the input parameter  \code{Omega}
 }
 \item{alpha}{
-the input parameter  \code{alpha}.
+the input parameter  \code{alpha}
 }
 \item{omega}{
-vector of scale parameters.
+vector of scale parameters
 }
 \item{mean}{
- the mean value of the distribution (vector)
+numeric vector representing the mean value of the distribution
 }
 \item{variance}{
-variance-covariance matrix of the distribution.
+variance matrix of the distribution
 }
 \item{Omega.conv}{
-concentration matrix associated to \code{Omega}, i.e. its inverse.
+concentration matrix associated to \code{Omega}, i.e. its inverse
 }
 \item{Omega.cor}{
-correlation matrix associated to \code{Omega}.
+correlation matrix associated to \code{Omega}
 }
 \item{Omega.pcor}{
-partial correlations matrix associated to \code{Omega}.
+partial correlations matrix associated to \code{Omega}
 }
 \item{lambda}{
-shape parameters of the marginal distributions
+shape parameters of the marginal distributions, in two equivalent
+forms
 }
 \item{Psi}{
-correlation matrix of the equivalent \code{(lambda,Psi)} parametrization.
+correlation matrix of the equivalent \code{(lambda,Psi)} parametrization
 }
 \item{delta}{
 the parameter \code{delta} which determines the shape of the marginal 
-distributions; this is related to \code{lambda}
+distributions
 }
+
 \item{skewness}{
 numeric vector with marginal indices of skewness (the standardised
-third cumulant).
+third cumulant)
 }}
-\details{Typical usages are
-\preformatted{%
-msn.quantities(xi=rep(0,length(alpha)), Omega, alpha)
-msn.quantities(dp= )
-}
-The meaning of the parameters is explained in the references below;
-see especially Azzalini and Capitanio (1999).
+\details{
+The meaning of the parameters is explained in the references below,
+especially Azzalini and Capitanio (1999).
 }
 \references{
 Azzalini, A. and Dalla Valle, A. (1996).
@@ -100,4 +94,4 @@ msn.quantities(c(0,0,1), Omega, c(-2,2,3))
 }
 \keyword{multivariate}
 \keyword{distribution}
-
+% Converted by Sd2Rd version 0.3-3.
