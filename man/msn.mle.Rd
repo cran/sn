@@ -9,7 +9,7 @@ linear regression model with multivariate skew-normal errors,
 using maximum likelihood estimation.
 }
 \usage{
-msn.mle(X, y, freq, start, trace=FALSE,  method="BFGS", control=list(iter.max=150, x.tol=1e-8) )
+msn.mle(X, y, freq, start, trace=FALSE,  method="BFGS", control=list(iter.max=150) )
 }
 \arguments{
 \item{y}{
@@ -111,7 +111,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \code{\link{dmsn}},\code{\link{sn.mle}},\code{\link{msn.fit}}, \code{\link{optim}}}
 }
 \examples{
-data(ais,package=sn)
+data(ais)
 attach(ais)
 # a simple-sample case
 b <- msn.mle(y=cbind(Ht,Wt))

@@ -89,7 +89,7 @@ Sartori, N. (2003).
 \code{\link{sn.mle}}, \code{\link{sn.Einfo}}
 }
 \examples{
-data(ais,package=sn)
+data(ais)
 attach(ais)
 a <-  sn.mmle(y=bmi)
 #

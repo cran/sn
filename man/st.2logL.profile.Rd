@@ -106,7 +106,7 @@ Azzalini, A. and Capitanio, A. (2002).
 \code{\link{st.mle}}, \code{\link{sn.2logL.profile}}
 }
 \examples{
-data(ais,package=sn)
+data(ais,package)
 attach(ais)
 a <- st.2logL.profile(y=bmi, xlab="alpha", ylab="log(df)")
 a <- st.2logL.profile(y=bmi, fixed.comp=4, fixed.values=log(c(1,25)))

@@ -135,7 +135,7 @@ Azzalini, A. and Capitanio, A. (2003).
 \code{\link{msn.fit}}, \code{\link{mst.mle}}
 }
 \examples{
-data(ais,package=sn)
+data(ais)
 attach(ais)
 # a simple-sample case
 b <- mst.fit(y=cbind(Ht,Wt))

@@ -1,5 +1,5 @@
 # S-plus/R library for the Skew-Normal (SN) distribution,
-# and skew-t distribution from version 0.30.
+# and skew-t distribution (the latter since version 0.30).
 #
 # Author: A.Azzalini <azzalini@stat.unipd.it> 
 # Home-page: http://www.stat.unipd.it/~azzalini/SN
@@ -583,31 +583,31 @@ sn.dev.gh <- function(cp, X, y, trace=FALSE, hessian=FALSE)
 
 # 
 
-dmsn <- function(x, xi=rep(0,k), Omega, alpha)
+dmsn <- function(x, xi=rep(0,d), Omega, alpha)
 {# Density of Multivariate SN rv with parameters (xi, Omega, alpha) 
- # evaluated at x, which is either a k-vector or n x k matrix
+ # evaluated at x, which is either a d-vector or (n x d) matrix
   scale <- sqrt(diag(Omega))
-  if(is.vector(x)) {n <-1;         k <- length(x)} 
-        else       {n <-dim(x)[1]; k <- dim(x)[2]}
-  X     <- t(matrix(x,nrow=n,ncol=k))-xi
+  if(is.vector(x)) {n <-1 ;         d <- length(x)} 
+        else       {n <-dim(x)[1] ; d <- dim(x)[2]}
+  X     <- t(matrix(x, nrow=n,ncol=d))- xi
   z     <- X/scale
   Q     <- apply((solve(Omega)%*% X)* X,2,sum) # diag of (x Omega^(-1) x^T)
   d <- diag(qr(Omega)[[1]])
   Det <- prod(abs(d))
-  pdf   <- 2*exp(-0.5*Q)*pnorm(t(z)%*%as.matrix(alpha))/sqrt((2*pi)^k*Det)
+  pdf   <- 2*exp(-0.5*Q) * pnorm(t(z)%*%as.matrix(alpha))/sqrt((2*pi)^d * Det)
   pdf
 }
 
 
-rmsn <- function(n=1, xi=rep(0,k), Omega, alpha){
-# generates SN_k(xi,Omega,alpha) variates using transformation method
-  k <- ncol(Omega)
+rmsn <- function(n=1, xi=rep(0,d), Omega, alpha){
+# generates SN_d(xi,Omega,alpha) variates using transformation method
+  d <- ncol(Omega)
   Z <- msn.quantities(xi,Omega,alpha)
-  y <- matrix(rnorm(n*k),n,k) %*% chol(Z$Psi)
-  # each row of y is N_k(0,Psi)
+  y <- matrix(rnorm(n*d),n,d) %*% chol(Z$Psi)
+  # each row of y is N_d(0,Psi)
   abs.y0 <- abs(rnorm(n))  
-  abs.y0<-matrix(rep(abs.y0,k),ncol=k)
-  delta <- Z$delta
+  abs.y0 <- matrix(rep(abs.y0,d), ncol=d)
+  delta  <- Z$delta
   z <- delta * t(abs.y0) +  sqrt(1-delta^2) * t(y)
   y <- t(xi+Z$omega*z)
   return(y)
@@ -1138,7 +1138,7 @@ qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,  tol = 1e-08)
     return(location + scale * x)
 }
 
-st.cumulants <- function(shape, df=Inf, n=4)
+st.cumulants <- function(shape=0, df=Inf, n=4)
 {
   if(df==Inf) return(sn.cumulants(shape, n=n))
   n<- as.integer(n)
@@ -1209,8 +1209,11 @@ pmst <- function(x, xi=rep(0,d), Omega=1, alpha=rep(0,d), df=Inf, ...)
     2 * pmvt(upper=c(0,(x-xi)/omega), corr=A, df=df, ...)
 }
 
-pmsn <- function(x, xi, Omega, alpha, ...) 
-        pmst(x, xi, Omega, alpha, df=Inf, ...)
+pmsn <- function(x, xi=rep(0,d), Omega, alpha, ...)
+  { d<- length(alpha)
+    p<- pmst(x, xi, Omega, alpha, df=Inf, ...)
+    p}
+
 
 dst2.plot <- function(x, y, xi, Omega, alpha, df, ...)
 {
@@ -1890,19 +1893,19 @@ mst.affine <- function(dp, A, a=0, drop=TRUE) msn.affine(dp, A, a, drop)
 #---
 
 .First.lib <- function(library, pkg)
-{
-    if(version$major == 0 |(version$major == 1 && version$minor < 0.1))
+{ 
+    Rv <- R.Version()
+    if(Rv$major == 0 |(Rv$major == 1 && Rv$minor < 0.1))
         stop("This package requires R 1.0.1 or later")
     assign(".sn.home", file.path(library, pkg),
            pos=match("package:sn", search()))
-    version <- "0.32 (2003-07-14)"
-    assign(".sn.version", version, pos=match("package:sn", search()))
+    sn.version <- "0.32-1 (2004-02-10)"
+    assign(".sn.version", sn.version, pos=match("package:sn", search()))
     if(interactive())
     {
-      cat("Library 'sn', version ", version, ", © 1998-2003 A.Azzalini\n",
-          sep="")
-      cat("type 'help(SN,package=sn)' for summary information\n")
+      cat("Library 'sn', version ", sn.version, ", © 1998-2004 A.Azzalini\n")
+      cat("type 'help(SN)' for summary information\n")
     }
     invisible()
-  }
+}
 

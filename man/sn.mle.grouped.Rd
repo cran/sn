@@ -77,10 +77,10 @@ with emphasis on a multivariate skew-\emph{t} distribution.
 
 }
 \seealso{
-\code{\link{dsn}},  \code{\link{dst}}, \code{\link{optim}}
+\code{\link{dsn}},  \code{\link{dst}}, \code{\link{optim}}, \code{\link{sn.mle}}
 }
 \examples{
-data(ais,package=sn)
+data(ais)
 attach(ais)
 breaks<- c(130,160, seq(170, 190, by=2.5), 200, 230)
 f <- cut(Ht[sex=="female"], breaks = breaks)

@@ -11,10 +11,10 @@ using maximum likelihood estimation.
 }
 \usage{
 mst.mle(X, y, freq, start=NA, fixed.df=NA, trace=FALSE,  method="BFGS", 
-       control=list(iter.max=150, x.tol=1e-8) )
+       control=list(iter.max=150) )
 
 st.mle(X, y, freq, start=NA, fixed.df=NA, trace=FALSE,  method="BFGS", 
-       control=list(iter.max=150, x.tol=1e-8) )
+       control=list(iter.max=150) )
 
 }
 \arguments{
@@ -119,7 +119,7 @@ Azzalini, A. and Capitanio, A. (2002).
 % \code{\link{sn.mle.grouped}}
 }
 \examples{
-data(ais,package=sn)
+data(ais)
 attach(ais)
 M <- model.matrix(~lbm+sex)
 b <- sn.mle(M, bmi)

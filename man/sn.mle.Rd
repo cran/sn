@@ -110,11 +110,11 @@ Bowman, A.W. and Azzalini, A. (1997).
 Oxford University Press, Oxford.
 }
 \seealso{
-\code{\link{dsn}}, \code{\link{sn.em}}, \code{\link{msn.mle}}, \code{\link{optim}}
-% \code{\link{sn.mle.grouped}}
+\code{\link{dsn}}, \code{\link{sn.em}}, \code{\link{msn.mle}},
+\code{\link{optim}}, \code{\link{sn.mmle}}, \code{\link{sn.mle.grouped}}
 }
 \examples{
-data(ais,package=sn)
+data(ais)
 attach(ais)
 a<-sn.mle(y=bmi)
 #

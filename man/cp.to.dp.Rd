@@ -14,7 +14,7 @@ dp.to.cp(param)
 }
 \arguments{
 \item{param}{
-a vector of length al least three.
+a vector of length at least three.
 If \code{lenght(param)} is \code{m+2}, then the first \code{m} components refer
 to the regression coefficients (or the location parameter, in
 case \code{m} is 1), and the remaining two components refer to scale and

@@ -9,7 +9,7 @@ Computation and plot of 1-dimensional and 2-dimensional profile
 }
 \usage{
 sn.2logL.profile(X=matrix(rep(1, n)), y,
-    param.range=c(sqrt(var(y)) * c(0.67, 1.5), -0.95, 0.95),
+    param.range=c(sqrt(var(y)) * c(2/3, 3/2), -0.95, 0.95),
     use.cp=TRUE, npts=31 \%/\% d, plot.it=TRUE, ...)
 }
 \arguments{
@@ -89,7 +89,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \code{\link{sn.em}}, \code{\link{sn.mle}}
 }
 \examples{
-data(ais,package=sn)
+data(ais)
 attach(ais)
 a <- sn.2logL.profile(y=bmi)
 a <- sn.2logL.profile(y=bmi, use.cp=FALSE, param.range=c(3,6,1,5))
