@@ -1,16 +1,15 @@
-\name{msn.dev}
-\alias{msn.dev}
+\name{msn.dev.grad}
+\alias{msn.dev.grad}
 \title{
-Deviance for multivariate skew-normal distributions
+Gradient of the deviance for multivariate skew-normal distributions
 }
 \description{
-Computes twice the negative profile log-likelihood (essentially,
-a form of the deviance)
+Computes the gradient of twice the negative profile log-likelihood 
 for multivariate regression models with errors having a multivariate
 skew-normal distribution.
 }
 \usage{
-msn.dev(param, X, y, freq, trace=F)
+msn.dev.grad(param, X, y, freq, trace=F)
 }
 \arguments{
 \item{param}{
@@ -32,18 +31,17 @@ logical value.
 If \code{trace=T}, details are printed. Default value is \code{F}.
 }}
 \value{
-a numeric value.
-}
-\section{Side Effects}{
-~describe any side effects if they exist
+a vector contaning the gradient
 }
 \details{
-This is the objective function of \code{msn.mle}, whose documentation
-gives additional details.
+This is the gradient function of \code{msn.dev}, 
+which is the objective function of \code{msn.mle};
+refer to its documentation for additional details.
 }
 \seealso{
-\code{\link{msn.mle}},\code{\link{msn.fit}},\code{\link{sn.mle}}
+\code{\link{msn.mle}},\code{\link{msn.dev}}}
 }
 \keyword{multivariate}
 \keyword{regression}
-% Converted by Sd2Rd version 0.3-3.
+
+

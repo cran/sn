@@ -48,7 +48,7 @@ quantile (\code{qsn}) or  random sample (\code{rsn})
 from the skew-normal distribution with given \code{location}, \code{scale}
 and \code{shape} parameters.
 }
-\section{BACKGROUND}{
+\section{Background}{
 The family of skew-normal distributions is an extension of the normal
 family, via the introdution of a \code{shape} parameter which regulates
 skewness; when \code{shape=0}, the skew-normal distribution reduces to the

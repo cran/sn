@@ -4,7 +4,7 @@
 Deviance for skew-normal distributions
 }
 \description{
-Computes twice the negative log-likelihood (essentially, the deviance)
+Computes twice the negative log-likelihood (the "deviance")
 for regression models with errors having a skew-normal distribution.
 }
 \usage{
@@ -36,4 +36,5 @@ gives additional details.
 \seealso{
 \code{\link{sn.mle}},\code{\link{msn.mle}}
 }
+\keyword{regression}
 % Converted by Sd2Rd version 0.3-3.

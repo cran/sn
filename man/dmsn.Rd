@@ -37,7 +37,7 @@ to be drawn.
 A vector of density values (\code{dmsn}), or a matrix of random 
 points (\code{rmsn}).
 }
-\section{BACKGROUND}{
+\section{Background}{
 The multivariate skew-normal distribution is discussed by
 Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)} parametrization
 adopted here is the one of Azzalini and Capitanio (1999).

@@ -116,7 +116,7 @@ Although the function accepts a vector \code{y} as input, the use of
 
 
 }
-\section{BACKGROUND}{
+\section{Background}{
 The multivariate skew-normal distribution is discussed by
 Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)} parametrization
 adopted here is the one of Azzalini and Capitanio (1999).

@@ -1,11 +1,12 @@
 Package: sn
-Version: 0.22
-Date: 2000/09/15
+Version: 0.22.1
+Date: 2001-05-17
 Title: The skew-normal distribution
 Author: Adelchi Azzalini <azzalini@stat.unipd.it>
+Maintainer: Adelchi Azzalini <azzalini@stat.unipd.it>
 Depends: R (>= 1.0.1)
 Description: Functions for manipulating skew-normal probability distributions
 	and for fitting them to data, in the scalar and the multivariate case.
 License: GPL Version 2 or later.
-URL: http://www.stat.unipd.it/~azzalini/SN
+URL: http://azzalini.stat.unipd.it//SN
 

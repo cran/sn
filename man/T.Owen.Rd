@@ -51,5 +51,5 @@ Tables for computing bivariate normal probabilities.
 \examples{
 owen <- T.Owen(1:10, 2)
 }
-\keyword{~keyword}
+\keyword{math}
 % Converted by Sd2Rd version 0.3-3.

@@ -85,7 +85,7 @@ The function can take a vector \code{y} as input; however the use of
 \code{sn.mle} is recommended in the scalar case.
 
 }
-\section{BACKGROUND}{
+\section{Background}{
 The multivariate skew-normal distribution is discussed by
 Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)} parametrization
 adopted here is the one of Azzalini and Capitanio (1999).

@@ -3,6 +3,10 @@
 # Home-page: http://www.stat.unipd.it/~azzalini/SN
 # major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 1/4/99
 # This is version 0.22 of the library (19-Sept-2000) for R 1.0.1.
+#
+#------- 
+# This is the working version;  updated on:
+# 2001-01-22 (msn.mle, use of optim)
 
 dsn <- function(x, location=0, scale=1, shape=0)
   2*dnorm((x-location)/scale)*pnorm((shape*(x-location)/scale))/scale
@@ -720,7 +724,6 @@ plot.msn.cond <- function(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
 
 msn.moment.fit <- function(y){
 # 31-12-1997: simple fit of MSN distribution usign moments
-#  cat("MLE con metodo momenti\n")
   Diag <- function(x) diag(x,nrow=length(x),ncol=length(x))
   y     <- as.matrix(y)
   k     <- ncol(y)
@@ -755,7 +758,11 @@ msn.fit <- function(X, y, freq, plotit=T, trace=F, ... )
   k <- ncol(y)
   if(missing(freq)) freq<-rep(1,nrow(y))  
   n <- sum(freq)
-  if(missing(X)) {X<-rep(1,nrow(y)); missing.X<-TRUE}
+  if(missing(X)) {
+    X <- rep(1,nrow(y))
+    missing.X <- TRUE }
+  else
+    missing.X <- FALSE
   X <- as.matrix(X)
   m <- ncol(X)
   if(length(dimnames(y)[[2]])==0) 
@@ -848,8 +855,8 @@ msn.fit <- function(X, y, freq, plotit=T, trace=F, ... )
 }
 
 
-msn.mle <-function(X, y, freq, start, trace=F, method="L-BFGS-B",
-                control=list(iter.max=150, x.tol=1e-8) )
+msn.mle <-function(X, y, freq, start, trace=F, method="BFGS",
+                control=list(iter.max=150) )
 {
   y <- as.matrix(y)
   if(missing(X)) X <- rep(1,nrow(y))
@@ -885,9 +892,9 @@ msn.mle <-function(X, y, freq, start, trace=F, method="L-BFGS-B",
   param<- c(beta,al.om)
   dev <- msn.dev(param,X,y,freq) 
   opt <- optim(param, fn=msn.dev, gr=msn.dev.grad, method=method,
-        control=control, X=X, y=y, freq=freq, trace=trace)      
-  # if(trace) 
-  cat(paste("Message from optimization routine:", opt$message,"\n"))
+               control=control, X=X, y=y, freq=freq, trace=trace)      
+  if(trace) 
+    cat(paste("Message from optimization routine:", opt$message,"\n"))
   logL <- (-opt$value)/2
   beta <- matrix(opt$par[1:(m*k)],m,k)
   dimnames(beta)[2] <- list(y.names)
@@ -973,7 +980,7 @@ num.deriv <- function(coefficients, FUN, ...)
         stop("This package requires R 1.0.1 or later")
     assign(".sm.home", file.path(library, pkg),
            pos=match("package:sn", search()))
-    cat("Library `sn'; Copyright (C) 1998-2000 A.Azzalini\n")
+    cat("Library `sn', version 0.22.1; Copyright (C) 1998-2000 A.Azzalini\n")
     cat("type `help(SN,package=sn)' for summary information\n")
     invisible()
 }

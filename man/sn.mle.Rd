@@ -79,7 +79,7 @@ If plotting operates, the function \code{sm.density} of the library \code{sm}
 is searched; this library is associated with the book by Bowman and
 Azzalini (1997).  If \code{sm.density} is not found, an histogram is plotted.
 }
-\section{BACKGROUND}{
+\section{Background}{
 Background information on the SN distribution is given by Azzalini (1985).
 See  Azzalini and Capitanio (1999) for a more detailed discussion of
 the centred parametrization.

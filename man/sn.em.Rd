@@ -73,7 +73,7 @@ but it appears to be very robust.
 See \code{sn.mle} for an alternative method, which also returns standard
 errors.
 }
-\section{BACKGROUND}{
+\section{Background}{
 Background information on the SN distribution is given by Azzalini (1985).
 See  Azzalini and Capitanio (1999) for a more detailed discussion of
 the direct and centred parametrizations.
