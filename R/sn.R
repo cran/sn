@@ -2,11 +2,11 @@
 # Author: A.Azzalini <azzalini@stat.unipd.it> 
 # Home-page: http://www.stat.unipd.it/~azzalini/SN
 # major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 1/4/99
-# This is version 0.22 of the library (19-Sept-2000) for R 1.0.1.
+# This is version 0.22.2 of the library (2002-01-05) for R 1.0.1.
 #
 #------- 
 # This is the working version;  updated on:
-# 2001-01-22 (msn.mle, use of optim)
+# 2001-12-12 (msn.mle, use of optim, qsn changed, rsn/attr)
 
 dsn <- function(x, location=0, scale=1, shape=0)
   2*dnorm((x-location)/scale)*pnorm((shape*(x-location)/scale))/scale
@@ -19,32 +19,41 @@ rsn <- function(n=1, location=0, scale=1, shape=0){
   u2 <- rnorm(n)
   id <- (u2 > shape*u1)
   u1[id] <- (-u1[id])
-  return(location+scale*u1)
+  y <- location+scale*u1
+  attr(y,"parameters") <- c(location,scale,shape)
+  return(y)
   }
 
-qsn <- function(p, location=0, scale=1, shape=0, tol=1.e-8){
-  na <- is.na(p) | (p<0) | (p>1)
-  zero <- (p==0)
-  one  <- (p==1)
-  p <- replace(p,(na|zero|one),0.5)
-  cum <- as.vector(sn.cumulants(shape,4))
-  g1<-cum[3]/cum[2]^(3/2)
-  g2<-cum[4]/cum[2]^2
-  x <- qnorm(p)
-  x <- x+(x^2-1)*g1/6+x*(x^2-3)*g2/24-x*(2*x^2-5)*g1^2/36
-  x <- cum[1]+sqrt(cum[2])*x # a Cornish-Fisher start
-  max.err <- 1
-  while(max.err>tol){
-    x1 <- x-(psn(x,0,1,shape)-p)/dsn(x,0,1,shape)
-    max.err <- max(abs(x1-x)/(1+abs(x)))
-    x <- x1
+qsn <- function (p, location = 0, scale = 1, shape = 0, tol = 1e-08) 
+{
+    max.q <- sqrt(qchisq(p,1))
+    min.q <- -sqrt(qchisq(1-p,1))
+    if(shape == Inf) return(location + scale * max.q)
+    if(shape == -Inf) return(location + scale * min.q)
+    na <- is.na(p) | (p < 0) | (p > 1)
+    zero <- (p == 0)
+    one <- (p == 1)
+    p <- replace(p, (na | zero | one), 0.5)
+    cum <- as.vector(sn.cumulants(shape, 4))
+    g1 <- cum[3]/cum[2]^(3/2)
+    g2 <- cum[4]/cum[2]^2
+    x <- qnorm(p)
+    x <- x + (x^2 - 1) * g1/6 + x * (x^2 - 3) * g2/24 - x * (2 * 
+        x^2 - 5) * g1^2/36
+    x <- cum[1] + sqrt(cum[2]) * x
+    max.err <- 1
+    while (max.err > tol) {
+        x1 <- x - (psn(x, 0, 1, shape) - p)/dsn(x, 0, 1, shape)
+        x1 <- pmin(x1,max.q)
+        x1 <- pmax(x1,min.q)
+        max.err <- max(abs(x1 - x)/(1 + abs(x)))
+        x <- x1
     }
-  x <- replace(x,na,NA)
-  x <- replace(x,zero,-Inf)
-  x <- replace(x,one,Inf)
-  return(location+scale*x)
+    x <- replace(x, na, NA)
+    x <- replace(x, zero, -Inf)
+    x <- replace(x, one, Inf)
+    return(location + scale * x)
 }
-
 
 sn.cumulants <- function(shape=0, n=4)
  {
@@ -447,7 +456,7 @@ sn.dev <- function(cp, X, y, trace=F)
   return(2*nlogL) 
 }
 
-sn.dev.gh <- function(cp, X, y, trace=F, hessian=F)
+sn.dev.gh <- function(cp, X, y, trace=FALSE, hessian=FALSE)
 {
   # computes gradient and hessian of dev=-2*logL for centred parameters 
   # (and observed information matrix);
@@ -460,6 +469,8 @@ sn.dev.gh <- function(cp, X, y, trace=F, hessian=F)
   sigma <- cp[m+1]
   gamma1 <- cp[m+2]
   lambda <- gamma1.to.lambda(gamma1)
+  # dp<-cp.to.dp(c(beta,sigma,gamma1))
+  # info.dp <- sn.info(dp,y)$info.dp
   mu <- as.vector(X %*% as.matrix(beta))
   d  <- y-mu
   r  <- d/sigma
@@ -478,8 +489,14 @@ sn.dev.gh <- function(cp, X, y, trace=F, hessian=F)
   DDz  <- DDE.Z + r*DDs.Z
   score[1:m] <- omega^(-2)*t(X) %*% as.matrix(y-mu-omega*w) 
   score[m+1] <- (-n)/sigma+s.Z*sum(d*(z-p1*lambda))/sigma^2
-  score[m+2] <- n*Ds.Z/s.Z-sum(z*Dz)+sum(p1*(z+lambda*Dz))
+  score[m+2] <- score.l <- n*Ds.Z/s.Z-sum(z*Dz)+sum(p1*(z+lambda*Dz))
   Dg.Dl <-1.5*(4-pi)*E.Z^2*(DE.Z*s.Z-E.Z*Ds.Z)/s.Z^4
+  R <- E.Z/s.Z
+  T <- sqrt(2/pi-(1-2/pi)*R^2)
+  Dl.Dg <- 2*(T/(T*R)^2+(1-2/pi)/T^3)/(3*(4-pi))
+  R. <- 2/(3*R^2 * (4-pi))
+  T. <- (-R)*R.*(1-2/pi)/T
+  DDl.Dg <- (-2/(3*(4-pi))) * (T./(R*T)^2+2*R./(T*R^3)+3*(1-2/pi)*T./T^4)
   score[m+2] <- score[m+2]/Dg.Dl  # convert deriv wrt lamda to gamma1 
   gradient <- (-2)*score
   if(hessian){
@@ -489,24 +506,24 @@ sn.dev.gh <- function(cp, X, y, trace=F, hessian=F)
             s.Z/sigma)/sigma^2
      info[m+1,m+1] <- (-n)/sigma^2+2*s.Z*sum(d*(z-lambda*p1))/sigma^3 +
             s.Z^2*sum(d*(1-lambda^2*p2)*d)/sigma^4
-     tmp <- as.matrix(Ds.Z*w+s.Z*(p1+lambda^2*p2*Dz-DE.Z) )
      info[1:m,m+2] <- info[m+2,1:m] <- 
             t(X)%*%(-2*Ds.Z*d/omega+Ds.Z*w+s.Z*(p1+lambda*p2*(z+lambda*Dz)
             -DE.Z))/sigma 
      info[m+1,m+2] <- info[m+2,m+1] <- 
             -sum(d*(Ds.Z*(z-lambda*p1)+s.Z*(Dz-p1-p2*lambda*(z+lambda*Dz))
              ))/sigma^2
-     info[m+2,m+2] <- n*(-DDs.Z*s.Z+Ds.Z^2)/s.Z^2+sum(Dz^2+z*DDz)-
-            sum(p2*(z+lambda*Dz)^2)- sum(p1*(2*Dz+lambda*DDz))
+     info[m+2,m+2] <- (n*(-DDs.Z*s.Z+Ds.Z^2)/s.Z^2+sum(Dz^2+z*DDz)-
+            sum(p2*(z+lambda*Dz)^2)- sum(p1*(2*Dz+lambda*DDz)))
      info[np,] <- info[np,]/Dg.Dl # convert info wrt lamda to gamma1 
-     info[,np] <- info[,np]/Dg.Dl
+     info[,np] <- info[,np]*Dl.Dg # an equivalent form of the above
+     info[np,np] <- info[np,np]-score.l*DDl.Dg
      }
   attr(gradient,"hessian") <- 2*info
   if(trace) {cat("sn.dev.gh: gradient="); print(-2*score)}
   return(gradient)
 }
 
-# version 0.2, Oct 1998
+# 
 
 dmsn <- function(x, xi=rep(0,k), Omega, alpha)
 {# Density of Multivariate SN rv with parameters (xi, Omega, alpha) 
@@ -980,7 +997,7 @@ num.deriv <- function(coefficients, FUN, ...)
         stop("This package requires R 1.0.1 or later")
     assign(".sm.home", file.path(library, pkg),
            pos=match("package:sn", search()))
-    cat("Library `sn', version 0.22.1; Copyright (C) 1998-2000 A.Azzalini\n")
+    cat("Library `sn', version 0.22.2; Copyright (C) 1998-2001 A.Azzalini\n")
     cat("type `help(SN,package=sn)' for summary information\n")
     invisible()
 }

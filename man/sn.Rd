@@ -9,17 +9,18 @@ distribution, both for the univariate and the the multivariate case.
 }
 \section{Functions}{
 The functions of the scalar case section are:
-\code{dsn}, \code{psn}, \code{qsn}, \code{rsn}, \code{T.Owen}, \code{cp.to.dp}, 
-\code{dp.to.cp}, \code{zeta},
-\code{gamma1.to.lambda}, \code{sn.cumulants}, \code{sn.em}, \code{sn.2logL.profile},
-\code{sn.mle}, \code{sn.dev}, \code{sn.dev.gh}.
+\code{dsn}, \code{psn}, \code{qsn}, \code{rsn}, \code{T.Owen}, 
+\code{cp.to.dp}, \code{dp.to.cp}, \code{zeta},
+\code{gamma1.to.lambda}, \code{sn.cumulants}, \code{sn.em}, 
+\code{sn.2logL.profile}, \code{sn.mle}, \code{sn.dev}, 
+\code{sn.dev.gh}.
 
 
-The functions of the multivariate section are:
-\code{dmsn}, \code{rmsn}, \code{plot.dsn2}, \code{msn.quantities}, 
-\code{msn.conditional},
-\code{msn.marginal}, \code{plot.msn.cond}, \code{msn.fit}, \code{msn.mle}, 
-\code{msn.dev}, \code{msn.dev.grad}, \code{msn.moment.fit}, \code{num.deriv}.
+The functions of the multivariate section are: \code{dmsn},
+\code{rmsn}, \code{plot.dsn2}, \code{msn.quantities},
+\code{msn.conditional}, \code{msn.marginal}, \code{plot.msn.cond},
+\code{msn.fit}, \code{msn.mle}, \code{msn.dev}, \code{msn.dev.grad},
+\code{msn.moment.fit}, \code{num.deriv}.
 
 Some of these functions are there to be used mostly by other functions
 of the library.  Those more relevant for practical use by a user are:
@@ -35,7 +36,7 @@ of (some of) these.
 R 1.0.1
 }
 \section{Version}{
-You are using version 0.22.1 (2001-05-17).
+You are using version 0.22.2 (2002-01-05).
 The most recent version of the library can be obtained from
 the WWW page: \url{http://azzalini.stat.unipd.it/SN}
 which also contains other related material
@@ -93,4 +94,3 @@ package.
 }
 \keyword{multivariate}
 \keyword{distribution}
-% Converted by Sd2Rd version 0.3-3.

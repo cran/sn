@@ -30,7 +30,7 @@ If \code{trace=T}, details are printed. Default value is \code{F}.
 \item{hessian}{
 logical value.
 If \code{hessian=T}, the Hessian is computed. Default value is \code{F}.
-}
+}}
 \value{
 a vector containing the gradient; 
 if \code{hessian=T}, this is given an attribute containing the Hessian matrix

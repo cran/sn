@@ -8,8 +8,8 @@ Fits a skew-normal (SN) distribution to data, or fits a linear regression
 model with skew-normal errors, using maximum likelihood estimation.
 }
 \usage{
-sn.mle <- function(X, y, cp, plotit=T, trace=F,
-          control=list(iter.max=100, abs.tol=1e-5))
+sn.mle(X, y, cp, plotit=T, trace=F,
+       control=list(iter.max=100, abs.tol=1e-5))
 }
 \arguments{
 \item{y}{
