@@ -7,8 +7,12 @@ Plot of Bivariate Skew-normal Density Function
 Produces a contour plot of the density function of a bivariate 
 skew-normal variate.
 }
+\synopsis{
+dsn2.plot(x, y, xi, Omega, alpha, dp = NULL, ...) 
+}
 \usage{
-dsn2.plot(x, y, xi, Omega, alpha,  ...)
+dsn2.plot(x, y, xi, Omega, alpha, ...)
+dsn2.plot(x, y, dp=, ...)
 }
 \arguments{
 \item{x}{
@@ -26,6 +30,11 @@ a 2 by 2 matrix containing a covariance matrix.
 \item{alpha}{
 a vector of length 2 containing the shape parameter.
 }
+\item{dp}{
+  a list with components named \code{xi, Omega, alpha}, containing
+  quantities as described above. If this parameter is set, then the
+  individual parameters must not be.
+  }
 \item{...}{
 additional parameters to be passed to \code{contour}.
 }}
@@ -34,11 +43,11 @@ A list containing the original input parameters plus a matrix
 containing the density function evaluated at the grid formed 
 by the \code{x} and \code{y} values. 
 }
-\section{Side effects}{
-A contour plot is produced on the graphical window.
-}
 \details{
-\code{dsn2.plot} makes use of function \code{dmsn}.
+  The density function is evalutate at the grid of points whose
+  coordinates are given by vectors \code{x} and \code{y}.
+  The actual computation is done by the  function \code{dmsn}.
+  A contour level plot is produced on the graphical window. 
 }
 \section{Background}{
 The multivariate skew-normal distribution is discussed by
@@ -57,7 +66,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \bold{61}, 579--602.
 }
 \seealso{
-\code{\link{dmsn}}, \code{link{dsn2.plot}}
+  \code{\link{dmsn}}
 }
 \examples{
 x <- y <- seq(-5, 5, length=35)

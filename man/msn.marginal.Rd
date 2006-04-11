@@ -8,7 +8,7 @@ Computes the marginal distribution of a subset of components of a
 multivariate skew-normal distribution.
 }
 \synopsis{
-msn.marginal(xi=NULL, Omega=NULL, alpha=NULL, comp=1:d, dp=NULL)
+msn.marginal(xi=rep(0, length(alpha)), Omega, alpha, comp=1:d, dp=NULL)
 }
 \usage{
 msn.marginal(xi, Omega, alpha, comp)
@@ -30,16 +30,19 @@ marginal distribution. A permutation of \code{1:d} is allowed, and
 the components of \code{comp} do not need to be sorted.
 }
 \item{dp}{
-  a list containing the components \code{xi}, \code{Omega}, \code{alpha}
+  a list containing the components \code{xi}, \code{Omega},
+  \code{alpha}, contaning quantities as described above; if \code{dp} is
+  specified, then the indicidual components must not be in the calling
+  statement
 }}
 \value{
 A list containing  components \code{xi, Omega, alpha} with the 
 parameters of the marginal distribution. If \code{length(comp)} is  equal to
-\code{r}, say, then the new components are of size \code{r, (r,r), r}, 
+\code{m}, say, then the new components are of size \code{m, (m,m), n}, 
 respectively.
 }
-\background{
-See Azzalini and Capitanio (1999) for background information.
+\section{Background}{
+See the reference below for background information.
 }
 \references{
 Azzalini, A. and Capitanio, A. (1999).
@@ -53,7 +56,8 @@ Statistical applications of the multivariate skew-normal distribution.
 xi <- c(10,0,-30)
 Omega <- 5*diag(3)+outer(1:3,1:3)
 alpha <- c(1,-3,5)
-marg31 <- msn.marginal(xi,Omega,alpha,c(3,1))
+msn.marginal(xi,Omega,alpha,c(3,1))
+msn.marginal(dp=list(xi=xi,Omega=Omega,alpha=alpha), comp=3)
 }
 \keyword{multivariate}
 \keyword{distribution}

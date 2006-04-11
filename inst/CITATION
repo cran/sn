@@ -1,8 +1,8 @@
 citHeader("To cite the sn package in publications use:")
 
 citEntry(entry="manual",
-         title = paste("{R} package 'sn':",
-                  "The skew-normal and skew-t distribution (version ",  
+         title = paste("{R} package \\texttt{sn}:",
+                  "The skew-normal and skew-$t$ distributions (version ",  
                   strsplit(.sn.version," ",fixed=TRUE)[[1]][1],")", sep=""),
          author = personList(as.person("A. Azzalini")),
          address      = "Università di Padova, Italia",

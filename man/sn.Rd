@@ -50,7 +50,7 @@ It is suggested that a user starts by reading the  documentation of
 (some of) these functions.
 }
 \section{Requirements}{
-R 1.0.1.  Two functions  require  \code{library(mvtnorm)}: 
+R 2.2.0.  Two functions make use of package \code{mtnormt}: 
 \code{pmsn}, \code{pmst}.
 }
 \section{Version}{
@@ -78,10 +78,11 @@ versions, developed over some years.
 
 For versions up to 0.20, the following people and institutions 
 have contributed. Many thanks go to Antonella Capitanio for testing 
-the procedures, and to Brian Ripley and Martin Maechler for useful 
-advice on R.  The function \code{num.deriv} is based on a similar 
-function written  by Monica Chiogna. 
-This software and part of the associated theoretical work has been developed 
+the procedures, and to Brian Ripley, Kurt Hornik and  Martin Maechler
+for useful  advice on R.
+The function \code{num.deriv2} is based on a similar 
+function written  by Monica Chiogna. The first version of this software
+and part of the associated theoretical work has been developed 
 while the author was at the Nuffield College, Oxford, under the Jemolo 
 Fellowship scheme; the generous support of the  college is gratefully 
 acknowledged. 
@@ -91,7 +92,7 @@ no.97.01331.CT10.
 
 Versions 0.21 to 0.30 have been supported by "MIUR", Italy, under grant 
 scheme PRIN 2000. Again, thanks to Antonella Capitanio for additional
-testing of the new version of the package.
+testing of those versions of the package.
 }
 \keyword{multivariate}
 \keyword{distribution}

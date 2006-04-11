@@ -31,11 +31,11 @@ it must have the same number of rows of \code{y}.
 }
 \item{fixed.df}{
 a scalar value containing the degrees of freedom (df), if these must
-be taked as fixed, or \code{NA} (deafult value) if df is a parameter
+be taken as fixed, or \code{NA} (default value) if df is a parameter
 to be estimated.
 }
 \item{start}{
-a list contaning the components \code{beta},\code{Omega}, \code{alpha},
+a list containing the components \code{beta},\code{Omega}, \code{alpha},
 \code{df} of the type described below. The \code{dp} component of the returned
 list from a previous call has the required format.
 }
@@ -48,8 +48,9 @@ logical value which controls printing of the algorithm convergence.
 If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
 }
 \item{...}{
-  additional parameters which are passed to the \code{control} parameter 
-  of \code{optim}; see the documentation of this function for their usage.
+  additional parameters passed to \code{msn.mle}; in practice, the
+  \code{start}, the \code{algorithm} and the \code{control} parameters
+  can be passed.
 }}
 \value{
 A list containing the following components:
@@ -74,9 +75,8 @@ corresponding point estimates;
 \code{info} is the observed information matrix for the working parameter,
 as explained below.
 }
-\item{optim}{
-the list returned by the optimizer \code{optim}; see the documentation
-of this function for explanation of its components.
+\item{algorithm}{
+  see the documentation of \code{mst.mle} for its explanation
 }
 \item{test.normality}{
 a list with elements \code{test} and \code{p.value}, which are the value
@@ -93,7 +93,7 @@ The first plot uses the variable \code{y} if \code{X} is missing, otherwise
 it uses the residuals from the regression.
 The form of this plot depends on the value of \code{d=ncol(y)};
 if \code{d=1}, an histogram is plotted with the fitted distribution
-superimposed. If \code{d>1}, a matrix of scatterplots is produced, with
+superimposed. If \code{d>1}, a matrix of scatter-plots is produced, with
 superimposed the corresponding bivariate densities of the fitted
 distribution.
 
@@ -111,10 +111,12 @@ For computing the maximum likelihood estimates, \code{mst.fit}
 invokes \code{mst.mle}, while \code{mst.fit} displays the results
 in graphical form.
 See the documentation of \code{mst.mle} for details of the numerical
-procedure for maximum likelihood estimation, and the one of
-\code{optim} for the optimisation procedure.
-
+procedure for maximum likelihood estimation.
 }
+\note{
+  This function may be removed in future versions of the package, and
+  (some of) its functionality transferred somewhere else
+  }
 \section{Background}{
 The family of multivariate skew-t distributions is an extension of the 
 multivariate Student's t family, via the introduction of a \code{shape} 
@@ -131,7 +133,7 @@ Azzalini, A. and Capitanio, A. (2003).
 
 }
 \seealso{
-\code{\link{mst.mle}}, \code{\link{optim}}
+\code{\link{mst.mle}}, \code{\link{msn.fit}}
 }
 \examples{
 data(ais, package="sn")

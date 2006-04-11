@@ -7,21 +7,30 @@ Quantities related to the multivariate skew-normal distribution.
 Computes mean vector, variance matrix and other relevant quantities
 of a given multivariate skew-normal distribution.
 }
+\synopsis{
+msn.quantities(xi=rep(0,length(alpha)), Omega, alpha, dp = NULL)
+}
 \usage{
-msn.quantities(xi, Omega, alpha)
+msn.quantities(xi=rep(0,length(alpha)), Omega, alpha)
+msn.quantities(dp= )
 }
 \arguments{
 \item{xi}{
-numeric vector giving the location parameter, of length \code{k}, say.
+numeric vector giving the location parameter, of length \code{d}, say.
 Missing values are not allowed.
 }
 \item{Omega}{
-a covariance matrix of size \code{k} by \code{k}.
+a covariance matrix of size \code{d} by \code{d}.
 Missing values are not allowed.
 }
 \item{alpha}{
-numeric vector of shape parameter of length \code{k}.
+numeric vector of shape parameter of length \code{d}.
 Missing values are not allowed.
+}
+\item{dp}{
+  a list with three components named \code{xi}, \code{Omega},
+  \code{alpha}, containing quantities as described above.
+  If \code{dp} is set, then the component parameters must not be.
 }}
 \value{
 A list containing the following components:
@@ -39,10 +48,10 @@ the input parameter  \code{alpha}.
 vector of scale parameters.
 }
 \item{mean}{
-numeric vector representing the mean value of the distribution.
+ the mean value of the distribution (vector)
 }
 \item{variance}{
-variance matrix of the distribution.
+variance-covariance matrix of the distribution.
 }
 \item{Omega.conv}{
 concentration matrix associated to \code{Omega}, i.e. its inverse.
@@ -54,17 +63,15 @@ correlation matrix associated to \code{Omega}.
 partial correlations matrix associated to \code{Omega}.
 }
 \item{lambda}{
-shape parameters of the marginal distributions, in two equivalent
-forms.
+shape parameters of the marginal distributions
 }
 \item{Psi}{
 correlation matrix of the equivalent \code{(lambda,Psi)} parametrization.
 }
 \item{delta}{
 the parameter \code{delta} which determines the shape of the marginal 
-distributions.
+distributions; this is related to \code{lambda}
 }
-
 \item{skewness}{
 numeric vector with marginal indices of skewness (the standardised
 third cumulant).
@@ -94,4 +101,4 @@ msn.quantities(c(0,0,1), Omega, c(-2,2,3))
 }
 \keyword{multivariate}
 \keyword{distribution}
-% Converted by Sd2Rd version 0.3-3.
+

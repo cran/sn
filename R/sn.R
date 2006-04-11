@@ -4,13 +4,20 @@
 # Author: A.Azzalini 
 # Home-page: http://azzalini.stat.unipd.it/SN
 # major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 01/04/1999, 
-# 15/06/2002. 
-# It requires R 1.0.1, plus library mvtnorm for a few functions
+# 15/06/2002, 01/04/2006
+# It requires R 1.0.1, plus package mnormt for a few functions
 #
 #------- 
 
-dsn <- function(x, location=0, scale=1, shape=0, log=FALSE)
+dsn <- function(x, location=0, scale=1, shape=0, dp=NULL, log=FALSE)
  {
+   if(!is.null(dp)) {
+     if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+     location <- dp[1]
+     scale <- dp[2]
+     shape <- dp[3]
+    }
    z <- (x-location)/scale
    if(log)
      y <- (-0.9189385332046727-logb(scale)-z^2/2+zeta(0,shape*z))
@@ -19,14 +26,29 @@ dsn <- function(x, location=0, scale=1, shape=0, log=FALSE)
    replace(y, scale<= 0, NaN)
  }
 
-psn <- function(x, location=0, scale=1, shape=0, ...)
+psn <- function(x, location=0, scale=1, shape=0,  dp=NULL, ...)
  {
+   if(!is.null(dp)) {
+     if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+     location <- dp[1]
+     scale <- dp[2]
+     shape <- dp[3]
+    }
    z <- (x-location)/scale
    p <- pmin(1, pmax(0, pnorm(z) - 2*T.Owen(z, shape,...)))
    replace(p, scale<= 0, NaN)
  }
  
-rsn <- function(n=1, location=0, scale=1, shape=0){
+rsn <- function(n=1, location=0, scale=1, shape=0, dp=NULL)
+{
+  if(!is.null(dp)) {
+    if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+    location <- dp[1]
+    scale <- dp[2]
+    shape <- dp[3]
+    }
   u1 <- rnorm(n)
   u2 <- rnorm(n)
   id <- (u2 > shape*u1)
@@ -36,8 +58,15 @@ rsn <- function(n=1, location=0, scale=1, shape=0){
   return(y)
   }
 
-qsn <- function (p, location = 0, scale = 1, shape = 0, tol = 1e-08, ...) 
-{
+qsn <- function (p, location = 0, scale = 1, shape = 0, dp=NULL, 
+           tol = 1e-08, ...) 
+{   if(!is.null(dp)) {
+      if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+      location <- dp[1]
+      scale <- dp[2]
+      shape <- dp[3]
+      }
     max.q <- sqrt(qchisq(p,1))
     min.q <- -sqrt(qchisq(1-p,1))
     if(shape == Inf) return(location + scale * max.q)
@@ -46,7 +75,7 @@ qsn <- function (p, location = 0, scale = 1, shape = 0, tol = 1e-08, ...)
     zero <- (p == 0)
     one <- (p == 1)
     p <- replace(p, (na | zero | one), 0.5)
-    cum <- as.vector(sn.cumulants(shape, 4))
+    cum <- sn.cumulants(0,1,shape, n=4)
     g1 <- cum[3]/cum[2]^(3/2)
     g2 <- cum[4]/cum[2]^2
     x <- qnorm(p)
@@ -67,7 +96,7 @@ qsn <- function (p, location = 0, scale = 1, shape = 0, tol = 1e-08, ...)
     return(location + scale * x)
 }
 
-sn.cumulants <- function(shape=0, n=4)
+sn.cumulants <- function(location = 0, scale = 1, shape = 0, dp=NULL, n=4)
  {
    cumulants.half.norm <- function(n=4){
      n <- max(n,2)
@@ -86,14 +115,23 @@ sn.cumulants <- function(shape=0, n=4)
      kappa[2] <- 1+kappa[2]
      return(kappa)
     }
-  # delta<-delta.of(shape)
-  delta <- shape/sqrt(1+shape^2)
+  if(!is.null(dp)) {
+      if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+      location <- dp[1]
+      scale <- dp[2]
+      shape <- dp[3]
+      }
+  par <- cbind(location,scale,shape)
+  delta <- par[,3]/sqrt(1+par[,3]^2)
   kv <- cumulants.half.norm(n)
   if(length(kv)>n) kv<-kv[-(n+1)]
   kv[2] <- kv[2]-1
-  kappa <- outer(delta,1:n,"^")*matrix(rep(kv,length(shape)),ncol=n,byrow=TRUE)
+  kappa <- outer(delta,1:n,"^")*matrix(rep(kv,nrow(par)),ncol=n,byrow=TRUE)
   kappa[,2] <- kappa[,2]+1
-  kappa
+  kappa <- kappa * outer(par[,2],(1:n),"^")
+  kappa[,1] <- kappa[,1]+par[,1]
+  kappa[,,drop=TRUE]
 }
 
 # lambda.of <- function(delta) delta/sqrt(1-delta^2)
@@ -153,18 +191,6 @@ T.Owen <- function(h, a, jmax=50, cut.point=6)
 }
 
 
-pnorm2 <- function(x,y,rho){
-  if(length(c(x,y,rho))>3) stop("non-scalar arguments")
-  if(x==0 & y==0) return(0.25+asin(rho)/(2*pi))
-  p <- 0.5*(pnorm(x)+pnorm(y))
-  if(x==0) p <- p-0.25*sign(y)
-      else p <- p-T.Owen(x,(y-rho*x)/(x*sqrt(1-rho^2)))
-  if(y==0) p <- p-0.25*sign(x)
-      else p <- p-T.Owen(y,(x-rho*y)/(y*sqrt(1-rho^2)))
-  if((x*y<0) | ((x*y==0) & (x+y)<0)) p <- p-0.5
-  return(p)
-  }  
-
 cp.to.dp <- function(param){
   # converts centred parameters cp=(mu,sigma,gamma1)
   # to direct parameters dp=(xi,omega,lambda)
@@ -205,9 +231,8 @@ dp.to.cp <- function(param){
 }
 
 zeta <- function(k,x){# k integer in (0,4)
-  if(k<0 | k>4) return(NULL)
-  if(k != as.integer(k)) warning("k must be an integer")
-  k <- as.integer(k)
+  if(k<0 | k>4 | k != round(k)) return(NULL)
+  k <- round(k)
   na<- is.na(x)
   x <- replace(x,na,0)
   z <- switch(k+1,
@@ -361,14 +386,14 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
       if(d==1) {
         lambda<-param1
         omega<-param2
-        xlab <- "lambda"
+        xlab <- "alpha"
         ylab <- ""}
       else {
          omega<-param1 
 	 sc <- rep(1,npts)
          lambda<-param2
          xlab <- "omega"
-         ylab <- "lambda"
+         ylab <- "alpha"
          }
       }
    cat(c("Running until",npts,":"))
@@ -459,7 +484,7 @@ sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
      }
   else info.ok <- FALSE
   if(info.ok) {
-    se2 <- diag(solve(qr.info))
+    se2 <- diag(solve.qr(qr.info))
     se <- sqrt(ifelse(se2 >= 0, se2, NA))
     }
   else
@@ -583,31 +608,44 @@ sn.dev.gh <- function(cp, X, y, trace=FALSE, hessian=FALSE)
 
 # 
 
-dmsn <- function(x, xi=rep(0,d), Omega, alpha=rep(0,d), log=FALSE)
-{# Density of Multivariate SN rv with parameters (xi, Omega, alpha) 
- # evaluated at x, which is either a d-vector or (n x d) matrix
-  scale <- sqrt(diag(Omega))
-  if(is.vector(x)) {n <-1 ;         d <- length(x)} 
-        else       {n <-dim(x)[1] ; d <- dim(x)[2]}
-  X <- t(matrix(x, nrow=n, ncol=d)) - xi
-  z <- X/scale
-  Q <- apply((solve(Omega)%*% X)* X,2,sum) # diag of (x Omega^(-1) x^T)
-  if(log){
-   logDet <- sum(log(abs(diag(qr(Omega)[[1]]))))
-   (log(2) - 0.5*Q + pnorm(t(z)%*%as.matrix(alpha), log=TRUE)
-           -0.5*(d*log(2*pi)+logDet))
-   }
-  else{
-    Det <- prod(abs(diag(qr(Omega)[[1]])))
-    pdf <- 2*exp(-0.5*Q) * pnorm(t(z)%*%as.matrix(alpha))/sqrt((2*pi)^d * Det)
-    as.vector(pdf)
+dmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL, log=FALSE)
+{
+    if(!(missing(alpha) & missing(Omega)) && !is.null(dp)) 
+       stop("You cannot set both component parameters and dp")
+    if(!is.null(dp)){
+      if(!is.null(dp$xi)) xi <- dp$xi
+        else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+      Omega <- dp$Omega
+      alpha <- dp$alpha
     }
+    d <- length(alpha)
+    Omega <- matrix(Omega,d,d)
+    x <- data.matrix(x)    
+    if(is.vector(xi)) xi <- outer(rep(1,nrow(x)), xi)
+    X <- t(x - xi)
+    Q <- apply((solvePD(Omega) %*% X) * X, 2, sum)
+    L <- as.vector(t(X/sqrt(diag(Omega))) %*% as.matrix(alpha))
+    logDet <- sum(logb(abs(diag(qr(Omega)$qr))))
+    logPDF <- (logb(2) - 0.5 * Q + pnorm(L, log = TRUE)
+               - 0.5 * (d * logb(2 * pi) + logDet))
+    if (log) logPDF
+    else exp(logPDF)
 }
 
 
-rmsn <- function(n=1, xi=rep(0,d), Omega, alpha){
-# generates SN_d(xi,Omega,alpha) variates using transformation method
-  d <- ncol(Omega)
+rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
+{# generates SN_d(xi,Omega,alpha) variates using transformation method
+  if(!(missing(alpha) & missing(Omega)) && !is.null(dp)) 
+       stop("You cannot set both component parameters and dp")
+    if(!is.null(dp)){
+      if(!is.null(dp$xi)) xi <- dp$xi
+        else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+      Omega <- dp$Omega
+      alpha <- dp$alpha
+    }
+  d <- length(alpha)
   Z <- msn.quantities(xi,Omega,alpha)
   y <- matrix(rnorm(n*d),n,d) %*% chol(Z$Psi)
   # each row of y is N_d(0,Psi)
@@ -616,12 +654,35 @@ rmsn <- function(n=1, xi=rep(0,d), Omega, alpha){
   delta  <- Z$delta
   z <- delta * t(abs.y0) + sqrt(1-delta^2) * t(y)
   y <- t(xi+Z$omega*z)
+  attr(y,"parameters") <- list(xi=xi,Omega=Omega,alpha=alpha)
   return(y)
-  }
+}
+
+pmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL, ...)
+{
+  if(!(missing(alpha) & missing(Omega)) && !is.null(dp)) 
+       stop("You cannot set both component parameters and dp")
+  if(!is.null(dp)){
+  if(!is.null(dp$xi)) xi <- dp$xi
+     else
+  if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+     Omega <- dp$Omega
+     alpha <- dp$alpha
+  }   
+  pmst(x, xi=xi, Omega=Omega, alpha=alpha, df=Inf, ...)
+}
 
 
-dsn2.plot <- function(x, y, xi, Omega, alpha, ...)
+dsn2.plot <- function(x, y, xi, Omega, alpha, dp=NULL, ...)
 {# plot bivariate density SN_2(xi,Omega,alpha) computed at (x,y) grid
+  if(!is.null(dp)){
+      if(!is.null(dp$xi)) xi <- dp$xi
+        else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+      Omega <- dp$Omega
+      alpha <- dp$alpha
+      df <- dp$df
+      }  
   if(any(dim(Omega)!=c(2,2))) stop("dim(Omega) != c(2,2)")
   nx <- length(x)
   ny <- length(y)
@@ -633,27 +694,34 @@ dsn2.plot <- function(x, y, xi, Omega, alpha, ...)
   invisible(list(x=x, y=y, density=pdf, xi=xi, Omega=Omega, alpha=alpha))
 }
 
-msn.quantities <- function(xi,Omega,alpha){
-# 21-12/1997; computes various quantities related to SN_k(xi,Omega,alpha)
-  Diag <- function(x) diag(x,nrow=length(x),ncol=length(x))
-  k <- length(alpha)
-  if(length(xi)!=k | any(dim(Omega)!=c(k,k))) 
+msn.quantities <- function(xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
+{# 21-12/1997; computes various quantities related to SN_d(xi,Omega,alpha)
+  if(!is.null(dp)){
+    if(any(!missing(xi) | !missing(Omega) | !missing(alpha))) 
+      stop("you cat set either dp or its components, but not both")
+    xi<- as.vector(dp$xi)
+    if(is.null(dp$xi)) xi<- as.vector(dp$beta)
+    Omega<- dp$Omega
+    alpha<- dp$alpha
+   }
+  d <- length(alpha)
+  Omega<- as.matrix(Omega)
+  if(length(xi)!=d | any(dim(Omega)!=c(d,d))) 
        stop("dimensions of arguments do not match")
   omega <- sqrt(diag(Omega))
-  O.cor <- Diag(1/omega) %*% Omega %*% Diag(1/omega)
+  O.cor <- cov2cor(Omega)
   tmp <- as.vector(sqrt(1 + t(as.matrix(alpha))%*%O.cor%*%alpha)) 
   delta<- as.vector(O.cor %*%alpha)/tmp
   lambda<- delta/sqrt(1-delta^2)
   D <-diag(sqrt(1+lambda^2))
   Psi <- D %*% (O.cor-outer(delta,delta)) %*% D
   Psi <- (Psi+t(Psi))/2
-  O.inv <- solve(Omega)
-  oi<- sqrt(diag(O.inv))
-  O.pcor <- Diag(1/oi)%*% (-O.inv) %*% Diag(1/oi)
-  diag(O.pcor) <- rep(1,k)
+  O.inv <- solvePD(Omega)
+  O.pcor <- -cov2cor(O.inv) 
+  O.pcor[cbind(1:d, 1:d)] <- 1
   muZ <- delta*sqrt(2/pi)
   muY <- xi+omega*muZ
-  Sigma <- Diag(omega) %*% (O.cor-outer(muZ,muZ)) %*% Diag(omega) 
+  Sigma <- diag(omega,d,d) %*% (O.cor-outer(muZ,muZ)) %*% diag(omega,d,d) 
   Sigma <- (Sigma+t(Sigma))/2
   cv <- muZ/sqrt(1-muZ^2)
   gamma1 <- 0.5*(4-pi)*cv^3
@@ -662,18 +730,26 @@ msn.quantities <- function(xi,Omega,alpha){
        lambda=lambda, Psi=Psi,  delta=delta, skewness=gamma1)
 }
 
-msn.conditional <- function(xi, Omega, alpha, fixed.comp, fixed.values)
+msn.conditional <- function(xi=rep(0,length(alpha)), Omega, alpha,
+                            fixed.comp, fixed.values, dp=NULL)
 {
 # conditional Multivariate SN  (6/11/1997).
-# Given a rv Y ~ SN_k(xi,Omega,alpha), this function computes cumulants of
+# Given a rv Y ~ SN_d(xi,Omega,alpha), this function computes cumulants of
 # conditrional distribution, given that the fixed.com take on fixed.values;
-# then it finds MSN with matching cumlants.  
+# then it finds MSN with matching cumulants.  
   Diag <- function(x) diag(x,nrow=length(x),ncol=length(x))
   msqrt <- function(A) Diag(sqrt(diag(as.matrix(A))))
   imsqrt<- function(A) Diag(1/sqrt(diag(as.matrix(A))))
-  k<-length(alpha) 
-  h<-length(fixed.comp)
-  if(any(dim(Omega)!=c(k,k)) | length(xi)!=k | h!=length(fixed.values))
+  if(!is.null(dp)){
+    if(!is.null(dp$xi)) xi <- dp$xi
+    else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+    Omega <- dp$Omega
+    alpha <- dp$alpha
+  }
+  d <- length(alpha) 
+  h <- length(fixed.comp)
+  if(any(dim(Omega)!=c(d,d)) | length(xi)!=d | h!=length(fixed.values))
         stop("dimensions of parameters do not match")
   fc <- fixed.comp
   O  <- as.matrix(Omega)
@@ -682,7 +758,7 @@ msn.conditional <- function(xi, Omega, alpha, fixed.comp, fixed.values)
   O21<- O[-fc,fc, drop=FALSE]
   O22<- O[-fc,-fc, drop=FALSE]
   o22<- sqrt(diag(O22))
-  inv.O11 <- solve(O11)
+  inv.O11 <- solvePD(O11)
   xi1 <- xi[fc, drop=FALSE]
   xi2 <- xi[-fc, drop=FALSE]
   alpha1 <- matrix(alpha[fc])
@@ -705,19 +781,19 @@ msn.conditional <- function(xi, Omega, alpha, fixed.comp, fixed.values)
   omega <- sqrt(diag(var.c)/(1-E.z^2))
   O.new <- var.c+outer(omega*E.z,omega*E.z) 
   xi.new<- E.c-omega*E.z
-  B   <- Diag(1/omega)
-  m   <- as.vector(solve(B %*% O.new %*% B) %*% as.matrix(delta))
+  B   <- diag(1/omega,d-h,d-h)
+  m   <- as.vector(solvePD(B %*% O.new %*% B) %*% as.matrix(delta))
   a   <- m/sqrt(1-sum(delta*m))
   # cum2<- msn.cumulants(xi.new,O.new,a)
   list(cumulants=cum, fit=list(xi=xi.new, Omega=O.new, alpha=a, delta=delta))
 }
 
 
-msn.marginal <- function(xi=NULL, Omega=NULL, alpha=NULL, comp=1:d, dp=NULL)
+msn.marginal <- function(xi=rep(0,length(alpha)), Omega, alpha,
+                         comp=1:d, dp=NULL)
+                         
 {# calcola parametri della marginale associata a comp di un SN_d 
-  Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
-  if(!is.null(xi) && !is.null(dp)) stop("You cannot set both xi and dp")
-  if(!is.null(xi) && is.list(xi) && is.null(dp)) dp <- xi
+ # cfr SJS 2003, p.131-2
   if(!is.null(dp)){
     if(!is.null(dp$xi)) xi <- dp$xi
     else
@@ -725,34 +801,47 @@ msn.marginal <- function(xi=NULL, Omega=NULL, alpha=NULL, comp=1:d, dp=NULL)
     Omega <- dp$Omega
     alpha <- dp$alpha
     }
-  xi <- as.vector(xi)
-  comp <- as.integer(comp)
   alpha <- as.vector(alpha)
   d <- length(alpha)
+  xi <- as.vector(xi)
+  comp <- as.integer(comp)
   if(length(xi) != d) stop("parameter size not compatible")
   if(all(dim(Omega) != c(d,d))) stop("parameter size not compatible")
   if(length(comp)<d){
     if(any(comp>d | comp<1)) stop("comp makes no sense")
-    scale<- sqrt(diag(Omega))
-    O   <- Diag(1/scale) %*% Omega %*% Diag(1/scale)
+    O   <- cov2cor(Omega)
     O11 <- O[comp,comp, drop=FALSE]
     O12 <- O[comp,-comp, drop=FALSE]
     O21 <- O[-comp,comp, drop=FALSE]
     O22 <- O[-comp,-comp, drop=FALSE]
-    alpha1<- as.matrix(alpha[comp, drop=FALSE])
-    alpha2<- as.matrix(alpha[-comp, drop=FALSE])
-    O22.1 <- O22 - O21 %*% solve(O11) %*% O12
+    alpha1 <- matrix(alpha[comp], ncol=1)
+    alpha2 <- matrix(alpha[-comp], ncol=1)
+    O11_inv <- solvePD(O11)
+    O22.1 <- O22 - O21 %*% O11_inv %*% O12
     a.sum <- as.vector(t(alpha2) %*% O22.1 %*% alpha2)
-    a.new <- as.vector(alpha1+solve(O11) %*% O12 %*% alpha2)/sqrt(1+a.sum)
-    # O.new <- Diag(scale[comp]) %*% O11 %*% Diag(scale[comp])
+    a.new <- as.vector(alpha1 + O11_inv %*% O12 %*% alpha2)/sqrt(1+a.sum)
     result<- list(xi=xi[comp], Omega=Omega[comp,comp], alpha=a.new)
   }
   else {
-   if(any(sort(comp)!=(1:d))) stop("comp makes no sense")
-   result <- list(xi=xi, Omega=as.matrix(Omega), alpha=alpha)
- }
+    if(any(sort(comp)!=(1:d))) stop("comp makes no sense")
+    result <- list(xi=xi[comp], Omega=Omega[comp,comp], alpha=alpha[comp])
+  }
+  if(!is.null(dp$tau)) result$tau <- dp$tau
   result
 }
+
+
+
+solvePD <- function(x) 
+{ # inverse of a symmetric positive definite matrix
+    u <- chol(x, pivot = FALSE)
+    if(prod(diag(u)) <= 0) stop("matrix not positive definite")
+    ui <- backsolve(u,diag(ncol(x)))
+    m <- ui %*% t(ui)
+    # attr(m,"chol") <- ui
+    return(m)
+}
+
 
 msn.cond.plot <- function(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
 {# fa il grafico di Y_2|Y_1; assumiamo che dim(Y_2)= 2 
@@ -812,9 +901,8 @@ msn.cond.plot <- function(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
 }
 
 
-msn.moment.fit <- function(y){
-# 31-12-1997: simple fit of MSN distribution usign moments
-  Diag <- function(x) diag(x,nrow=length(x),ncol=length(x))
+msn.moment.fit <- function(y)
+{# 31-12-1997: simple fit of MSN distribution usign moments
   y     <- as.matrix(y)
   k     <- ncol(y)
   m.y   <- apply(y,2,mean)
@@ -829,9 +917,8 @@ msn.moment.fit <- function(y){
   omega <- sqrt(diag(var.y)/(1-m.z^2))
   Omega <- var.y+outer(omega*m.z,omega*m.z) 
   xi    <- m.y-omega*m.z
-  O.cor <- Diag(1/omega) %*% Omega %*% Diag(1/omega)
-  O.cor <- (t(O.cor)+O.cor)/2
-  O.inv <- solve(O.cor)
+  O.cor <- cov2cor(Omega)
+  O.inv <- solvePD(O.cor)
   tmp   <- as.vector(1-t(delta) %*% O.inv %*% delta)
   if(tmp<=0) {tmp <- 0.0001; admissible <- FALSE} 
         else admissible<-TRUE
@@ -920,8 +1007,8 @@ msn.fit <- function(X, y, freq, plot.it=TRUE, trace=FALSE, ... )
     pp <- qchisq((1:n)/(n+1),k)
     # Xb <- qr.fitted(qrX,y)
     res<- qr.resid(qrX,y)
-    rad.n  <- apply(res    * (res    %*% solve(var(res))), 1, sum)
-    rad.sn <- apply((y-xi) * ((y-xi) %*% solve(Omega)), 1, sum)
+    rad.n  <- apply(res    * (res    %*% solvePD(var(res))), 1, sum)
+    rad.sn <- apply((y-xi) * ((y-xi) %*% solvePD(Omega)), 1, sum)
     plot(pp, sort(rad.n), pch=1, ylim=c(0,max(rad.n,rad.sn)),
         xlab="Percentiles of chi-square distribution", 
         ylab="Mahalanobis distances")
@@ -952,15 +1039,16 @@ msn.fit <- function(X, y, freq, plot.it=TRUE, trace=FALSE, ... )
   invisible(mle)
 }
 
-
-msn.mle <-function(X, y, freq, start, trace=FALSE, method="BFGS",
+msn.mle <-function(X, y, freq, start, trace=FALSE, 
+                algorithm=c("nlminb", "Nelder-Mead", "BFGS", "CG",  "SANN"),
                 control=list() )
 {
-  y <- as.matrix(y)
+  y <- data.matrix(y)
   if(missing(X)) X <- rep(1,nrow(y))
     else {if(!is.numeric(X)) stop("X must be numeric")}
   if(missing(freq)) freq <- rep(1,nrow(y))
-  X <- as.matrix(X) 
+  algorithm <- match.arg(algorithm)
+  X <- data.matrix(X) 
   k <- ncol(y)  
   n <- sum(freq)
   m <- ncol(X)
@@ -989,12 +1077,19 @@ msn.mle <-function(X, y, freq, start, trace=FALSE, method="BFGS",
     print(cbind(t(beta),al.om,Omega))
     }
   param<- c(beta,al.om)
-  dev <- msn.dev(param,X,y,freq) 
-  opt <- optim(param, fn=msn.dev, gr=msn.dev.grad, method=method,
-               control=control, X=X, y=y, freq=freq, trace=trace)      
+  dev <- msn.dev(param,X,y,freq)    
+  if(algorithm == "nlminb"){
+    opt <- nlminb(param, msn.dev, msn.dev.grad, 
+                control=control, X=X, y=y, freq=freq, trace=trace)      
+    opt$value<- opt$objective 
+    }
+  else{
+   opt <- optim(param, fn=msn.dev, gr=msn.dev.grad, method=algorithm,
+               control=control, X=X, y=y, freq=freq, trace=trace)    
+   }
   if(trace) 
     cat(paste("Message from optimization routine:", opt$message,"\n"))
-  logL <- (-opt$value)/2
+  logL <- opt$value/(-2) 
   beta <- matrix(opt$par[1:(m*k)],m,k)
   dimnames(beta)[2] <- list(y.names)
   dimnames(beta)[1] <- list(x.names)
@@ -1006,29 +1101,47 @@ msn.mle <-function(X, y, freq, start, trace=FALSE, method="BFGS",
   param <- cbind(omega,alpha)
   dimnames(Omega) <- list(y.names,y.names)
   dimnames(param)[1] <- list(y.names)
-  info <- num.deriv(opt$par, FUN="msn.dev.grad", X=X, y=y, freq=freq)/2
-  se      <- sqrt(diag(solve(info)))
-  se.beta <- matrix(se[1:(m*k)],m,k)
-  se.alpha<- se[(m*k+1):(m*k+k)]*omega
-  dimnames(se.beta)[2]<-list(y.names)
-  dimnames(se.beta)[1]<-list(x.names)
-  se  <- list(beta=se.beta, alpha=se.alpha, info=info)
+  info <- num.deriv2(opt$par, FUN="msn.dev.grad", X=X, y=y, freq=freq)/2
+    if (all(is.finite(info))) {
+        qr.info <- qr(info)
+        info.ok <- (qr.info$rank == length(param))
+    }
+    else info.ok <- FALSE
+    if (info.ok) {
+        se2 <- diag(solve(qr.info))
+        if (min(se2) < 0) 
+          se <- NA
+        else {
+          se <- sqrt(se2)
+          se      <- sqrt(diag(solve(info)))
+          se.beta <- matrix(se[1:(m*k)],m,k)
+          se.alpha<- se[(m*k+1):(m*k+k)]*omega
+          dimnames(se.beta)[2]<-list(y.names)
+          dimnames(se.beta)[1]<-list(x.names)
+          se  <- list(beta=se.beta, alpha=se.alpha, info=info)
+        }
+    }
+  else 
+    se <- NA       
   dp  <- list(beta=beta, Omega=Omega, alpha=alpha)
-  list(call=match.call(), dp=dp, logL=logL, se=se, optim=opt)
+  opt$name <- algorithm
+  list(call=match.call(), dp=dp, logL=logL, se=se, algorithm=opt)
 }
+
  
-msn.dev<-function(param, X, y, freq, trace=FALSE){
-  k <- ncol(y)
+msn.dev<-function(param, X, y, freq, trace=FALSE)
+{
+  d <- ncol(y)
   # if(missing(freq)) freq<-rep(1,nrow(y))
   n <- sum(freq)
   m <- ncol(X)
-  beta<-matrix(param[1:(m*k)],m,k)
-  al.om<-param[(m*k+1):(m*k+k)]
+  beta<-matrix(param[1:(m*d)],m,d)
+  al.om<-param[(m*d+1):(m*d+d)]
   y0 <- y-X %*% beta
   Omega <- (t(y0) %*% (y0*freq))/n  
-  d <- diag(qr(2*pi*Omega)[[1]])
-  logDet <- sum(log(abs(d)))
-  dev <- n*logDet-2*sum(zeta(0,y0 %*% al.om)*freq)+n*k
+  D <- diag(qr(2*pi*Omega)[[1]])
+  logDet <- sum(log(abs(D)))
+  dev <- n*logDet-2*sum(zeta(0,y0 %*% al.om)*freq)+n*d
   if(trace) { 
     cat("\nmsn.dev:",dev,"\n","parameters:"); 
     print(rbind(beta,al.om))
@@ -1037,16 +1150,16 @@ msn.dev<-function(param, X, y, freq, trace=FALSE){
 }
 
 msn.dev.grad <- function(param, X, y, freq, trace=FALSE){
-  k <- ncol(y)
+  d <- ncol(y)
   # if(missing(freq)) freq<-rep(1,nrow(y))
   n <- sum(freq)
   m <- ncol(X)
-  beta<-matrix(param[1:(m*k)],m,k)
-  al.om<-param[(m*k+1):(m*k+k)]
+  beta<-matrix(param[1:(m*d)],m,d)
+  al.om<-param[(m*d+1):(m*d+d)]
   y0 <- y-X %*% beta
   Omega <- (t(y0) %*% (freq*y0))/n
   p1 <- zeta(1,as.vector(y0 %*% al.om))
-  Dbeta <- t(X)%*% (y0*freq) %*%solve(Omega) - 
+  Dbeta <- t(X)%*% (y0*freq) %*%solvePD(Omega) - 
             outer(as.vector(t(X*freq)%*%p1), al.om)
   Dal.om <- as.vector(t(y0*freq) %*% p1)
   if(trace){
@@ -1055,20 +1168,34 @@ msn.dev.grad <- function(param, X, y, freq, trace=FALSE){
   -2*c(Dbeta,Dal.om)
 }
 
-num.deriv <- function(coefficients, FUN, ...)
-{# da rm.fit: derivate seconde numeriche, se FUN da` il gradiente
+num.deriv1 <- function(x, FUN, ...)
+{# calcola gradiente in modo numerico, se FUN calcola la funzione
    FUN <- get(FUN, inherit = TRUE)
-   values <- FUN(coefficients, ...)
-   p <- length(values)
-   H <- matrix(0, p, p)
-   h <- rep(0, p)
-   delta <- cbind((abs(coefficients) + 1e-10) * 1e-5, rep(1e-06, p))
+   value <- FUN(x, ...)
+   p <- length(x)
+   grad <- numeric(p)
+   delta <- cbind((abs(x) + 1e-10) * 1e-5, rep(1e-06, p))
    delta <- apply(delta, 1, max)
    for(i in 1:p) {
-   	h[i] <- delta[i]
-   	new.values <- FUN(coefficients + h, ...)
-   	H[, i] <- (new.values - values)/delta[i]
-   	h[i] <- 0
+        x1 <- x
+        x1[i] <- x1[i]+delta[i]
+   	grad[i] <- (FUN(x1, ...) - value)/delta[i]
+   }
+   grad
+}
+    
+num.deriv2 <- function(x, FUN, ...)
+{# derivate seconde numeriche, se FUN calcola il gradiente
+   FUN <- get(FUN, inherit = TRUE)
+   values <- FUN(x, ...)
+   p <- length(values)
+   H <- matrix(0, p, p)
+   delta <- cbind((abs(x) + 1e-10) * 1e-5, rep(1e-06, p))
+   delta <- apply(delta, 1, max)
+   for(i in 1:p) {
+   	x1 <- x
+        x1[i] <- x1[i]+delta[i]
+   	H[, i] <- (FUN(x1, ...) - values)/delta[i]
    }
    (H+t(H))/2
 }
@@ -1076,8 +1203,16 @@ num.deriv <- function(coefficients, FUN, ...)
 #---
 # skew-t portion
 
-dst <-  function (x, location = 0, scale = 1, shape = 0, df=Inf, log=FALSE)
+dst <-  function (x, location=0, scale=1, shape=0, df=Inf, dp=NULL, log=FALSE)
 { 
+  if(!is.null(dp)) {
+     if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+     location <- dp[1]
+     scale <- dp[2]
+     shape <- dp[3]
+     df <- dp[4]
+    }
   if(df==Inf) return(dsn(x,location,scale,shape, log=log))
   z   <- (x - location)/scale
   pdf <- dt(z, df=df, log=log)
@@ -1089,8 +1224,16 @@ dst <-  function (x, location = 0, scale = 1, shape = 0, df=Inf, log=FALSE)
 }
 
 
-rst <- function (n=1, location = 0, scale = 1, shape = 0, df=Inf)
+rst <- function (n=1, location = 0, scale = 1, shape = 0, df=Inf, dp=NULL)
 { 
+    if(!is.null(dp)) {
+     if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+     location <- dp[1]
+     scale <- dp[2]
+     shape <- dp[3]
+     df <- dp[4]
+    }
   z <- rsn(n,location=0,scale,shape)
   if(df==Inf) return(z+location)
   v <- rchisq(n,df)/df
@@ -1101,31 +1244,43 @@ rst <- function (n=1, location = 0, scale = 1, shape = 0, df=Inf)
 
 
 
-pst <- function (x, location = 0, scale = 1, shape = 0, df = Inf, ...) 
-{
+pst <- function (x, location=0, scale=1, shape=0, df=Inf, dp=NULL, ...) 
+{        
+    if(!is.null(dp)) {
+      if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+      location <- dp[1]
+      scale <- dp[2]
+      shape <- dp[3]
+      df <- dp[4]
+     }
+    fp <- function(v, shape, df, t.value) psn(sqrt(v) * t.value, 0, 1, 
+                    shape) * dchisq(v * df, df = df) * df
     if (df == Inf) 
         p <- psn(x, location, scale, shape)
-    else {
-        if(df<= 0) stop("df must be non-negative")
+    else 
+      {
+        if(df <= 0) stop("df must be non-negative")
         z <- (x-location)/scale
         p <- numeric(length(z))
-        fp <- function(v, shape, df, t.value) psn(sqrt(v) * t.value, 0, 1, 
-                    shape) * dchisq(v * df, df = df) * df
-        for (i in 1:length(z)) {
-          if(abs(z[i]) == Inf)
-              p[i] <- (1+sign(z[i]))/2
+        for (i in 1:length(z)){
+          if(round(df)==df) 
+             p[i] <- pmst(z[i], 0, matrix(1,1,1), shape, df, ...)
           else{
-          if(z[i] < 10+50/df)  
-            p[i]<- integrate(dst, -Inf, z[i], shape = shape, df = df,
+            if(abs(z[i]) == Inf)
+               p[i] <- (1+sign(z[i]))/2
+            else{
+              if(z[i] < 10+50/df)  
+                p[i]<- integrate(dst, -Inf, z[i], shape = shape, df = df,
                              ...)$value
-          else           
-            p[i] <- integrate(fp, 0, Inf, shape = shape, df = df,
-                              t.value = z[i], ...)$value
-          # browser()
-        }
+              else           
+                p[i] <- integrate(fp, 0, Inf, shape = shape, df = df,
+                                t.value = z[i], ...)$value
+        }}
       }
-  pmax(0,pmin(1,p))
-}}
+    pmax(0,pmin(1,p))
+  }
+}
 
 qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,  
                  tol = 1e-08, ...)
@@ -1142,7 +1297,7 @@ qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,
     zero <- (p == 0)
     one <- (p == 1)
     p <- replace(p, (na | zero | one), 0.5)
-    cum <- st.cumulants(shape, max(df,5), n=4)
+    cum <- st.cumulants(0, 1, shape, max(df,5), n=4)
     g1 <- cum[3]/cum[2]^(3/2)
     g2 <- cum[4]/cum[2]^2
     x <- qnorm(p)
@@ -1163,95 +1318,127 @@ qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,
     return(location + scale * x)
 }
 
-st.cumulants <- function(shape=0, df=Inf, n=4)
+st.cumulants <- function(location=0, scale=1, shape=0, df=Inf, dp=NULL, n=4)
 {
-  if(df == Inf) return(sn.cumulants(shape, n=n))
-  n<- as.integer(n)
+  if(!is.null(dp)) {
+      if(!missing(shape)) 
+        stop("You cannot set both component parameters and dp")
+      location <- dp[1]
+      scale <- dp[2]
+      shape <- dp[3]
+      df <- dp[4]
+      }
+  if(df == Inf) return(sn.cumulants(location, scale, shape, n=n))
+  n <- min(as.integer(n),4)
   if(df <= n) stop("need df>n")
-  if(length(shape)>1) warning("only shape[1] will be used")
-  delta <- shape[1]/sqrt(1 + shape[1]^2)
-  cum<- numeric(min(n,4))
-  if(n<1) return(cum)
+  par <- cbind(location,scale,shape)
+  delta <- par[,3]/sqrt(1+par[,3]^2)
   mu <- delta*sqrt(df/pi)*exp(lgamma((df-1)/2)-lgamma(df/2))
-  cum[1]<- mu
-  if(n>1) cum[2] <- df/(df-2) - mu^2
-  if(n>2) cum[3] <- mu*(df*(3-delta^2)/(df-3) - 3*df/(df-2)+2*mu^2)
-  if(n>3) cum[4] <- (3*df^2/((df-2)*(df-4)) - 4*mu^2*df*(3-delta^2)/(df-3)
-                    + 6*mu^2*df/(df-2)-3*mu^4)- 3*cum[2]^2
-  cum
+  cum<- matrix(NA, nrow=nrow(par), ncol=n)
+  cum[,1]<- mu
+  if(n>1) cum[,2] <- df/(df-2) - mu^2
+  if(n>2) cum[,3] <- mu*(df*(3-delta^2)/(df-3) - 3*df/(df-2)+2*mu^2)
+  if(n>3) cum[,4] <- (3*df^2/((df-2)*(df-4)) - 4*mu^2*df*(3-delta^2)/(df-3)
+                      + 6*mu^2*df/(df-2)-3*mu^4)- 3*cum[,2]^2
+  cum <- cum*outer(par[,2],1:n,"^")
+  cum[,1] <- cum[,1]+par[,1]
+  cum[,,drop=TRUE]
 }
 
-dmst <- function(x, xi=rep(0,d), Omega, alpha, df=Inf, log=FALSE)
+
+dmst <- function(x, xi = rep(0, length(alpha)), Omega, alpha,
+                 df = Inf, dp=NULL, log = FALSE) 
 {
-# Density of multivariate ST rv with parameters (xi, Omega, alpha, df) 
-# evaluated at x, which is either a d-vector or (n,d) matrix
-#
-  if(df==Inf) return(dmsn(x, xi, Omega, alpha, log=log))
-  if(is.vector(x)) {
-    n <- 1
-    d <- length(x)
-  }
-  else {
-    n <- dim(x)[1]
-    d <- dim(x)[2]
-  }
-  omega <- sqrt(diag(Omega))
-  X <- t(matrix(x, nrow = n, ncol = d)) - xi
-  z <- X/omega
-  Q <- apply((solve(Omega) %*% X) * X, 2, sum) # diag of (x Omega^(-1) x^T)  
-  L <- as.vector(t(z) %*% as.matrix(alpha))
-  if(log){
-   logDet <- sum(log(abs(diag(qr(Omega)$qr))))
-   lpdf.mt <- (lgamma((df+d)/2) - 0.5*(d*log(pi*df)+ logDet) - lgamma(df/2)
-               -0.5*(df+d)*log(1+Q/df))
-   lcdf.T <- pt(L*sqrt((df+d)/(Q+df)), df=df+d, log=TRUE)
-   log(2) + lpdf.mt + lcdf.T
-   } 
-  else{
-    Det <- abs(prod(diag(qr(Omega)$qr)))
-    pdf.mt <- (gamma((df+d)/2)/
-            (sqrt((pi*df)^d*Det) * gamma(df/2) * (1+Q/df)^((df+d)/2)))
-    cdf.T <- pt(L*sqrt((df+d)/(Q+df)), df=df+d)
-    2 * pdf.mt * cdf.T
-  }
+    if(!(missing(alpha) & missing(Omega)) && !is.null(dp)) 
+       stop("You cannot set both component parameters and dp")
+    if(!is.null(dp)){
+      if(!is.null(dp$xi)) xi <- dp$xi
+        else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+      Omega <- dp$Omega
+      alpha <- dp$alpha
+      df <- dp$df
+    }  
+    if (df == Inf) 
+        return(dmsn(x, xi=xi, Omega=Omega, alpha=alpha, log = log))
+    d <- length(alpha)
+    Omega <- matrix(Omega,d,d)
+    x <- if(is.vector(x)) matrix(x, 1, d) else data.matrix(x)
+    if(is.vector(xi)) xi <- outer(rep(1,nrow(x)), xi)
+    X <- t(x - xi)
+    Q <- apply((solvePD(Omega) %*% X) * X, 2, sum)
+    L <- as.vector(t(X/ sqrt(diag(Omega))) %*% as.matrix(alpha))
+    logDet <- sum(logb(abs(diag(qr(Omega)$qr))))
+    log.dmt <- (lgamma((df + d)/2) - 0.5 * (d * logb(pi * df) + 
+              logDet) - lgamma(df/2) - 0.5 * (df + d) * logb(1 + Q/df))
+    log.pt <- pt(L * sqrt((df + d)/(Q + df)), df = df + d, log = TRUE)
+    logPDF <-  logb(2) + log.dmt + log.pt
+    if (log) logPDF
+    else exp(logPDF)
 }
 
-rmst <- function(n=1, xi=rep(0,d), Omega, alpha, df=Inf)
+rmst <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, df=Inf, dp=NULL)
 { 
-  d <- ncol(Omega)
-  if(df==Inf) x<-1 
-    else x <- rchisq(n,df)/df
-  z <- rmsn(n,rep(0,d),Omega,alpha)
-  y <- t(xi+t(sqrt(x)*z))
+  if(!(missing(alpha) & missing(Omega)) && !is.null(dp)) 
+       stop("You cannot set both component parameters and dp")
+  if(!is.null(dp)){
+      if(!is.null(dp$xi)) xi <- dp$xi
+        else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+      Omega <- dp$Omega
+      alpha <- dp$alpha
+      df <- dp$df
+     }  
+  d <- length(alpha)
+  x <- if(df==Inf) 1 else rchisq(n,df)/df
+  z <- rmsn(n, rep(0,d), Omega, alpha)
+  y <- t(xi+ t(sqrt(x)*z))
+  attr(y,"parameters") <- list(xi=xi, Omega=Omega, alpha=alpha, df=df)
   return(y)
 }
 
-pmst <- function(x, xi=rep(0,d), Omega=1, alpha=rep(0,d), df=Inf, ...)
+pmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, df=Inf,
+         dp= NULL, ...)
 {
-  Diag <- function(x) diag(x,nrow=length(x),ncol=length(x))
-  d <- ifelse(is.matrix(Omega),nrow(Omega),1)
+    if(!(missing(alpha) & missing(Omega)) && !is.null(dp)) 
+       stop("You cannot set both component parameters and dp")
+    if(!is.null(dp)){
+      if(!is.null(dp$xi)) xi <- dp$xi
+        else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+      Omega <- dp$Omega
+      alpha <- dp$alpha
+      df <- dp$df
+      }  
+  d <- length(alpha)
   Omega<- matrix(Omega,d,d) 
   omega<- sqrt(diag(Omega))
-  Ocor <- Diag(1/omega) %*% Omega %*% Diag(1/omega)
-  #  t(Omega /omega)/omega
+  Ocor <- cov2cor(Omega)
   O.alpha <- as.vector(Ocor %*% alpha)
   delta <- O.alpha/sqrt(1+sum(alpha*O.alpha))
-  A <- matrix(rbind(c(1,-delta),cbind(-delta,Ocor)),d+1,d+1)
+  Obig <- matrix(rbind(c(1,-delta),cbind(-delta,Ocor)),d+1,d+1)
+  x <- c(0,(x-xi)/omega)
   if(df==Inf) 
-    2 * pmvnorm(upper=c(0,(x-xi)/omega), corr=A, ...)
+    2 * pmnorm(x, mean=rep(0,d+1), varcov=Obig, ...)
   else 
-    2 * pmvt(upper=c(0,(x-xi)/omega), corr=A, df=df, ...)
+    2 * pmt(x, mean=rep(0,d+1), S=Obig, df=df, ...)
 }
 
-pmsn <- function(x, xi=rep(0,d), Omega, alpha, ...)
-  { d<- length(alpha)
-    pmst(x, xi, Omega, alpha, df=Inf, ...)  
-  }
+  
 
 
-dst2.plot <- function(x, y, xi, Omega, alpha, df, ...)
-{
-# plot bivariate density ST_2(xi,Omega,alpha,df) computed at (x,y) grid
+dst2.plot <- function(x, y, xi, Omega, alpha, df, dp=NULL, ...)
+{# plot bivariate density ST_2(xi,Omega,alpha,df) computed at (x,y) grid
+    if(!(missing(alpha) & missing(Omega)) && !is.null(dp)) 
+       stop("You cannot set both component parameters and dp")
+    if(!is.null(dp)){
+      if(!is.null(dp$xi)) xi <- dp$xi
+        else
+      if(!is.null(dp$beta)) xi <- as.vector(dp$beta)
+      Omega <- dp$Omega
+      alpha <- dp$alpha
+      df <- dp$df
+      }  
     if(any(dim(Omega) != c(2, 2))) stop("dim(Omega) != c(2,2)")
     nx <- length(x)
     ny <- length(y)
@@ -1291,7 +1478,7 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
   qrX <- qr(X)
   m   <- ncol(X)
   mle <- mst.mle(X=X, y=y, freq=freq,  fixed.df=fixed.df, start=start, 
-                 trace=trace, control=list(...))
+                 trace=trace, ...)
   mle$call <- match.call()
   beta  <- mle$dp$beta
   Omega <- mle$dp$Omega
@@ -1350,8 +1537,8 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
     pp2 <- qchisq((1:n)/(n+1),d)
     # Xb  <- qr.fitted(qrX,y)
     res <- qr.resid(qrX,y)
-    rad.n  <- apply(res    * (res %*% solve(var(res))), 1, sum)
-    rad.sn <- apply((y-xi) * ((y-xi) %*% solve(Omega)), 1, sum)
+    rad.n  <- apply(res    * (res %*% solvePD(var(res))), 1, sum)
+    rad.sn <- apply((y-xi) * ((y-xi) %*% solvePD(Omega)), 1, sum)
     plot(pp2, sort(rad.n), pch=1, ylim=c(0,max(rad.n,rad.sn)),
         xlab="Percentiles of chi-square distribution", 
         ylab="Mahalanobis distances")
@@ -1383,18 +1570,40 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
   invisible(mle)
 }
 
-
 #
 
-
 st.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE, 
-              method="BFGS", control=list())
+              algorithm = c("nlminb","Nelder-Mead", "BFGS", "CG", "SANN"),
+              control=list())
 { 
   y.name  <- deparse(substitute(y))
-  y <- as.matrix(y)
+  y <- data.matrix(y)
+  if(missing(X)) X<- matrix(1, nrow=length(y), ncol=1)
   dimnames(y)[[2]] <- list(y.name) 
+  if(missing(start)){
+    qrX   <- qr(X)
+    beta  <- qr.coef(qrX,y)
+    mom <- sample.centralmoments(x=qr.resid(qrX,y), w=freq)
+    dp  <- st.cumulants.inversion(cum=c(mom[1:3], mom[4]-3*mom[2]^2))
+    Omega <- matrix(dp[2]^2, 1, 1)
+    alpha <- dp[3]
+    start <- list(beta=beta, Omega=Omega, alpha=alpha)
+    if(is.na(fixed.df))  start$df <- dp[4]
+    if(trace)  cat("st.mle: dp= ",c(beta,Omega,alpha,df),"\n")
+    }
+  else {
+    if(!is.na(fixed.df)) start$df <- fixed.df
+    if(all(names(start)==c("beta", "Omega", "alpha", "df")))
+      {
+      beta  <- start$beta
+      Omega <- start$Omega
+      alpha <- start$alpha
+      df    <- start$df
+      }
+    else stop("start parameter is not in the form that I expected")
+  }
   fit <- mst.mle(X, y, freq, start=start, fixed.df=fixed.df, trace=trace, 
-              method=method, control=control)
+              algorithm=algorithm, control=control)
   mle <- list()
   mle$call<- match.call()
   dp <- fit$dp
@@ -1411,138 +1620,140 @@ st.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE,
 }
 
 
-mst.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE, 
-         method="BFGS", control=list())
-{  
-  Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
-  y.name  <- deparse(substitute(y))
-  y.names <- dimnames(y)[[2]] 
-  y <- data.matrix(y)
-  if(missing(X))    X <- matrix(rep(1,nrow(y)),ncol=1)
-    else {if(!is.numeric(X)) stop("X must be numeric")}
-  if(missing(freq)) freq <- rep(1,nrow(y))
-  x.names<-dimnames(X)[[2]]
-  X <- as.matrix(X) 
-  d <- ncol(y)  
-  n <- sum(freq)
-  m <- ncol(X)
-  if(missing(start)){
-    qrX   <- qr(X)
-    beta  <- as.matrix(qr.coef(qrX,y))
-    Omega <- matrix(var(qr.resid(qrX,y)),d,d)
-    omega <- sqrt(diag(Omega))
-    alpha <- rep(0,d)
-    df <- ifelse(is.na(fixed.df), 10, fixed.df)
-    if(trace) {
-      cat("mst.mle: dp=","\n")
-      print(c(beta,Omega,alpha))
-      cat("df:", df,"\n")
+mst.mle <- function (X, y, freq, start, fixed.df = NA, trace = FALSE, 
+                 algorithm=c("nlminb", "Nelder-Mead", "BFGS", "CG",  "SANN"),
+                control = list()) 
+{
+    algorithm <- match.arg(algorithm)
+    y.name <- deparse(substitute(y))
+    y.names <- dimnames(y)[[2]]
+    y <- data.matrix(y)
+    X <- if (missing(X)) matrix(rep(1, nrow(y)), ncol = 1)        
+              else data.matrix(X)
+    if (missing(freq))    freq <- rep(1, nrow(y))
+    x.names <- dimnames(X)[[2]]
+    d <- ncol(y)
+    n <- sum(freq)
+    m <- ncol(X)
+    if (missing(start)) {
+        qrX <- qr(X)
+        beta <- as.matrix(qr.coef(qrX, y))
+        Omega <- matrix(var(qr.resid(qrX, y)), d, d)
+        omega <- sqrt(diag(Omega))
+        alpha <- rep(0, d)
+        df <- ifelse(is.na(fixed.df), 10, fixed.df)
+        if (trace) {
+            cat("mst.mle: dp=", "\n")
+            print(c(beta, Omega, alpha))
+            cat("df:", df, "\n")
+        }
+    }
+    else {
+        if (!is.na(fixed.df)) 
+            start$df <- fixed.df
+        if (all(names(start) == c("beta", "Omega", "alpha", "df"))) {
+            beta <- start$beta
+            Omega <- start$Omega
+            alpha <- start$alpha
+            df <- start$df
+        }
+        else stop("start parameter is not in the form that I expected")
+    }
+    eta <- alpha/sqrt(diag(Omega))
+    Oinv <- solvePD(Omega)
+    upper <- chol(Oinv)
+    D <- diag(upper)
+    A <- upper/D
+    D <- D^2
+    if (d > 1) 
+       param <- c(beta, -log(D)/2, A[!lower.tri(A, diag = TRUE)], eta)            
+    else 
+       param <- c(beta, -log(D)/2, eta)
+    if (is.na(fixed.df)) 
+        param <- c(param, log(df))
+    if(algorithm == "nlminb"){
+      opt <- nlminb(param, objective = mst.dev, gradient = mst.dev.grad, 
+               control = control,  X = X, y = y, freq = freq, 
+               trace = trace, fixed.df = fixed.df)
+      info <- num.deriv2(opt$par, FUN="mst.dev.grad", X=X, y=y, freq=freq)/2
+      opt$value <-  opt$objective
       }
-    }
-  else {
-    if(!is.na(fixed.df)) start$df <- fixed.df
-    if(all(names(start)==c("beta", "Omega", "alpha", "df")))
-      {
-      beta  <- start$beta
-      Omega <- start$Omega
-      alpha <- start$alpha
-      df    <- start$df
-      }
-    else stop("start parameter is not in the form that I expected")
-  }
-  eta  <- alpha/sqrt(diag(Omega))
-  Oinv <- solve(Omega)
-  Oinv <- (Oinv+t(Oinv))/2
-  upper<- chol(Oinv)
-  D <- diag(upper)
-  A <- upper/D
-  D <- D^2
-  if(d>1) param <- c(beta, -0.5*log(D), A[!lower.tri(A,diag=TRUE)], eta) 
-     else param <- c(beta, -0.5*log(D), eta)
-  if(is.na(fixed.df)) param <- c(param,log(df))
-  opt  <- optim(param, fn=mst.dev,  gr=mst.dev.grad, 
-              method=method,  control=control, hessian=TRUE, 
-              X=X, y=y, freq=freq, trace=trace, fixed.df=fixed.df)
-  dev  <- opt$value
-  param<- opt$par
-  if(trace){
-    cat("Message from optimization routine:", opt$message,"\n")
-    cat("deviance:", dev,"\n")
-    }
-  beta <- matrix(param[1:(m*d)],m,d)
-  D    <- exp(-2*param[(m*d+1):(m*d+d)])
-  if(d>1) {
-    A <- diag(d)
-    A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):(m*d+d+d*(d-1)/2)]
-    i0 <- m*d+d+d*(d-1)/2
-    }
-  else{
-    i0 <- m+1
-    A  <- as.matrix(1)
-    }
-  eta  <- param[(i0+1):(i0+d)]
-  if(is.na(fixed.df)) df <- exp(param[i0+d+1])
-    else df <- fixed.df
-  # Omega <- solve(t(A) %*% diag(D) %*% A)
-  Ainv <- backsolve(A,diag(d))
-  Omega<- Ainv %*% Diag(1/D) %*% t(Ainv)
-  omega<-sqrt(diag(Omega))
-  alpha<- eta*omega
-  dimnames(beta) <- list(x.names,y.names)
-  dimnames(Omega) <- list(y.names, y.names)
-  if(length(y.names)>0) names(alpha) <- y.names
-  info <- opt$hessian/2
-  if(all(is.finite(info))) 
-    {
-      qr.info <- qr(info)
-      info.ok <- (qr.info$rank == length(param))
-     }
-  else info.ok <- FALSE
-  if(info.ok) {
-    se2     <- diag(solve(qr.info))
-    if(min(se2) < 0 )
-      se<- NA
     else{
-      se      <- sqrt(se2)
-      se.beta <- matrix(se[1:(m*d)],m,d)
-      se.alpha<- se[(i0+1):(i0+d)] * omega
-      dimnames(se.beta)[2] <- list(y.names)
-      dimnames(se.beta)[1] <- list(x.names)
-      names(se.alpha) <- y.names
-      se.df   <- df*se[i0+d+1]
-      se      <- list(beta=se.beta, alpha=se.alpha, df=se.df,
-                      internal=se, info=info)
-    }}
-  else
-    se <- NA
-  dp <- list(beta=beta, Omega=Omega,  alpha=alpha, df=df)
-  list(call=match.call(), logL=-0.5*dev, deviance=dev, dp=dp, se=se, optim=opt)
+        opt <- optim(param, fn = mst.dev, gr = mst.dev.grad, 
+                method = algorithm, control = control, hessian = TRUE,
+                X = X, y = y, freq = freq, trace = trace, fixed.df = fixed.df)
+        info <- opt$hessian/2
+        }
+    dev   <- opt$value
+    param <- opt$par
+    opt$name <- algorithm
+    if (trace) {
+        cat("Message from optimization routine:", opt$message, 
+            "\n")
+        cat("deviance:", dev, "\n")
+    }
+    beta <- matrix(param[1:(m * d)], m, d)
+    D <- exp(-2 * param[(m * d + 1):(m * d + d)])
+    A <- diag(d)
+    i0 <- m*d+d*(d+1)/2
+    if(d>1)  A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):i0]
+    eta <- param[(i0 + 1):(i0 + d)]
+    if (is.na(fixed.df)) 
+        df <- exp(param[i0 + d + 1])
+    else df <- fixed.df
+    Oinv <- t(A) %*% diag(D,d,d) %*% A
+    Omega <- solvePD(Oinv)
+    omega <- sqrt(diag(Omega))
+    alpha <- eta * omega
+    dimnames(beta) <- list(x.names, y.names)
+    dimnames(Omega) <- list(y.names, y.names)
+    if (length(y.names) > 0) names(alpha) <- y.names
+    if (all(is.finite(info))) {
+        qr.info <- qr(info)
+        info.ok <- (qr.info$rank == length(param))
+    }
+    else info.ok <- FALSE
+    if (info.ok) {
+        se2 <- diag(solve(qr.info))
+        if (min(se2) < 0) 
+            se <- NA
+        else {
+            se <- sqrt(se2)
+            se.beta <- matrix(se[1:(m * d)], m, d)
+            se.alpha <- se[(i0 + 1):(i0 + d)] * omega
+            dimnames(se.beta)[2] <- list(y.names)
+            dimnames(se.beta)[1] <- list(x.names)
+            names(se.alpha) <- y.names
+            se.df <- df * se[i0 + d + 1]
+            se <- list(beta = se.beta, alpha = se.alpha, df = se.df, 
+                internal = se, info = info)
+        }
+    }
+    else se <- NA
+    dp <- list(beta = beta, Omega = Omega, alpha = alpha, df = df)
+    list(call = match.call(), logL = -dev/2, deviance = dev, 
+        dp = dp, se = se, algorithm = opt)
 }
+
 
 
 mst.dev <- function(param, X, y, freq=rep(1,nrow(X)), fixed.df=NA, trace=FALSE)
 {
-  Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
+  # Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
   d <- ncol(y)
   # if(missing(freq)) freq<-rep(1,nrow(y))
   n <- sum(freq)
   m <- ncol(X)
   beta<-matrix(param[1:(m*d)],m,d)
-  D <- exp(-2*param[(m*d+1):(m*d+d)])
-  if(d>1) {
-    A <- diag(d)
-    A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):(m*d+d+d*(d-1)/2)]
-    i0 <- m*d+d+d*(d-1)/2
-    }
-  else {
-    i0<- m+1
-    A <- as.matrix(1)
-    }
+  D <- exp(-2*param[(m*d+1):(m*d+d)]) 
+  i0 <- m*d+d*(d+1)/2
+  A <- diag(d)
+  if(d>1) A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):i0]
   eta <- param[(i0+1):(i0+d)]
   if(is.na(fixed.df)) df <- exp(param[i0+d+1])
      else df <- fixed.df
-  Oinv <- t(A) %*% Diag(D) %*% A
-  # Omega <- solve(Oinv)
+  Oinv <- t(A) %*% diag(D,d,d) %*% A
+  # Omega <- solvePD(Oinv)
   u <-  y - X %*% beta
   Q <- apply((u %*% Oinv)*u,1,sum)
   L <- as.vector(u %*% eta) 
@@ -1558,27 +1769,19 @@ mst.dev <- function(param, X, y, freq=rep(1,nrow(X)), fixed.df=NA, trace=FALSE)
 mst.dev.grad <- function(param, X, y, freq=rep(1,nrow(X)), fixed.df=NA,
                          trace=FALSE)
 {
-  Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
+  # Diag <- function(x) diag(x, nrow=length(x), ncol=length(x))
   d <- ncol(y)
-  # if(missing(freq)) freq<-rep(1,nrow(y))
   n   <- sum(freq)
   m   <- ncol(X)
   beta<- matrix(param[1:(m*d)],m,d)
-  D   <- exp(-2*param[(m*d+1):(m*d+d)])
-  if(d>1) {
-    A  <- diag(d)
-    A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):(m*d+d+d*(d-1)/2)]
-    i0 <- m*d+d+d*(d-1)/2
-    }
-  else{
-    i0 <- m*d+d
-    A  <- as.matrix(1)
-    }
+  D  <- exp(-2*param[(m*d+1):(m*d+d)])
+  A  <- diag(d)
+  i0 <- m*d+d*(d+1)/2
+  if(d>1) A[!lower.tri(A,diag=TRUE)] <- param[(m*d+d+1):i0]
   eta   <- param[(i0+1):(i0+d)]
   if(is.na(fixed.df)) df <- exp(param[i0+d+1])
      else df <- fixed.df
-  tA    <- t(A)
-  Oinv  <- tA %*% Diag(D) %*% A
+  Oinv  <- t(A) %*% diag(D,d,d) %*% A
   u     <- y-X %*% beta
   Q     <- as.vector(apply((u %*% Oinv)*u,1,sum))
   L     <- as.vector(u %*% eta) 
@@ -1594,16 +1797,15 @@ mst.dev.grad <- function(param, X, y, freq=rep(1,nrow(X)), fixed.df=NA,
             - 2* t(X) %*% (dlogT.* dt.dQ * u.freq) %*% Oinv )
   Deta  <- apply(dlogT.*sqrt((df+d)/(Q+df))*u.freq, 2, sum)
   if(d>1){
-     M  <- 2*( Diag(D) %*% A %*% t(u * dlogft
+     M  <- 2*( diag(D,d,d) %*% A %*% t(u * dlogft
                + u * dlogT. * dt.dQ) %*% u.freq)
      DA <- M[!lower.tri(M,diag=TRUE)]
      }
   else DA<- NULL
-  M     <- ( A %*% t(u*dlogft + u*dlogT.*dt.dQ) %*% u.freq %*% tA)
+  M     <- ( A %*% t(u*dlogft + u*dlogT.*dt.dQ) %*% u.freq %*% t(A))
   if(d>1) DD <- diag(M) + 0.5*n/D
      else DD <- as.vector(M + 0.5*n/D) 
   grad <- (-2)*c(Dbeta,DD*(-2*D),DA,Deta)
-# browser()  
   if(is.na(fixed.df)) {  
     dlogft.ddf <- 0.5 * (digamma((df+d)/2) - digamma(df/2) - d/df
                         + (df+d)*Q/((1+Q/df)*df^2) - log(1+Q/df))
@@ -1780,8 +1982,8 @@ sn.Einfo <- function(dp=NULL, cp=NULL, n=1, x=NULL)
   if(is.null(x))
      {
       x <-matrix(rep(1,n),nrow=n,ncol=1)
-      xx<- n
-      sum.x<-n
+      xx <- n
+      sum.x <- n
       p <- 1
      }
     else
@@ -1835,8 +2037,8 @@ sn.Einfo <- function(dp=NULL, cp=NULL, n=1, x=NULL)
   D[p+2,p+2] <- Da.Dg
   I.cp  <- t(D) %*% I.dp %*% D
   I.cp <- (I.cp + t(I.cp))/2
-  se.dp <- sqrt(diag(solve(I.dp)))
-  se.cp <- sqrt(diag(solve(I.cp)))
+  se.dp <- sqrt(diag(solvePD(I.dp)))
+  se.cp <- sqrt(diag(solvePD(I.cp)))
   dimnames(I.cp)<- list(names(cp), names(cp))
   dimnames(I.dp)<- list(names(dp), names(dp))
   list(dp=dp, cp=cp, info.dp=I.dp, info.cp=I.cp, se.dp=se.dp, se.cp=se.cp, D=D)
@@ -1902,7 +2104,7 @@ st.mle.grouped <- function(breaks, freq, trace=FALSE, start=NA)
   invisible(list(call=match.call(), dp=dp, logL=logL, end=param, opt=opt))
 }
 
-msn.affine <- function(dp, A, a=0, drop=TRUE)
+msn.affine <- function(dp, a=0, A, drop=TRUE)
 {
 # computes distribution of affine transformation of MSN/MST variate, T=a+AY,
 # using formuale in Appendix A.2 of Capitanio et al.(2003)
@@ -1914,10 +2116,9 @@ msn.affine <- function(dp, A, a=0, drop=TRUE)
   O.T   <- as.matrix(A %*% Omega %*% t(A)) 
   oi    <- Diag(1/sqrt(diag(Omega)))
   B     <- oi %*% Omega %*% t(A)
-  tmp   <- (oi %*% Omega %*% oi - B %*% solve(O.T) %*% t(B)) %*% dp$alpha
+  tmp   <- (oi %*% Omega %*% oi - B %*% solvePD(O.T) %*% t(B)) %*% dp$alpha
   den   <- sqrt(1+sum(dp$alpha*as.vector(tmp)))
-  num   <- Diag(sqrt(diag(O.T))) %*% solve(O.T) %*% t(B) %*% dp$alpha
-  # cat("termine sotto radice -1: ", sum(dp$alpha*as.vector(tmp)),"\n")
+  num   <- Diag(sqrt(diag(O.T))) %*% solvePD(O.T) %*% t(B) %*% dp$alpha
   alpha <- as.vector(num/den)
   if(all(dim(O.T)==c(1,1)) & drop)
      dp.T<- list(location=xi.T, scale=sqrt(as.vector(O.T)), shape=alpha)
@@ -1928,24 +2129,77 @@ msn.affine <- function(dp, A, a=0, drop=TRUE)
   return(dp.T)
 }
 
-mst.affine <- function(dp, A, a=0, drop=TRUE) msn.affine(dp, A, a, drop)
+mst.affine <- function(dp, a=0, A, drop=TRUE) msn.affine(dp, a, A, drop)
+                                     
+#---
+
+st.cumulants.inversion <- function(cum, abstol=1e-8)
+{
+
+  st.cumulants.matching <- function(par, gamma)
+    {
+      cum <- st.cumulants(shape=par[1], df=exp(par[2])+4, n=4)
+      g1  <- cum[3]/cum[2]^1.5
+      g2  <- cum[4]/cum[2]^2
+      sqrt((g1-gamma[1])^2 + (g2-gamma[2])^2)
+    }
+  if(length(cum) != 4) stop("cum must be a vector of length 4")
+  g1 <- cum[3]/cum[2]^1.5
+  g2 <- cum[4]/cum[2]^2
+  opt1 <- optim(c(0,1), st.cumulants.matching,
+            control=list(abstol=abstol), gamma=c(g1,g2))
+  opt2 <- nlminb(c(0,1), st.cumulants.matching,
+            control=list(abs.tol=abstol), gamma=c(g1,g2))
+  if(opt1$value < opt2$objective) par<- opt1$par else par<- opt2$par
+  if(min(opt1$value, opt2$objective) > abstol) 
+    warning("cumulants matching may be inaccurate")
+  alpha <- par[1]
+  df  <- exp(par[2])+4
+  cumZ <- st.cumulants(dp=c(0,1,alpha,df))
+  omega <- sqrt(cum[2]/cumZ[2])
+  c(location=cum[1]-omega*cumZ[1], scale=omega, shape=alpha, df=df)
+}
+
+
+sample.centralmoments <- function(x, w=rep(1,length(x)), order=4)
+{ # central moments, but first term is ordinary mean
+  if( order < 1 | order != round(order))
+    stop("order must be a positive integer") 
+  x <- as.vector(x)
+  m <- weighted.mean(x, w=w, na.rm = TRUE)
+  mom <- rep(0,4)
+  mom[1] <- m
+  if(order > 1) 
+    for(k in 2:order)
+      mom[k] <- weighted.mean((x-m)^k, w=w, na.rm = TRUE)
+  mom
+}
+
+solvePD <- function(x) 
+{ # inverse of a symmetric positive definite matrix
+    u <- chol(x, pivot = FALSE)
+    if(prod(diag(u)) <= 0) stop("matrix not positive definite")
+    # ui <- backsolve(u,diag(ncol(x)))
+    # ui %*% t(ui)
+    chol2inv(u)
+}
 
 #---
 
-.First.lib <- function(library, pkg)
-{ 
-    Rv <- R.Version()
-    if(Rv$major == 0 |(Rv$major == 1 && Rv$minor < 0.1))
-        stop("This package requires R 1.0.1 or later")
-    assign(".sn.home", file.path(library, pkg),
-           pos=match("package:sn", search()))
-    sn.version <- "0.3-5 (2005-12-30)"
-    assign(".sn.version", sn.version, pos=match("package:sn", search()))
-    if(interactive())
-    {
-      cat("Library 'sn', version ", sn.version, ", © 1998-2005 A.Azzalini\n")
-      cat("type 'help(SN)' for summary information\n")
-    }
-    invisible()
+.onAttach <- function(library, pkg)
+{
+  Rv <- R.Version()
+  if(Rv$major < 2 |(Rv$major == 2 && Rv$minor < 2.0))
+    stop("This package requires R 2.2.0 or later")
+  assign(".sn.home", file.path(library, pkg),
+       pos=match("package:sn", search()))
+  sn.version <- "0.4-0 (2006-04-11)"
+  assign(".sn.version", sn.version, pos=match("package:sn", search()))
+  if(interactive())
+  {
+    cat("Library 'sn', version ", sn.version,", © 1998-2006 A.Azzalini\n")
+    cat("type 'help(SN)' for summary information\n")
+  }
+  invisible()
 }
 

@@ -10,9 +10,10 @@ fits a linear regression model with (multivariate) skew-t errors,
 using maximum likelihood estimation.
 }
 \usage{
-mst.mle(X, y, freq, start, fixed.df=NA, trace=FALSE, method="BFGS", control=list())
-
-st.mle(X, y, freq, start, fixed.df=NA, trace=FALSE, method="BFGS", control=list())
+mst.mle(X, y, freq, start, fixed.df=NA, trace=FALSE,
+   algorithm = c("nlminb","Nelder-Mead", "BFGS", "CG", "SANN"), control=list())
+st.mle(X, y, freq, start, fixed.df=NA, trace=FALSE,
+   algorithm = c("nlminb","Nelder-Mead", "BFGS", "CG", "SANN"), control=list())
 
 }
 \arguments{
@@ -49,14 +50,16 @@ to be estimated.
 logical value which controls printing of the algorithm convergence.
 If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
 }
-\item{method}{
-this parameter is just passed to the optimizer \code{optim}; 
-see the documentation of this function for its usage. Default value is
-\code{"BFGS"}.
+\item{algorithm}{
+a character string which selects the numerical optimization procedure 
+used to maximize the loglikelihood function. If this string is set 
+equal to \code{"nlminb"}, then this function is called; in all other cases,
+\code{optim} is called, with \code{method} set equal to the given string.
+Default value is \code{"nlminb"}.
 }
 \item{control}{
-this parameter is passed to the optimizer \code{optim}; 
-see the documentation of this function for its usage.
+  this parameter is passed to the chose optimizer, either \code{nlminb}
+  or  \code{optim}; see the documentation of this function for its usage.
 }}
 \value{
 A list containing the following components:
@@ -81,9 +84,11 @@ corresponding point estimates;
 \code{info} is the observed information matrix for the working parameter,
 as explained below.
 }
-\item{optim}{
-the list returned by the optimizer \code{optim}; see the documentation
-of this function for explanation of its components.
+\item{algorithm}{
+  the list returned by the chose optimizer, either \code{nlminb}
+  or  \code{optim}, plus an item with the \code{name} of the selected
+  algorithm; see the documentation of either \code{nlminb}
+  or  \code{optim}  for explanation  of the other components.
 }}
 \details{
 If \code{y} is a vector and it is supplied to \code{mst.mle}, then
@@ -100,13 +105,16 @@ set, exact maximum likelihood estimation is performed.
 % To fit a scalar skew-t distribution to grouped data by exact
 % maximum likelihood estimation, use \code{st.mle.grouped}.
 
-Numerical search of the maximum likelihood estimates is performed
-in a suitable re-parameterization of the original parameters
-with aid of the optimizer \code{optim}  which is supplied with the
-derivatives of the log-likelihood function; on exit from
-\code{optim}, an inverse transformation of the parameters is
+Numerical search of the maximum likelihood estimates is performed in a
+suitable re-parameterization of the original parameters with aid of the
+selected optimizer (\code{nlminb} or \code{optim}) which is supplied
+with the derivatives of the log-likelihood function. Notice that, in
+case the optimizer is \code{optim}), the gradient may or may not be
+used, depending on which specific method has been selected.  On exit
+from the optimizer, an inverse transformation of the parameters is
 performed. For a specific description on the re-parametrization adopted,
-see Section 5.1 and Appendix B of  Azzalini \& Capitanio (2003).
+see Section 5.1 and Appendix B of Azzalini \& Capitanio (2003).
+
 }
 \section{Background}{
 The family of multivariate skew-t distributions is an extension of the 
@@ -126,7 +134,7 @@ Azzalini, A. and Capitanio, A. (2003).
 }
 \seealso{
   \code{\link{dmst}},\code{\link{msn.mle}},\code{\link{mst.fit}},
-  \code{\link{optim}}  % \code{\link{sn.mle.grouped}}
+   \code{\link{nlminb}}, \code{\link{optim}}  % \code{\link{sn.mle.grouped}}
 }
 \examples{
 data(ais, package="sn")

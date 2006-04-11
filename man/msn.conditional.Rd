@@ -9,27 +9,36 @@ distribution conditionally on the values taken on by some of
 its components, and finds a multivariate skew-normal distribution
 with the same cumulants.
 }
+\synopsis{
+   msn.conditional(xi = rep(0, length(alpha)), Omega, alpha, fixed.comp, 
+                  fixed.values, dp = NULL) 
+}
 \usage{
 msn.conditional(xi, Omega, alpha, fixed.comp, fixed.values)
+msn.conditional(dp=, fixed.comp, fixed.values)
 }
 \arguments{
 \item{xi}{
-a numeric vector of length \code{k}, say, giving the location parameter.
+a numeric vector of length \code{d}, say, giving the location parameter.
 }
 \item{Omega}{
-a covariance matrix of dimension \code{(k,k)}.
+a covariance matrix of dimension \code{(d,d)}.
 }
 \item{alpha}{
-a numeric vector of length \code{k}, which regulates the shape of the density.
+a numeric vector of length \code{d}, which regulates the shape of the density.
 }
 \item{fixed.comp}{
-a vector containing a subset of \code{1:k} which selects the components
-whose values are to be fixed; it must be of length \code{k-2}.
+a vector containing a subset of \code{1:d} which selects the components
+whose values are to be fixed; it must be of length \code{d-2}.
 }
 \item{fixed.values}{
 a numeric vector of values taken on by the components \code{fixed.comp};
 it must be of the same length of \code{fixed.comp}.
-}}
+}
+\item{dp}{
+    a list containing the components \code{xi}, \code{Omega},
+  \code{alpha}, contaning quantities as described above
+  }}
 \value{
 A list containing the following elements:
 
@@ -60,4 +69,3 @@ a<- msn.conditional(rep(0,3), Omega, 1:3, 3, -0.75)
 }
 \keyword{multivariate}
 \keyword{distribution}
-% Converted by Sd2Rd version 0.3-3.

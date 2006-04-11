@@ -10,8 +10,8 @@
   of a multivariate skew-normal or skew-t variable \emph{Y}
 }
 \usage{
-  msn.affine(dp, A, a=0, drop=TRUE)
-  mst.affine(dp, A, a=0, drop=TRUE)
+  msn.affine(dp, a=0, A, drop=TRUE)
+  mst.affine(dp, a=0, A, drop=TRUE)
 }
 \arguments{
   \item{dp}{a list containg the pamaters of the variable being
@@ -58,11 +58,11 @@ Graphical models for skew-normal variates.
 \examples{
 dp<- list(xi=c(1,1,2), Omega=toeplitz(1/1:3), alpha=c(3,-1,2))
 A <- matrix(c(1,-1,1,3,0,-2), 2, 3, byrow=TRUE) 
-dp1 <- msn.affine(dp, A, 1:2)
+dp1 <- msn.affine(dp, 1:2, A)
 #
 dp$df <- 5
-dp2<-  mst.affine(dp,A[1,,drop=FALSE])
-dp3<-  mst.affine(dp,A[1,,drop=FALSE], drop=FALSE)
+dp2<-  mst.affine(dp,,A[1,,drop=FALSE])
+dp3<-  mst.affine(dp,,A[1,,drop=FALSE], drop=FALSE)
 if(zapsmall(dp2$scale^2 - dp3$Omega)) print("something wrong here!")
 }
 \keyword{multivariate}

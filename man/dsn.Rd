@@ -10,11 +10,21 @@ Skew-Normal Distribution
 Density function, distribution function, quantiles and random number
 generation for the skew-normal (SN) distribution.
 }
+\synopsis{
+dsn(x, location = 0, scale = 1, shape = 0, dp = NULL, log = FALSE)
+psn(x, location = 0, scale = 1, shape = 0, dp = NULL, ...)
+qsn(p, location = 0, scale = 1, shape = 0, dp = NULL, tol = 1e-08, ...) 
+rsn(n = 1, location = 0, scale = 1, shape = 0, dp = NULL)
+}
 \usage{
 dsn(x, location=0, scale=1, shape=0, log=FALSE)
+dsn(x, dp=, log=FALSE)
 psn(x, location=0, scale=1, shape=0, ...)
+psn(x, dp=, log=FALSE)
 qsn(p, location=0, scale=1, shape=0, tol=1e-8, ...)
+qsn(x, dp=, log=FALSE)
 rsn(n=1, location=0, scale=1, shape=0)
+rsn(x, dp=, log=FALSE)
 }
 \arguments{
 \item{x}{
@@ -33,6 +43,11 @@ rsn(n=1, location=0, scale=1, shape=0)
 \item{shape}{
   vector of shape parameters.
   With \code{psn} and \code{qsn}, it must be of length 1.
+}
+\item{dp}{
+a vector of length 3, whose elements represent location, scale (positive) and
+shape, respectively. If \code{dp} is specified, this overrides the specification
+of the other parameters.
 }
 \item{n}{
   sample size.

@@ -1,14 +1,18 @@
 \name{dst2.plot}
 \alias{dst2.plot}
 \title{
-Plot of Bivariate Skew-t Density Function
+Plot of bivariate skew-t density function
 }
 \description{
 Produces a contour plot of the density function of a bivariate 
 skew-t variate.
 }
+\synopsis{
+dst2.plot(x, y, xi, Omega, alpha, df, dp = NULL, ...) 
+}
 \usage{
 dst2.plot(x, y, xi, Omega, alpha, df, ...)
+dst2.plot(x, y, dp=, ...)
 }
 \arguments{
 \item{x}{
@@ -29,6 +33,11 @@ a vector of length 2 containing the shape parameter.
 \item{df}{
 a positive number, representing the degrees of freedom .
 }
+\item{dp}{
+  a list with components named \code{xi, Omega, alpha, df}, containing
+  quantities as described above. If this parameter is set, then the
+  individual parameters must not be.
+  }
 \item{...}{
 additional parameters to be passed to \code{contour}.
 }}
@@ -37,11 +46,11 @@ A list containing the original input parameters plus a matrix
 containing the density function evaluated at the grid formed 
 by the \code{x} and \code{y} values. 
 }
-\section{Side effects}{
-A contour plot is produced on the graphical window.
-}
 \details{
-\code{dst2.plot} makes use of function \code{dmst}.
+  The density function is evalutate at the grid of points whose
+  coordinates are given by vectors \code{x} and \code{y}.
+  The actual computation is done by the  function \code{dmst}.
+  A contour level plot is produced on the graphical window. 
 }
 \section{Background}{
 The family of multivariate skew-t distributions is an extension of the 
@@ -58,11 +67,11 @@ Azzalini, A. and Capitanio, A. (2003).
   \emph{J.Roy. Statist. Soc. B} \bold{65}, 367--389.
 }
 \seealso{
-\code{\link{dmsn}}, \code{\link{dsn2.plot}}
+\code{\link{dmst}}, \code{\link{dsn2.plot}}
 }
 \examples{
 x <- y <- seq(-5, 5, length=35)
 dst2.plot(x, y, c(-1,2), diag(c(1,2.5)), c(2,-3), df=5)
 }
 \keyword{distribution}
-% Comment
+

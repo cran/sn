@@ -6,15 +6,30 @@ Cumulants of the skew-normal distribution
 \description{
 Cumulants of the skew-normal distribution.
 }
+\synopsis{
+sn.cumulants(location = 0, scale = 1, shape = 0, dp = NULL, n = 4) 
+}
 \usage{
-sn.cumulants(shape=0, n=4)
+sn.cumulants(location = 0, scale = 1, shape = 0,  n = 4)
+sn.cumulants(dp=, n = 4)
 }
 \arguments{
+\item{location}{
+ location parameter (vector)
+ }
+\item{scale}{
+scale parameter (vector)
+}
 \item{shape}{
-a vector of shape parameter.
+shape parameter (vector)
+}
+\item{dp}{
+ a vector of three elements, whose elements are \code{(location, scale, shape)}
+ respectively. If \code{dp} is specified, then the individual
+ parameters must not be.
 }
 \item{n}{
-a scalar integer.
+  a scalar integer of the maximal order or cumulants required
 }}
 \value{
 the cumulants up to order \code{n} of the skew-normal distribution
@@ -36,7 +51,8 @@ A class of distributions which includes the normal ones.
 \code{\link{dsn}},\code{\link{zeta}}
 }
 \examples{
-cum <- sn.cumulants(c(0,1,2,5,10),4)
+sn.cumulants(shape=c(0,2.5,5,10), n=5)
+sn.cumulants(dp=c(10,3,-8), n=6)
 }
 \keyword{distribution}
 % Converted by Sd2Rd version 0.3-3.

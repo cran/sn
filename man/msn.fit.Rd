@@ -38,8 +38,9 @@ logical value which controls printing of the algorithm convergence.
 If \code{trace=TRUE}, details are printed. Default value is \code{FALSE}.
 }
 \item{...}{
-additional paramters passed to \code{msn.mle}; in practice, the \code{start}
-parameter can be passed.
+  additional parameters passed to \code{msn.mle}; in practice, the
+  \code{start}, the \code{algorithm} and the \code{control} parameters
+  can be passed.
 }}
 \value{
 A list containing the following components:
@@ -64,14 +65,13 @@ corresponding point estimates;
 \code{info} is the observed information matrix for the working parameter,
 as explained below.
 }
-\item{optim}{
-the list returned by the optimizer \code{optim}; see the documentation
-of this function for explanation of its components.
+\item{algorithm}{
+  see the documentation of \code{msn.mle} for its explanation
 }
 \item{test.normality}{
 a list of with elements \code{test} and \code{p.value}, which are the value
 of the likelihood ratio test statistic for normality (i.e. test that
-all components of the shape parameter are 0), and the corresponging
+all components of the shape parameter are 0), and the corresponding
 p-value.
 }}
 \section{Side Effects}{
@@ -103,12 +103,13 @@ then, \code{msn.fit} displays the results in graphical form.
 The documentation of \code{msn.mle} gives details of the numerical
 procedure for maximum likelihood estimation.
 
-
 Although the function accepts a vector \code{y} as input, the use of
 \code{sn.mle} is recommended in the scalar case.
-
-
 }
+\note{
+  This function may be removed in future versions of the package, and
+  (some of) its functionality transferred somewhere else
+  }
 \section{Background}{
 The multivariate skew-normal distribution is discussed by
 Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)} parametrization

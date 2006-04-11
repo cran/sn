@@ -1,32 +1,81 @@
 \name{st.cumulants}
 \alias{st.cumulants}
+\alias{st.cumulants.inversion}
 \title{
 Cumulants of the skew-t distribution
 }
 \description{
-Cumulants of the skew-t distribution.
+Cumulants of the skew-t distribution and inverse matching
+}
+\synopsis{
+st.cumulants(location = 0, scale = 1, shape = 0, df = Inf, dp = NULL,  n = 4) 
+st.cumulants.inversion(cum, abstol = 1e-08) 
 }
 \usage{
-st.cumulants(shape=0, df=Inf, n=4)
+st.cumulants(location = 0, scale = 1, shape = 0, df = Inf, n = 4)
+st.cumulants(dp=, n = 4)
+st.cumulants.inversion(cum, abstol = 1e-08)
 }
 \arguments{
+\item{location}{
+ location parameter (vector)
+ }
+\item{scale}{
+ scale parameter (vector)
+ }
 \item{shape}{
-shape parameter (scalar).
-}
+ shape parameter (vector)
+ }
 \item{df}{
-degrees of freedom (scalar); default is \code{df=Inf} which corresponds 
-to the skew-normal distribution.
+ degrees of freedom (scalar); default is \code{df=Inf} which corresponds 
+ to the skew-normal distribution.
+ }
+\item{dp}{
+  a vector of four elements, whose elements are \code{(location, scale,
+  shape, df)} respectively. If \code{dp} is specified,  then
+  the individual parameters must not be.
 }
 \item{n}{
-a scalar integer, from 1 to 4.
+  a scalar integer of the maximal order or cumulants required;
+  it must be from 1 to 4 and smaller than \code{df}
+}
+\item{cum}{
+  a vector of 4 elements which are taken to represent the first 4 cumulants
+  of a skew-t distribution
+}
+\item{abstol}{
+ a scalar which regulates the accuracy of the cumulants matching (default
+ value 1e-08)
 }}
 \value{
-the cumulants up to order \code{n} of the skew-t distribution
-with the selected parameters.
+\code{st.cumulants} computes the cumulants up to order \code{n} of 
+the skew-t distribution with the selected parameters. The returned object
+is a vector of length \code{n} if the parameters are all scalar, 
+otherwise a matrix with \code{n} columns.
+
+\code{st.cumulants.inversion} returns a vector with the \code{dp} parameters 
+of the  matching skew-t distribution}
 }
 \details{
 Expressions of the moments and other details on the skew-t distribution are 
-given in the refence below.
+given in the reference below. These formulae are used by \code{st.cumulants}
+to compute the cumulants.
+
+\code{st.cumulants.inversion} searches the set of \code{shape} and \code{df}
+parameters of the skew-t family, attempting to match  the third and fourth 
+cumulants with those of the supplied vector \code{cum}. 
+This search is done numerically twice,
+once using \code{optim} and a second time using \code{nlminb}, 
+to the accuracy \code{abstol}; the best matching solution is retained.
+If the required accuracy of the matching is not achieved by any of the
+two methods, a warning message is issued.
+After this step, the other two parameters (\code{location} and
+\code{scale}) are computed via simple algebra.
+}
+\note{
+  The joint use \code{st.cumulants.inversion} and
+  \code{sample.centralmoments} allows to fit a skew-t distribution
+  by the methods of moments; see the example below
 }
 \references{
 Azzalini, A. and Capitanio, A. (2003).
@@ -36,10 +85,19 @@ with emphasis on a multivariate skew-\emph{t} distribution.
 \bold{65}, 367--389.
 }
 \seealso{
-\code{\link{sn.cumulants}},\code{\link{dst}}
+  \code{\link{sn.cumulants}},\code{\link{dst}},
+  \code{\link{sample.centralmoments}}, \code{\link{optim}},
+  \code{\link{nlminb}}
 }
 \examples{
-cum <- st.cumulants(shape=3, df=5)
+st.cumulants(shape=c(0,3,9), df=5)
+cum <- st.cumulants(dp=c(10, 2, -8, 5.2))
+st.cumulants.inversion(cum)
+#
+data(ais, package='sn')
+mom <- sample.centralmoments(ais[,"bmi"])
+st.cumulants.inversion(cum=c(mom[1:3],mom[4]-3*mom[2]^2))
+# parameters of the fitted ST distribution
 }
 \keyword{distribution}
 

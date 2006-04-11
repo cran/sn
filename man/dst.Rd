@@ -10,11 +10,21 @@ Skew-t Distribution
 Density function, distribution function and random number
 generation for the skew-t (ST) distribution.
 }
+\synopsis{
+dst(x, location = 0, scale = 1, shape = 0, df = Inf, dp = NULL, log = FALSE) 
+pst(x, location = 0, scale = 1, shape = 0, df = Inf, dp = NULL, ...)
+qst(p, location = 0, scale = 1, shape = 0, df = Inf, tol = 1e-08, ...)
+rst(n = 1, location = 0, scale = 1, shape = 0, df = Inf, dp = NULL)
+}
 \usage{
 dst(x, location=0, scale=1, shape=0, df=Inf, log=FALSE)
+dst(x, dp=, log=FALSE)
 pst(x, location=0, scale=1, shape=0, df=Inf, ...)
+pst(x, dp=, log=FALSE)
 qst(p, location=0, scale=1, shape=0, df=Inf, tol=1e-8, ...)
+qst(x, dp=, log=FALSE)
 rst(n=1, location=0, scale=1, shape=0, df=Inf)
+rst(x, dp=, log=FALSE)
 }
 \arguments{
 \item{x}{
@@ -36,6 +46,11 @@ it must be of length 1.
 \item{df}{
 degrees of freedom (scalar); default is \code{df=Inf} which corresponds 
 to the skew-normal distribution.
+}
+\item{dp}{
+a vector of length 4, whose elements represent location, scale (positive),
+shape and df, respectively. If \code{dp} is specified, this overrides the 
+specification of the other parameters.
 }
 \item{n}{
 sample size.

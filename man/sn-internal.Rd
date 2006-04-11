@@ -4,11 +4,13 @@
 \alias{sn.dev}
 \alias{sn.dev.gh}
 \alias{msn.moment.fit}
-\alias{num.deriv}
+\alias{num.deriv1}
+\alias{num.deriv2}
 \alias{mst.dev}
 \alias{mst.dev.grad}
 \alias{st.dev.fixed}
 \alias{sn.logL.grouped}
+\alias{solvePD}
 \alias{st.logL.grouped}
 \alias{sn.SFscore}
 \title{Internal sn functions}
@@ -21,11 +23,13 @@ msn.dev.grad(param, X, y, freq, trace=FALSE)
 msn.moment.fit(y)
 mst.dev(param, X, y, freq, fixed.df=NA, trace=FALSE)
 mst.dev.grad(param, X, y, freq, fixed.df=NA, trace=FALSE)
-num.deriv(coefficients, FUN, ...)
+num.deriv1(x, FUN, ...)
+num.deriv2(x, FUN, ...)
 st.dev.fixed(free.param, X, y, freq, trace=FALSE, fixed.comp=NA, fixed.values=NA)
 sn.dev(cp, X, y, trace=FALSE)
 sn.dev.gh(cp, X, y, trace=FALSE, hessian=FALSE)
 sn.logL.grouped(param, breaks, freq, trace=FALSE)
+solvePD(x)
 st.logL.grouped(param, breaks, freq, trace=FALSE)
 sn.SFscore(shape, data, trace=FALSE)
 }

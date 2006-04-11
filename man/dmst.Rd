@@ -9,17 +9,26 @@ Multivariate skew-t distribution
 Probability density function, distribution function and random number 
 generation for the multivariate skew-t (MST) distribution.
 }
+\synopsis{
+dmst(x, xi=rep(0,length(alpha)), Omega, alpha, df=Inf, dp = NULL, log=FALSE)
+pmst(x, xi=rep(0,length(alpha)), Omega, alpha, df=Inf, dp = NULL, ...)
+rmst(n=1, xi=rep(0,length(alpha)), Omega, alpha, df=Inf, dp = NULL)
+
+}
 \usage{
-dmst(x, xi=rep(0,d), Omega, alpha, df=Inf, log=FALSE)
-pmst(x, xi=rep(0,d), Omega, alpha, df=Inf, ...)
-rmst(n=1, xi=rep(0,d), Omega, alpha, df=Inf)
+dmst(x, xi=rep(0,length(alpha)), Omega, alpha, df=Inf, log=FALSE)
+dmst(x, dp=, log=FALSE)
+pmst(x, xi=rep(0,length(alpha)), Omega, alpha, df=Inf, ...)
+pmst(x, dp=, ...)
+rmst(n=1, xi=rep(0,length(alpha)), Omega, alpha, df=Inf)
+rmst(n=1, dp=)
 }
 \arguments{
 \item{x}{
-for \code{dmsn}, this is either a vector of length \code{d} or a matrix 
-with \code{d} columns (where \code{d=length(alpha)}), giving 
-the coordinates of the point(s) where the density must be avaluated;
-for \code{pmsn}, only a vector of length \code{d} is allowed.
+for \code{dmsn}, this is either a vector of length \code{d},
+where \code{d=length(alpha)}, or a matrix with \code{d} columns, 
+giving  the coordinates of the point(s) where the density must be 
+avaluated; for \code{pmsn}, only a vector of length \code{d} is allowed.
 }
 \item{xi}{
 a numeric vector of lenght \code{d}, or a matrix with \code{d} columns,
@@ -36,6 +45,12 @@ a numeric vector which regulates the shape of the density.
 degrees of freedom (scalar); default is \code{df=Inf} which corresponds 
 to the multivariate skew-normal distribution.
 }
+\item{dp}{
+a list with three elements named \code{xi}, \code{Omega}, \code{alpha}
+and \code{df}, containing quantities as described above. 
+If \code{dp} is specified, this overrides the individual parameter 
+specification. 
+}
 \item{n}{
 a numeric value which represents the number of random vectors
 to be drawn.
@@ -44,7 +59,7 @@ to be drawn.
 logical; if TRUE, densities  are given as log-densities.
 }
 \item{...}{
-additional parameters passed to \code{pmvt}
+additional parameters passed to \code{pmt}
 }}
 \value{
 A vector of density values (\code{dmst}) or a single probability 
@@ -61,7 +76,7 @@ one; see \code{dmsn}. See the reference below for additional information.
 \details{
   The positive-definiteness of \code{Omega} is not tested for
   efficiency reasons. Function
-  \code{pmst} requires \code{pmvt} from \code{library(mvtnorm)};
+  \code{pmst} requires \code{pmt} from package \code{mnormt};
   the accuracy of its computation can be controlled via use of \code{...}
 }
 \references{
@@ -71,8 +86,7 @@ one; see \code{dmsn}. See the reference below for additional information.
   \emph{J.Roy. Statist. Soc. B} \bold{65}, 367--389.
 }
 \seealso{
-\code{\link{dst}}, \code{\link{mst.fit}}, \code{\link{dmsn}},
-\code{\link[mvtnorm]{pmvt}}
+\code{\link{dst}},  \code{\link{dmsn}}, \code{\link[mnormt]{dmt}}
 }
 \examples{
 x <- seq(-4,4,length=15)
@@ -82,9 +96,8 @@ Omega[2,1] <- Omega[1,2] <- 0.5
 alpha <- c(2,2)
 pdf <- dmst(cbind(x,2*x-1), xi, Omega, alpha, df=5)
 rnd <- rmst(10,  xi, Omega, alpha, 6)
-library(mvtnorm)                # only once in the session
-cdf <- pmst(c(2,1), xi, Omega, alpha, df=5)
-
+p1 <- pmst(c(2,1), xi, Omega, alpha, df=5)
+p2 <- pmst(c(2,1), xi, Omega, alpha, df=5, abseps=1e-12, maxpts=10000)
 }
 \keyword{distribution}
 \keyword{multivariate}

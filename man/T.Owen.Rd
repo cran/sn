@@ -18,7 +18,7 @@ a numerical scalar. \code{Inf} is allowed.
 }
 \item{jmax}{
 an integer scalar value which regulates the accuracy of the result.
-See DETAILS below for explanation.
+See the section Details below for explanation.
 }
 \item{cut.point}{
 a scalar value which regulates the behaviour of the algorithm, as
@@ -47,7 +47,7 @@ Tables for computing bivariate normal probabilities.
 \bold{27}, 1075-1090.
 }
 \seealso{
-\code{\link{pnorm2}}, \code{\link{psn}}
+ \code{\link{psn}}
 }
 \examples{
 owen <- T.Owen(1:10, 2)
