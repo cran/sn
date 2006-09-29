@@ -13,7 +13,7 @@ generation for the skew-t (ST) distribution.
 \synopsis{
 dst(x, location = 0, scale = 1, shape = 0, df = Inf, dp = NULL, log = FALSE) 
 pst(x, location = 0, scale = 1, shape = 0, df = Inf, dp = NULL, ...)
-qst(p, location = 0, scale = 1, shape = 0, df = Inf, tol = 1e-08, ...)
+qst(p, location = 0, scale = 1, shape = 0, df = Inf, tol = 1e-08, dp = NULL, ...)
 rst(n = 1, location = 0, scale = 1, shape = 0, df = Inf, dp = NULL)
 }
 \usage{

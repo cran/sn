@@ -34,11 +34,15 @@ If missing, a one-column matrix of 1's is created; otherwise
 it must have the same number of rows of \code{y}.
 }
 \item{start}{
-a list contaning the components \code{beta},\code{Omega}, \code{alpha},
-\code{df} of the type described below. The \code{dp} component of the returned
-list from a previous call has the required format and it can be used as a new
-\code{start}. If missing, initial values are computed fitting an
-ordinary linear model and with shape parameter set to 0.
+  for \code{mst.mle}, a list contaning the components
+  \code{beta},\code{Omega},  \code{alpha},
+\code{df} of the type described below; for \code{st.mle}, a vector whose
+components contain analogous ingredients as before, with the exception
+that the scale parameter is the square root of \code{Omega}.  In both
+cases, the \code{dp} component of the returned list from a previous call
+has the required format and it can be used as a new \code{start}. If the
+\code{start} parameter is missing, initial values are selected by the
+function.
 
 }
 \item{fixed.df}{
@@ -68,14 +72,14 @@ A list containing the following components:
 a string containing the calling statement.
 }
 \item{dp}{
-a list containing the direct parameters \code{beta}, \code{Omega}, \code{alpha}.
+  for \code{mst.mle}, this is a list containing the direct parameters
+  \code{beta}, \code{Omega}, \code{alpha}.
 Here, \code{beta} is a matrix of regression coefficients with
-\code{dim(beta)=c(ncol(X),ncol(y))}, \code{Omega} is a covariance matrix of
-order \code{ncol(y)}, \code{alpha} is a vector of shape parameters of length
-\code{ncol(y)}.
-Notice that, if \code{st.mle} was called or equivalently \code{mst.mle}
-was called with \code{y} a vector, then \code{Omega} represents the
-\emph{square} of the scale parameter. 
+\code{dim(beta)=c(ncol(X),ncol(y))}, \code{Omega} is a covariance matrix
+of order \code{ncol(y)}, \code{alpha} is a vector of shape parameters of
+length \code{ncol(y)}.  For \code{st.mle}, \code{dp} is a vector of
+length \code{ncol(X)+3}, containing \code{c(beta, omega, alpha, df)}, where
+\code{omega} is the square root of \code{Omega}.
 }
 \item{se}{
 a list containing the components \code{beta}, \code{alpha}, \code{info}.

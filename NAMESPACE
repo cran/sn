@@ -9,7 +9,7 @@ export(cp.to.dp, dmsn, dmst, dp.to.cp, dsn, dst,
   sn.2logL.profile, sn.cumulants, sn.Einfo, sn.em,  
   sn.mle, sn.mle.grouped, sn.mmle, 
   st.2logL.profile, st.cumulants, st.cumulants.inversion,
-  st.mle, st.mle.grouped, T.Owen, zeta  
+  st.mle, st.mle.grouped, st.mmle, T.Owen, zeta
 )
 
 # msn.dev, msn.dev.grad, mst.dev.grad

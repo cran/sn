@@ -1,8 +1,7 @@
 \name{SN}
 \alias{SN}
-\title{
-Package `sn': summary information
-}
+\alias{sn-package}
+\title{Package `sn': summary information}
 \description{
 This package provides functions related to the skew-normal (SN) and
 the skew-t (ST) probability distributions, both for the univariate 
@@ -50,8 +49,8 @@ It is suggested that a user starts by reading the  documentation of
 (some of) these functions.
 }
 \section{Requirements}{
-R 2.2.0.  Two functions make use of package \code{mtnormt}: 
-\code{pmsn}, \code{pmst}.
+  R 2.2.0.
+  Two functions make use of package \code{mnormt}: \code{pmsn}, \code{pmst}.
 }
 \section{Version}{
 The version level of the package is given by the  command 

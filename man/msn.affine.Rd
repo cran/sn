@@ -35,7 +35,9 @@
 \section{Background}{
   For background information about the skew-normal and skew-t
   distributions, their parameters and the properties of affine
-  transformations, see the references below.
+  transformations, see the references below. The specific formulae
+  implemented by this function are given in Appendix A.2 of
+  Capitanio et al.(2003).
 }
 \references{
 Azzalini, A. and Capitanio, A. (1999).

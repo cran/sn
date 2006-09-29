@@ -32,7 +32,9 @@ sample.centralmoments(x, w = rep(1, length(x)), order=4)
   
   Used in conjunction with \code{st.cumulants.inversion},  this 
   function allows to fit a skew-t distribution by the methods
-  of moments; see the example below.
+  of moments; see the example below. Note however, that for
+  stability reasons, this is \emph{not} adopted as the standard method
+  for producing initial values of MLE search.
 }
 \seealso{\link{st.cumulants.inversion}, \link{weighted.mean}}
 \examples{

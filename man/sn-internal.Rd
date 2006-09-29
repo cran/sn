@@ -13,6 +13,7 @@
 \alias{solvePD}
 \alias{st.logL.grouped}
 \alias{sn.SFscore}
+\alias{st.SFscore}
 \title{Internal sn functions}
 \description{
  Internal functions of package \emph{sn}
@@ -31,7 +32,8 @@ sn.dev.gh(cp, X, y, trace=FALSE, hessian=FALSE)
 sn.logL.grouped(param, breaks, freq, trace=FALSE)
 solvePD(x)
 st.logL.grouped(param, breaks, freq, trace=FALSE)
-sn.SFscore(shape, data, trace=FALSE)
+sn.SFscore(shape, z, trace=FALSE)
+st.SFscore(shape, df, z, trace=FALSE)
 }
 \arguments{
 \item{param,cp, coefficients, shape}{
@@ -43,8 +45,8 @@ a matrix of explanatory variables; must have \code{col(X)} equal to
 \code{length(y)}. Missing values (\code{NA}) are not allowed.
 If \code{X} is missing, a one-column matrix of 1's is created.
 }
-\item{y}{
-a numeric vector or matrix. Missing values (\code{NA}s) are not allowed.
+\item{x,y,z}{
+a numeric vector or matrix, depending on the context.
 }
    
 \item{freq}{

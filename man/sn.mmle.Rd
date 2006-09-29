@@ -1,15 +1,17 @@
 \name{sn.mmle}
 \alias{sn.mmle}
+\alias{st.mmle}
 \title{
-Modified maximum likelihood estimation for skew-normal models
+Modified maximum likelihood estimation for skew-normal ans skew-t models
 }
 \description{
-  Fits a one-dimensional skew-normal (SN) distribution to data, or fits
-  a  linear regression model with skew-normal errors, using a
-  modification  of maximum likelihood estimation.
+  Fits a one-dimensional skew-normal (SN) or skew-t (ST) distribution to
+  data, or fits a linear regression model with skew-normal errors, using
+  a modification of maximum likelihood estimation.
 }
 \usage{
-sn.mmle(X, y,  plot.it=TRUE, trace=FALSE, ...)
+sn.mmle(X, y, plot.it=TRUE, trace=FALSE, ...)
+st.mmle(X, y, df, trace=FALSE)
 }
 \arguments{
 \item{y}{
@@ -23,6 +25,9 @@ sn.mmle(X, y,  plot.it=TRUE, trace=FALSE, ...)
   If \code{X} has only one column, then it is assumed to be made of 1's.
   Missing values (\code{NA}s) are not allowed.
 }
+\item{df}{
+  a positive real value representing the degrees of freedom, in the ST case
+  }
 \item{plot.it}{
   logical value, If \code{plot.it=TRUE} (default),
   a plot of the nonparametric estimate of variable \code{y} (or the residuals,
@@ -38,7 +43,7 @@ sn.mmle(X, y,  plot.it=TRUE, trace=FALSE, ...)
 }
 }
 \value{
-a list containing the following components:
+from \code{sn.mmle}, a list containing the following components:
 
 \item{call}{
 a string containing the calling statement
@@ -52,17 +57,17 @@ a vector of standard errors for the parameters
 \item{Einfo}{
 the expected Fisher information matrix for the parameters
 }
-}
+from \code{st.mmle} only the \code{call} and \code{dp} components are returned}
 }
 \details{
 If plotting operates, the function \code{sm.density} of the library \code{sm}
 is searched.  If \code{sm.density} is not found, an histogram is plotted.
 }
 \section{Background}{
-  Maximum likelihood estimation for SN models can lead to estimates
+  Maximum likelihood estimation for SN and ST models can lead to estimates
   of the shape parameters on the frontier (that is \code{Inf} for the
   DP parameters); see  Azzalini and Capitanio (1999) for a discussion
-  of this aspect.
+  of this aspect in the SN case.
   To avoid this situation, an alternative estimation criterion is the
   method of Sartori-Firth, which involves first regular maximum estimation
   and subsequent re-estimation of the shape parameter using a modified
@@ -80,10 +85,10 @@ Firth, D.  (1993).
   Bias reduction of maximum likelihood estimates.
   \emph{Biometrika}  \bold{80}, 27--38. (Corr: 95V82 p.667).
 
-Sartori, N. (2003).
-  Bias prevention of maximum  likelihood estimates: skew normal and skew t
-  distributions. Working paper 2003-1,
-  Department of Statistical Sciences, University of Padua. Submitted.
+Sartori, N. (2006).
+  Bias prevention of maximum likelihood estimates for scalar skew normal
+  and skew $t$ distributions.
+  \emph{J. Statist. Plann. Inf.} \bold{136}, 4259--4275.
 }
 \seealso{
 \code{\link{sn.mle}}, \code{\link{sn.Einfo}}

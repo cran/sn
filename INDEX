@@ -2,21 +2,24 @@ Overview:
 ---------
 SN                     the library `sn': summary information
 
-
 Functions:
 ----------
 cp.to.dp               conversion between equivalent parametrizations
 dmsn                   multivariate skew-normal distribution
 dmst                   multivariate skew-t distribution
 dp.to.cp               conversion between equivalent parametrizations
-dsn                    skew-Normal distribution
+dsn                    skew-normal distribution
+dsn2.plot              plot of bivariate skew-normal density function
 dst                    skew-t distribution
+dst2.plot              plot of bivariate skew-t density function
 gamma1.to.lambda       converts skewness to shape parameter of skew-
                        normal distribution
 msn.affine             affine trasnformation of a multivariate skew-normal
                        variate
 msn.conditional        cumulants and distribution of a skew-normal
                        variate after conditioning
+msn.cond.plot          plot of the density of a conditional skew-normal
+                       variate
 msn.fit                fitting multivariate skew-normal distributions
 msn.marginal           marginal compontents of a multivariate skew-
                        normal distribution
@@ -24,26 +27,26 @@ msn.mle                maximum likelihood estimation for a multivariate
                        skew-normal distribution
 msn.quantities         quantities related to the multivariate skew-
                        normal distribution.
-msn.cond.plot          plot of the density of a conditional skew-normal
-                       variate
+mst.affine             affine trasnformation of a multivariate skew-t variate
 mst.fit                fitting multivariate skew-t distributions
 mst.mle                maximum likelihood estimation for a multivariate
                        skew-t distribution
-pnorm2                 bivariate normal integral
-sn.2logL.profile       profile twice loglikelihood for skew-normal
-                       models
+sample.centralmoments  computes sample mean and central moments
+sn.2logL.profile       profile twice loglikelihood for skew-normal models
 sn.cumulants           cumulants of the skew-normal distribution
 sn.Einfo               expected Fisher information for skew-normal
                        distributions and regression models
 sn.em                  fitting skew-normal variables using the EM algorithm
 sn.mle                 maximum likelihood estimation for skew-normal models
-sn.mmle                modified MLE for skew-normal models
 sn.mle.grouped         maximum likelihood estimation for skew-normal 
                        grouped data
-st.2logL.profile       profile twice loglikelihood for skew-normal models
+sn.mmle                modified MLE for skew-normal models
+st.2logL.profile       profile twice loglikelihood for skew-t models
 st.cumulants           cumulants of skew-t distribution
+st.cumulants.inversion inverts cumulants of skew-t distribution to parameters
 st.mle                 maximum likelihood estimation for skew-t models
 st.mle.grouped         maximum likelihood estimation for skew-t grouped data
+sn.mmle                modified MLE for skew-t models
 T.Owen                 Owen's function
 zeta                   function `log(2*pnorm(x))' and its derivatives
 
