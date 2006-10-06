@@ -128,7 +128,7 @@ Statistical applications of the multivariate skew-normal distribution.
 \bold{61}, 579--602.
 }
 \seealso{
-\code{\link{msn.mle}}, \code{\link{mst.fit}}
+\code{\link{msn.mle}}, \code{\link{mst.fit}},  \code{\link{dmsn}},
 }
 \examples{
 data(ais, package="sn")

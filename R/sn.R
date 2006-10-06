@@ -510,8 +510,8 @@ sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
       }
     else 
       {
-      h <- hist(y0, prob=TRUE, breaks="FD", plot=FALSE)
-      hist(y0, prob=TRUE, breaks="FD", xlim=c(min(x),max(x)),
+      h <- hist(y0, breaks="FD", plot=FALSE)
+      hist(y0, probability=TRUE, breaks="FD", xlim=c(min(x),max(x)),
            xlab=xlab, main=xlab, ylim=c(0, max(pdf.sn, h$density)))
       }
     if(n<101) points(y0,rep(0,n),pch=1)
@@ -1546,12 +1546,12 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
     rad.n  <- apply(res    * (res %*% solvePD(var(res))), 1, sum)
     rad.st <- apply((y-xi) * ((y-xi) %*% solvePD(Omega)), 1, sum)
     plot(pp2, sort(rad.n), pch=1, ylim=c(0,max(rad.n,rad.st)),
-        xlab="Percentiles of chi-square distribution", 
+        xlab="Percentiles of scaled F distribution", 
         ylab="Mahalanobis distances")
     abline(0,1,lty=3)
     title(main="QQ-plot for normal distribution", sub=y.name)
     plot(pp, sort(rad.st), pch=1, ylim=c(0,max(rad.n,rad.st)),
-        xlab="Percentiles of chi-square distribution", 
+        xlab="Percentiles of scaled F distribution", 
         ylab="Mahalanobis distances")
     abline(0,1,lty=3)
     title(main="QQ-plot for skew-t distribution", sub=y.name)
@@ -2217,8 +2217,8 @@ msn.affine <- function(dp, a=0, A, drop=TRUE)
      dp.T<- list(location=xi.T, scale=sqrt(as.vector(O.T)), shape=alpha)
   else
      dp.T <- list(xi=xi.T, Omega=O.T, alpha=alpha)
-  if(!is.null(tau=dp$tau)) dp.T$tau <- dp$tau
-  if(!is.null(tau=dp$df)) dp.T$df <- dp$df
+  if(!is.null(dp$tau)) dp.T$tau <- dp$tau
+  if(!is.null(dp$df)) dp.T$df <- dp$df
   return(dp.T)
 }
 
@@ -2305,7 +2305,7 @@ log.pt <- function(x, df){
     stop("This package requires R 2.2.0 or later")
   assign(".sn.home", file.path(library, pkg),
          pos=match("package:sn", search()))
-  sn.version <- "0.4-2 (2006-10-26)"
+  sn.version <- "0.4-3 (2007-10-06)"
   assign(".sn.version", sn.version, pos=match("package:sn", search()))
   if(interactive())
   {

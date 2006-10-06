@@ -17,7 +17,7 @@
     [, 5] \tab Hc   \tab Hematocrit \cr
     [, 6] \tab Hg   \tab Hemoglobin \cr
     [, 7] \tab Fe   \tab plasma ferritin concentration \cr
-    [, 8] \tab bmi  \tab body mass index, weight/(height)² \cr
+    [, 8] \tab bmi  \tab body mass index, weight/(height)\eqn{^2}{²} \cr
     [, 9] \tab ssf  \tab sum of skin folds \cr
     [,10] \tab Bfat \tab body fat percentage \cr
     [,11] \tab lbm  \tab lean body mass \cr

@@ -2,7 +2,7 @@
 \alias{msn.affine}
 \alias{mst.affine}
 \title{
-  Affine transformation a multivariate skew-normal or
+  Affine transformation of a multivariate skew-normal or
   skew-t variable
 }
 \description{

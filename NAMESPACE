@@ -1,4 +1,3 @@
-
 export(cp.to.dp, dmsn, dmst, dp.to.cp, dsn, dst,
   dsn2.plot, dst, dst2.plot, gamma1.to.lambda,
   msn.affine, msn.conditional, msn.cond.plot,
@@ -11,7 +10,3 @@ export(cp.to.dp, dmsn, dmst, dp.to.cp, dsn, dst,
   st.2logL.profile, st.cumulants, st.cumulants.inversion,
   st.mle, st.mle.grouped, st.mmle, T.Owen, zeta
 )
-
-# msn.dev, msn.dev.grad, mst.dev.grad
-# num.deriv1, num.deriv2, sn.dev, sn.dev.gh, sn.logL.grouped, 
-# sn.SFscore, solvePD, st.dev.fixed, st.logL.grouped 

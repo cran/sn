@@ -5,7 +5,7 @@ citEntry(entry="manual",
                   "The skew-normal and skew-$t$ distributions (version ",  
                   strsplit(.sn.version," ",fixed=TRUE)[[1]][1],")", sep=""),
          author = personList(as.person("A. Azzalini")),
-         address      = "Università di Padova, Italia",
+         address      = "Universit\\`a di Padova, Italia",
          year         = substr(strsplit(
                         .sn.version," ",fixed=TRUE)[[1]][2], 2,5),
          url          = "URL http://azzalini.stat.unipd.it/SN",

@@ -81,8 +81,8 @@ as explained below.
 \item{test.normality}{
 a list with elements \code{test} and \code{p.value}, which are the value
 of the likelihood ratio test statistic for normality (i.e. test that
-all components of the shape parameter are 0), and the corresponding
-p-value.
+ all components of the shape parameter are 0 and \code{df=Inf}), 
+and the corresponding p-value.
 }}
 \section{Side Effects}{
 Graphical output is produced if \code{(plot.it & missing(freq))==TRUE}. 
@@ -133,7 +133,7 @@ Azzalini, A. and Capitanio, A. (2003).
 
 }
 \seealso{
-\code{\link{mst.mle}}, \code{\link{msn.fit}}
+\code{\link{mst.mle}}, \code{\link{msn.fit}}, \code{\link{dmst}}, \code{\link{dmsn}}
 }
 \examples{
 data(ais, package="sn")
