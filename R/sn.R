@@ -1398,7 +1398,7 @@ rmst <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, df=Inf, dp=NULL)
   d <- length(alpha)
   x <- if(df==Inf) 1 else rchisq(n,df)/df
   z <- rmsn(n, rep(0,d), Omega, alpha)
-  y <- t(xi+ t(sqrt(x)*z))
+  y <- t(xi+ t(z/sqrt(x)))
   attr(y,"parameters") <- list(xi=xi, Omega=Omega, alpha=alpha, df=df)
   return(y)
 }
@@ -1607,12 +1607,12 @@ st.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE,
   dp <- fit$dp
   se <- fit$se
   p  <- length(dp$beta)
-  dp.names<- c(if(p==1) "location" else dimnames(dp$beta)[[1]],
+  dp.names <- c(if(p==1) "location" else dimnames(dp$beta)[[1]],
                 "scale","shape","df")
   mle$dp  <- c(dp$beta, sqrt(as.vector(dp$Omega)), dp$alpha, dp$df)
   names(mle$dp) <- dp.names
   mle$se  <- c(se$beta, mle$dp[p+1] * se$internal[p+1], se$alpha,
-          dp$df *  se$internal[p+3])
+               dp$df * se$internal[p+3])
   if(length(mle$se) == length(dp.names)) names(mle$se) <- dp.names
   mle$logL <- fit$logL
   mle
@@ -2305,7 +2305,7 @@ log.pt <- function(x, df){
     stop("This package requires R 2.2.0 or later")
   assign(".sn.home", file.path(library, pkg),
          pos=match("package:sn", search()))
-  sn.version <- "0.4-1 (2006-09-29)"
+  sn.version <- "0.4-2 (2006-10-26)"
   assign(".sn.version", sn.version, pos=match("package:sn", search()))
   if(interactive())
   {
