@@ -51,7 +51,7 @@ summary statistics of relative and absolute error of the approximation.
 A contour plot of the exact and approximate densities is produced
 on a graphical device.
 }
-\details{
+\details{See Section 4.2 of the reference given below for backgroud details
 }
 \references{
 Azzalini, A. and Capitanio, A. (1999).

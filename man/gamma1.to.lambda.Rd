@@ -38,6 +38,7 @@ A class of distributions which includes the normal ones.
 \code{\link{dsn}}
 }
 \examples{
+gamma1.to.lambda(seq(-0.95, 0.95, length=11))
 }
 \keyword{distribution}
 % Converted by Sd2Rd version 0.3-3.

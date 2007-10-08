@@ -2305,7 +2305,7 @@ log.pt <- function(x, df){
     stop("This package requires R 2.2.0 or later")
   assign(".sn.home", file.path(library, pkg),
          pos=match("package:sn", search()))
-  sn.version <- "0.4-3 (2007-10-06)"
+  sn.version <- "0.4-4 (2007-10-08)"
   assign(".sn.version", sn.version, pos=match("package:sn", search()))
   if(interactive())
   {
