@@ -9,7 +9,7 @@ model with skew-normal errors, using maximum likelihood estimation.
 }
 \usage{
 sn.mle(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
-          control=list(iter.max=100, abs.tol=1e-5))
+          control=list(maxit=100))
 }
 \arguments{
 \item{y}{
@@ -82,8 +82,8 @@ If plotting operates, the function \code{sm.density} of the library \code{sm}
 is searched; this library is associated with the book by Bowman and
 Azzalini (1997).  If \code{sm.density} is not found, an histogram is plotted.
 
-% To fit a skew-notmal distribution to grouped data by exact
-% maximum likelihood estimation, use \code{sn.mle.grouped}.
+To fit a skew-normal distribution to grouped data by exact
+maximum likelihood estimation, use \code{sn.mle.grouped}.
 
 }
 \section{Background}{

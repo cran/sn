@@ -265,9 +265,9 @@ sn.em <-function(X, y, fixed, p.eps=1e-4, l.eps=1.e-2, trace=FALSE, data=FALSE)
 #
 #  EM per caso con uno/due/tre parametri ignoti, parametrizzando in modo 
 #  "diretta" con (xi, omega, lambda); internamente usa peraltro 'delta'.
-#  Le componenti ignote sono i termini NA di fixed,  ma per semplicità
+#  Le componenti ignote sono i termini NA di fixed,  ma per semplicita`
 #  assumiamo che un NA implica che le componenti alla sua sx sono NA
-#  (e quindi il primo elemento di fixed è sempre NA).
+#  (e quindi il primo elemento di 'fixed' e` sempre NA).
 #
   n <- length(y)
   if(missing(X)) X<-matrix(rep(1,n),n,1)
@@ -432,7 +432,7 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
 
   
 sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
-               control=list(iter.max=100, abs.tol=1e-5)) 
+               control=list(maxit=100)) 
 {
   xlab<-deparse(substitute(y))
   if(!is.null(dim(y))) {
@@ -510,8 +510,8 @@ sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
       }
     else 
       {
-      h <- hist(y0, breaks="FD", plot=FALSE)
-      hist(y0, probability=TRUE, breaks="FD", xlim=c(min(x),max(x)),
+      h <- hist(y0,  breaks="FD", plot=FALSE)
+      hist(y0, freq=FALSE, breaks="FD", xlim=c(min(x),max(x)),
            xlab=xlab, main=xlab, ylim=c(0, max(pdf.sn, h$density)))
       }
     if(n<101) points(y0,rep(0,n),pch=1)
@@ -2264,7 +2264,7 @@ sample.centralmoments <- function(x, w=rep(1,length(x)), order=4)
     stop("order must be a positive integer") 
   x <- as.vector(x)
   m <- weighted.mean(x, w=w, na.rm = TRUE)
-  mom <- rep(0,4)
+  mom <- rep(0,order)
   mom[1] <- m
   if(order > 1) 
     for(k in 2:order)
@@ -2305,7 +2305,7 @@ log.pt <- function(x, df){
     stop("This package requires R 2.2.0 or later")
   assign(".sn.home", file.path(library, pkg),
          pos=match("package:sn", search()))
-  sn.version <- "0.4-4 (2007-10-08)"
+  sn.version <- "0.4-5 (2008-07-29)"
   assign(".sn.version", sn.version, pos=match("package:sn", search()))
   if(interactive())
   {
