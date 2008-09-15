@@ -11,11 +11,11 @@ Computation and plot of 1-dimensional and 2-dimensional profile
 st.2logL.profile(X=matrix(rep(1, n)), y, freq, trace=FALSE,
           fixed.comp = c(ncol(X)+2, ncol(X)+3), 
           fixed.values = cbind(c(-4,4), log(c(1,25))),
-          npts=30/length(fixed.comp), plot.it=TRUE, ...)
+          npts=51/length(fixed.comp), plot.it=TRUE, ...)
 }
 \arguments{
 \item{X}{
-a matrix of explanatory variables; must have \code{col(X)} equal to
+a matrix of explanatory variables; must have \code{nrow(X)} equal to
 \code{length(y)}. Missing values (\code{NA}) are not allowed.
 If \code{X} is missing, a one-column matrix of 1's is created.
 }
@@ -25,7 +25,7 @@ a numeric vector. Missing values (\code{NA}s) are not allowed.
 \item{freq}{
 a vector of weights.
 If missing, a vector of 1's is created; otherwise
-it must have the same number of rows of \code{y}.
+it must have the same length of \code{y}.
 }
 \item{trace}{
 logical value which controls printing of the algorithm convergence.
@@ -51,7 +51,7 @@ logical value; if \code{plot.it=TRUE} (default value) a graphical display
 is produced.
 }
 \item{...}{
-graphical parameter passed to \code{plot} or \code{contour},
+graphical parameter passed either to \code{plot} or to \code{contour},
 depending on whether \code{lenght(fixed.comp)} is 1 or 2.
 }}
 \value{
@@ -85,8 +85,8 @@ If \code{plot.it=TRUE}, a plot of the profile twice relative loglikeliood is
 produced on a graphical device. 
 If \code{length(fixed.comp)=1}, a plot of the `deviance' is produced
 as a function of the chosen parameter component.
-If \code{length(fixed.comp)=2}, a contour plot is produced whose
-contour lines correspond to confidence regions of approximate
+If \code{length(fixed.comp)=2}, this plot takes the form of a contour plot 
+whose contour lines correspond to confidence regions of approximate
 probability levels \code{c(0.25, 0.5,  0.75, 0.90,0.95, 0.99)}.
 }
 \section{Background}{

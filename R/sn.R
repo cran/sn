@@ -355,7 +355,7 @@ gamma1.to.lambda<- function(gamma1){
 
 sn.2logL.profile<-function(X=matrix(rep(1,n)), y, 
       param.range=c(sqrt(var(y))*c(2/3, 3/2), -0.95, 0.95),
-      use.cp=TRUE, npts= 31 %/% d, plot.it=TRUE, ...)
+      use.cp=TRUE, npts= 51 %/% d, plot.it=TRUE, ...)
 {# plot 1D or 2D profile deviance (=-2logL) using either parameters
    # if(plot.it & !exists(.Device)) stop("Device not active")
    n<-length(y)
@@ -382,7 +382,7 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
         }
       if(max(abs(gamma1))>0.9952717) stop("abs(gamma1)>0.9952717")
       lambda <- gamma1.to.lambda(gamma1)
-      sc<-sqrt(1-(2/pi)*lambda^2/(1+lambda^2))      
+      sc <- sqrt(1 - (2/pi) * lambda^2/(1+lambda^2))      
       }
    else{ # use dp 
       if(d==1) {
@@ -393,7 +393,7 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
       else {
          omega<-param1 
 	 sc <- rep(1,npts)
-         lambda<-param2
+         lambda <- param2
          xlab <- "omega"
          ylab <- "alpha"
          }
@@ -402,27 +402,25 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
    for(i in 1:npts){
      cat(" ");cat(i)
      if(d==1) {
-       a<-sn.em(X, y, fixed=c(NA,NA,lambda[i]), ...)       
+       a <- sn.em(X, y, fixed=c(NA,NA,lambda[i]), ...)       
        llik[i]<-a$logL
-       # print(c(i,lambda[i],a$logL))
        }
      else{
      for(j in 1:npts){     
-       a<-sn.em(X, y, fixed=c(NA,param1[i]/sc[j],lambda[j]), ...)
+       a <- sn.em(X, y, fixed=c(NA,param1[i]/sc[j],lambda[j]), ...)
        llik[i,j] <- a$logL
-       # print( c(i,j, param1[i]/sc[j], lambda[j], a$logL))
      }}
    }
   cat("\n")
   #if(plot)
-  f<-2*(llik-max(llik))	
+  f <- 2*(llik-max(llik))	
   if(plot.it){
     if(d==1) plot(param1, f, type="l", 
             xlab=xlab, ylab="profile relative 2(logL)")
-    else contour(param1, param2, f, labcex=0.75, 
+    else contour(param1, param2, f, labcex=0.5, 
             xlab=xlab, ylab=ylab,
-            levels=-c(0.575, 1.386, 2.773, 4.605, 5.991, 9.210))
-            # qchisq(c(0.25,0.5,0.75,0.90,0.95,0.99),2)
+            levels=-c(0.57, 1.37, 2.77, 4.6, 5.99, 9.2), 
+            labels=c(0.25, 0.5,  0.75, 0.90,0.95, 0.99))
     title(main=paste("dataset:", deparse(substitute(y)),
         "\nProfile relative 2(logLikelihood)", sep= " "))	
   }
@@ -1844,13 +1842,14 @@ mst.dev.grad <- function(param, X, y, freq=rep(1,nrow(X)), fixed.df=NA,
 st.2logL.profile<-function(X=matrix(rep(1,n)), y, freq, trace=FALSE,
           fixed.comp = c(ncol(X)+2, ncol(X)+3), 
           fixed.values = cbind(c(-4,4), log(c(1,25))),
-          npts=30/length(fixed.comp), plot.it=TRUE, ...)
+          npts=51/length(fixed.comp), plot.it=TRUE, ...)
 {# plot2D profile deviance (=2(max.logL-logL)) using either parameters
  # if(plot.it & !exists(.Device)) stop("Device not active")
  #
    if(missing(freq)) freq <- rep(1,length(y))
    n <- sum(freq)
    m <- ncol(X)
+   npts <- as.integer(npts)
    if(length(fixed.comp) == 1){
       param1 <- seq(fixed.values[1], fixed.values[2], length=npts)
       logL <- param2 <- rep(NA,npts)}
@@ -1879,6 +1878,7 @@ st.2logL.profile<-function(X=matrix(rep(1,n)), y, freq, trace=FALSE,
          dp<- c(param[1:m], exp(param[m+1]), param[m+2], exp(param[m+3]))
          best <- list(fixed.comp1=param1[i], fixed.comp2=NA,
                       dp=dp, logL=max.logL, opt=opt)
+         param <- param[-fixed.comp]
        }}
      else{
      for(j in 1:npts){     
@@ -1900,6 +1900,7 @@ st.2logL.profile<-function(X=matrix(rep(1,n)), y, freq, trace=FALSE,
          dp<- c(param[1:m], exp(param[m+1]), param[m+2], exp(param[m+3]))
          best <- list(fixed.comp1=param1[i], fixed.comp2=param2[j],
                       dp=dp, logL=max.logL, opt=opt)
+         param <- param[-fixed.comp]
        }   
      }}
    }
@@ -1911,11 +1912,11 @@ st.2logL.profile<-function(X=matrix(rep(1,n)), y, freq, trace=FALSE,
       points(x=best$fixed.comp1, y=0, pch=1)
       }
     else{
-      contour(param1, param2, dev,   labcex=0.75, 
+      contour(param1, param2, dev, labcex=0.5, 
           levels=c(0.57, 1.37, 2.77, 4.6, 5.99, 9.2), 
           labels=c(0.25, 0.5,  0.75, 0.90,0.95, 0.99),
           ...)
-    points(x=best$fixed.comp1, y=best$fixed.comp2, pch=1)  
+      points(x=best$fixed.comp1, y=best$fixed.comp2, pch=1,cex=0.5)  
     }
   }    
   title(main=paste("dataset:", deparse(substitute(y)),
@@ -2305,7 +2306,7 @@ log.pt <- function(x, df){
     stop("This package requires R 2.2.0 or later")
   assign(".sn.home", file.path(library, pkg),
          pos=match("package:sn", search()))
-  sn.version <- "0.4-5 (2008-07-29)"
+  sn.version <- "0.4-6 (2008-09-15)"
   assign(".sn.version", sn.version, pos=match("package:sn", search()))
   if(interactive())
   {

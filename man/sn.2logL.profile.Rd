@@ -10,7 +10,7 @@ Computation and plot of 1-dimensional and 2-dimensional profile
 \usage{
 sn.2logL.profile(X=matrix(rep(1, n)), y,
     param.range=c(sqrt(var(y)) * c(2/3, 3/2), -0.95, 0.95),
-    use.cp=TRUE, npts=31 \%/\% d, plot.it=TRUE, ...)
+    use.cp=TRUE, npts=51 \%/\% d, plot.it=TRUE, ...)
 }
 \arguments{
 \item{y}{
@@ -71,6 +71,9 @@ obtain the "relative" version of \code{2logL}.
 \section{Side Effects}{
 If \code{plot.it=TRUE}, a plot of the profile twice relative loglikeliood is
 produced on a graphical device.
+If \code{length(fixed.comp)=2}, this plot takes the form of a contour plot 
+whose contour lines correspond to confidence regions of approximate probability  
+levels \code{c(0.25, 0.5, 0.75, 0.90,0.95, 0.99)}.
 }
 \details{
 Likelihood maximization is performed by \code{sn.em}.
