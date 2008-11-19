@@ -3,7 +3,7 @@
 \title{Sample centralmoments}
 \description{
   Computes sample central moments up to a given order and the
-  first moment from the origin}
+  first moment from the origin
 }
 \usage{
 sample.centralmoments(x, w = rep(1, length(x)), order=4)

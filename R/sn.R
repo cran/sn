@@ -1609,10 +1609,11 @@ st.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE,
                 "scale","shape","df")
   mle$dp  <- c(dp$beta, sqrt(as.vector(dp$Omega)), dp$alpha, dp$df)
   names(mle$dp) <- dp.names
-  mle$se  <- c(se$beta, mle$dp[p+1] * se$internal[p+1], se$alpha,
-               dp$df * se$internal[p+3])
-  if(length(mle$se) == length(dp.names)) names(mle$se) <- dp.names
+  mle$se <- if(all(is.na(se))) NA else
+        c(se$beta, mle$dp[p + 1] * se$internal[p + 1], 
+        se$alpha, dp$df * se$internal[p + 3])
   mle$logL <- fit$logL
+  mle$algorithm <- fit$algorithm
   mle
 }
 
@@ -2306,7 +2307,7 @@ log.pt <- function(x, df){
     stop("This package requires R 2.2.0 or later")
   assign(".sn.home", file.path(library, pkg),
          pos=match("package:sn", search()))
-  sn.version <- "0.4-6 (2008-09-15)"
+  sn.version <- "0.4-8 (2008-11-19)"
   assign(".sn.version", sn.version, pos=match("package:sn", search()))
   if(interactive())
   {

@@ -55,7 +55,7 @@ is a vector of length \code{n} if the parameters are all scalar,
 otherwise a matrix with \code{n} columns.
 
 \code{st.cumulants.inversion} returns a vector with the \code{dp} parameters 
-of the  matching skew-t distribution}
+of the  matching skew-t distribution
 }
 \details{
 Expressions of the moments and other details on the skew-t distribution are 

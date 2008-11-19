@@ -115,7 +115,7 @@ Statistical applications of the multivariate skew-normal distribution.
 }
 \seealso{
 \code{\link{dmsn}},\code{\link{msn.fit}}, \code{\link{nlminb}}, 
-\code{\link{optim}}  }
+\code{\link{optim}}  
 }
 \examples{
 data(ais, package="sn")

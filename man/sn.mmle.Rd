@@ -57,7 +57,7 @@ a vector of standard errors for the parameters
 \item{Einfo}{
 the expected Fisher information matrix for the parameters
 }
-from \code{st.mmle} only the \code{call} and \code{dp} components are returned}
+from \code{st.mmle} only the \code{call} and \code{dp} components are returned
 }
 \details{
 If plotting operates, the function \code{sm.density} of the library \code{sm}

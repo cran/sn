@@ -100,6 +100,6 @@ a <- st.mle.grouped(breaks=log(us.income), freq, trace=TRUE,
         start=c(1.2, log(0.9), -2.1, log(20)))
 print(a$dp)
 }
-}
+
 \keyword{distribution}
 
