@@ -49,8 +49,8 @@ to the skew-normal distribution.
 }
 \item{dp}{
 a vector of length 4, whose elements represent location, scale (positive),
-shape and df, respectively. If \code{dp} is specified, this overrides the 
-specification of the other parameters.
+shape and df, respectively.  If \code{dp} is specified, the individual
+parameters cannot be set.
 }
 \item{n}{
 sample size.

@@ -12,19 +12,19 @@ generation for the skew-normal (SN) distribution.
 }
 \synopsis{
 dsn(x, location = 0, scale = 1, shape = 0, dp = NULL, log = FALSE)
-psn(x, location = 0, scale = 1, shape = 0, dp = NULL, ...)
-qsn(p, location = 0, scale = 1, shape = 0, dp = NULL, tol = 1e-08, ...) 
+psn(x, location = 0, scale = 1, shape = 0, dp = NULL, engine, ...)
+qsn(p, location = 0, scale = 1, shape = 0, dp = NULL, tol = 1e-8, engine, ...) 
 rsn(n = 1, location = 0, scale = 1, shape = 0, dp = NULL)
 }
 \usage{
 dsn(x, location=0, scale=1, shape=0, log=FALSE)
 dsn(x, dp=, log=FALSE)
-psn(x, location=0, scale=1, shape=0, ...)
-psn(x, dp=, log=FALSE)
+psn(x, location=0, scale=1, shape=0, engine, ...)
+psn(x, dp=, engine, ...)
 qsn(p, location=0, scale=1, shape=0, tol=1e-8, ...)
-qsn(x, dp=, log=FALSE)
+qsn(x, dp=, ...)
 rsn(n=1, location=0, scale=1, shape=0)
-rsn(x, dp=, log=FALSE)
+rsn(x, dp=)
 }
 \arguments{
 \item{x}{
@@ -45,9 +45,9 @@ rsn(x, dp=, log=FALSE)
   With \code{psn} and \code{qsn}, it must be of length 1.
 }
 \item{dp}{
-a vector of length 3, whose elements represent location, scale (positive) and
-shape, respectively. If \code{dp} is specified, this overrides the specification
-of the other parameters.
+a vector of length 3, whose elements represent location, scale (positive) 
+and shape, respectively. If \code{dp} is specified, the individual
+parameters cannot be set.
 }
 \item{n}{
   sample size.
@@ -58,6 +58,12 @@ of the other parameters.
 \item{log}{
   logical flag used in \code{dsn} (default \code{FALSE}).
   When \code{TRUE}, the logarithm of the density values is returned.
+}
+\item{engine}{
+  character string to select the computing engine, which is either
+  \code{"T.Owen"} or \code{"bin.nt.prob"} (the latter from package 
+  \code{mnormt}).
+  If the parameter is missing, a default selection rule is applied.
 }
 \item{...}{
   additional parameters passed to \code{T.Owen}
@@ -76,25 +82,21 @@ normal one.  The density of the SN distribution in the "standard" case
 having \code{location=0} and \code{scale=1}  is
 \code{2*dnorm(x)*pnorm(shape*x)}.
 A multivariate version of the distribution exists.
-See the references below for additional information.
+See the reference below for additional information.
 }
 \section{Details}{
-\code{psn} and \code{qsn} make use of function \code{T.Owen}
+\code{psn} and \code{qsn} make use either of function \code{T.Owen}
+or \code{biv.nt.prob}
 }
 \references{
 Azzalini, A. (1985).
 A class of distributions which includes the normal ones.
 \emph{Scand. J. Statist.}
 \bold{12}, 171-178.
-
-
-Azzalini, A. and Dalla Valle, A. (1996).
-The multivariate skew-normal distribution.
-\emph{Biometrika}
-\bold{83}, 715--726.
 }
 \seealso{
-\code{\link{T.Owen}}, \code{\link{dmsn}}, \code{\link{dst}}
+ \code{\link{dmsn}}, \code{\link{dst}},  \code{\link{T.Owen}},
+ \code{\link[mnormt]{biv.nt.prob}}
 }
 \examples{
 pdf <- dsn(seq(-3,3,by=0.1), shape=3)

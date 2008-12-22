@@ -4,7 +4,7 @@
 # Home-page: http://azzalini.stat.unipd.it/SN
 # major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 01/04/1999, 
 # 15/06/2002, 01/04/2006
-# It requires R 2.2.0, plus package mnormt for a few functions
+# It requires R 2.2.0, plus package mnormt 
 #
 #------- 
 
@@ -25,19 +25,33 @@ dsn <- function(x, location=0, scale=1, shape=0, dp=NULL, log=FALSE)
    replace(y, scale<= 0, NaN)
  }
 
-psn <- function(x, location=0, scale=1, shape=0,  dp=NULL, ...)
- {
-   if(!is.null(dp)) {
-     if(!missing(shape)) 
-        stop("You cannot set both component parameters and dp")
-     location <- dp[1]
-     scale <- dp[2]
-     shape <- dp[3]
+psn <- function(x, location = 0, scale = 1, shape = 0, dp = NULL, engine, ...)
+{ 
+  if(!is.null(dp)) {
+    if(!missing(shape)) 
+       stop("You cannot set both component parameters and dp")
+    xi <- dp[1]
+    omega <- dp[2]
+    shape <- dp[3]
+    # h.mean <- if(length(dp)>3) dp[4] else 0
     }
-   z <- (x-location)/scale
-   p <- pmin(1, pmax(0, pnorm(z) - 2*T.Owen(z, shape,...)))
-   replace(p, scale<= 0, NaN)
- }
+  z<- as.numeric((x-location)/scale)
+  if(missing(engine)) engine <- 
+    if(length(shape) == 1 & length(x) > 3) "T.Owen" else "biv.nt.prob"
+  if(engine == "T.Owen") 
+    p<- pnorm(z) - 2 * T.Owen(z, shape, ...)
+  else {
+    zd <- cbind(z, shape/sqrt(1+shape^2))
+    np <- nrow(zd)
+    p <- numeric(np)
+    for(k in 1:np){
+      R <- matrix(c(1, -zd[k,2], -zd[k,2], 1), 2, 2)
+      p[k] <- 2 * biv.nt.prob(0, rep(-Inf,2), c(0,zd[k,1]), rep(0,2), R)
+    }
+  }
+  p <- pmin(1, pmax(0, p))
+  replace(p, scale <= 0, NaN)
+}
  
 rsn <- function(n=1, location=0, scale=1, shape=0, dp=NULL)
 {
@@ -58,7 +72,7 @@ rsn <- function(n=1, location=0, scale=1, shape=0, dp=NULL)
   }
 
 qsn <- function (p, location = 0, scale = 1, shape = 0, dp=NULL, 
-           tol = 1e-08, ...) 
+           tol = 1e-8,  engine, ...) 
 {   if(!is.null(dp)) {
       if(!missing(shape)) 
         stop("You cannot set both component parameters and dp")
@@ -81,9 +95,12 @@ qsn <- function (p, location = 0, scale = 1, shape = 0, dp=NULL,
     x <- (x + (x^2 - 1) * g1/6 + x * (x^2 - 3) * g2/24 -
           x * (2 * x^2 - 5) * g1^2/36)
     x <- cum[1] + sqrt(cum[2]) * x
+    if(missing(engine)) engine <- 
+      if(length(shape) == 1 & length(x) > 3) "T.Owen" else "biv.nt.prob"
     max.err <- 1
+    dp <- c(0,1,shape)
     while (max.err > tol) {
-        x1 <- x - (psn(x, 0, 1, shape, ...) - p)/dsn(x, 0, 1, shape)
+        x1 <- x - (psn(x, dp=dp, engine=engine, ...) - p)/dsn(x, dp=dp)
         x1 <- pmin(x1,max.q)
         x1 <- pmax(x1,min.q)
         max.err <- max(abs(x1 - x)/(1 + abs(x)))
@@ -1253,18 +1270,16 @@ pst <- function (x, location=0, scale=1, shape=0, df=Inf, dp=NULL, ...)
         z <- (x-location)/scale
         p <- numeric(length(z))
         for (i in 1:length(z)){
+          p[i]  <- 
           if(round(df)==df) 
-             p[i] <- pmst(z[i], 0, matrix(1,1,1), shape, df, ...)
+            pmst(z[i], 0, matrix(1,1,1), shape, df, ...)
           else{
-            if(abs(z[i]) == Inf)
-               p[i] <- (1+sign(z[i]))/2
+            if(abs(z[i]) == Inf)   (1+sign(z[i]))/2
             else{
-              if(z[i] < 10+50/df)  
-                p[i] <- integrate(dst, -Inf, z[i], shape = shape, df = df,
-                             ...)$value
+              if(z[i] < 0)  
+                integrate(dst, -Inf, z[i], shape = shape, df = df, ...)$value
               else           
-                p[i] <- integrate(fp, 0, Inf, shape = shape, df = df,
-                                t.value = z[i], ...)$value
+                integrate(fp, 0, Inf, shape = shape, df = df, t.value = z[i], ...)$value
         }}
       }
     pmax(0,pmin(1,p))
@@ -1619,7 +1634,7 @@ st.mle <- function(X, y, freq,  start, fixed.df=NA, trace=FALSE,
 
 
 mst.mle <- function (X, y, freq, start, fixed.df = NA, trace = FALSE, 
-                 algorithm=c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"),
+                 algorithm = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"),
                  control = list()) 
 {
     algorithm <- match.arg(algorithm)
@@ -2305,13 +2320,10 @@ log.pt <- function(x, df){
   Rv <- R.Version()
   if(Rv$major < 2 |(Rv$major == 2 && Rv$minor < 2.0))
     stop("This package requires R 2.2.0 or later")
-  assign(".sn.home", file.path(library, pkg),
-         pos=match("package:sn", search()))
-  sn.version <- "0.4-8 (2008-11-19)"
-  assign(".sn.version", sn.version, pos=match("package:sn", search()))
   if(interactive())
   {
-    cat(paste("Package 'sn', ", sn.version, ". ",sep=""))
+    meta <- packageDescription("sn")
+    cat(paste("Package 'sn', ", meta$Version, " (", meta$Date, "). ", sep=""))
     cat("Type 'help(SN)' for summary information\n")
   }
   invisible()
