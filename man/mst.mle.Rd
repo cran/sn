@@ -30,8 +30,8 @@ components of the multivariate distribution.
 }
 \item{freq}{
 a vector of weights.
-If missing, a one-column matrix of 1's is created; otherwise
-it must have the same number of rows of \code{y}.
+If missing, a vector of 1's is created; otherwise
+it must have  length equal to the number of rows of \code{y}.
 }
 \item{start}{
   for \code{mst.mle}, a list contaning the components

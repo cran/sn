@@ -729,7 +729,7 @@ msn.quantities <- function(xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
   tmp <- as.vector(sqrt(1 + t(as.matrix(alpha))%*%O.cor%*%alpha)) 
   delta<- as.vector(O.cor %*%alpha)/tmp
   lambda<- delta/sqrt(1-delta^2)
-  D <-diag(sqrt(1+lambda^2))
+  D   <- diag(sqrt(1+lambda^2), d, d)
   Psi <- D %*% (O.cor-outer(delta,delta)) %*% D
   Psi <- (Psi+t(Psi))/2
   O.inv <- solvePD(Omega)

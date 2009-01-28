@@ -14,12 +14,13 @@ sn.2logL.profile(X=matrix(rep(1, n)), y,
 }
 \arguments{
 \item{y}{
-a numeric vector. Missing values (\code{NA}s) are not allowed.
+a numeric vector. Missing values (\code{NA}'s) are not allowed.
 }
 \item{X}{
-a matrix of explanatory variables; must have \code{col(X)} equal to
-\code{length(y). Missing values (`NA}s) are not allowed.
-If \code{X} is missing, a one-comun matrix of 1's is created.
+a matrix of explanatory variables. It must have \code{col(X)} equal to
+\code{length(y)}, and it must include a column of 1's if an intercept
+term is required.  Missing values (\code{NA}'s) are not allowed.
+If \code{X} is missing, a one-column matrix of 1's is created.
 }
 \item{param.range}{
 a numeric vector of length either 2 or 4. If the length is 2,
@@ -104,4 +105,4 @@ a <- sn.2logL.profile(y=frontier, param.range=c(0.8,1.6,10,30),
         use.cp=FALSE, npts=11)
 }
 \keyword{distribution}
-% Converted by Sd2Rd version 0.3-3.
+ 
