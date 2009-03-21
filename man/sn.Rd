@@ -50,7 +50,8 @@ It is suggested that a user starts by reading the  documentation of
 }
 \section{Requirements}{
   R 2.2.0.
-  Two functions make use of package \code{mnormt}: \code{pmsn}, \code{pmst}.
+  A few functions make use of package \code{mnormt}: 
+  \code{psn}, \code{pmsn}, \code{pmst}.
 }
 \section{Version}{
 The version level of the package is given by the  command 
