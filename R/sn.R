@@ -30,8 +30,8 @@ psn <- function(x, location = 0, scale = 1, shape = 0, dp = NULL, engine, ...)
   if(!is.null(dp)) {
     if(!missing(shape)) 
        stop("You cannot set both component parameters and dp")
-    xi <- dp[1]
-    omega <- dp[2]
+    location <- dp[1]
+    scale <- dp[2]
     shape <- dp[3]
     # h.mean <- if(length(dp)>3) dp[4] else 0
     }
@@ -82,8 +82,8 @@ qsn <- function (p, location = 0, scale = 1, shape = 0, dp=NULL,
       }
     max.q <- sqrt(qchisq(p,1))
     min.q <- -sqrt(qchisq(1-p,1))
-    if(shape == Inf) return(location + scale * max.q)
-    if(shape == -Inf) return(location + scale * min.q)
+    if(shape >  1e5) return(location + scale * max.q)
+    if(shape < -1e5) return(location + scale * min.q)
     na <- is.na(p) | (p < 0) | (p > 1)
     zero <- (p == 0)
     one <- (p == 1)
@@ -140,6 +140,8 @@ sn.cumulants <- function(location = 0, scale = 1, shape = 0, dp=NULL, n=4)
       }
   par <- cbind(location,scale,shape)
   delta <- par[,3]/sqrt(1+par[,3]^2)
+  n0 <- n
+  n <- max(n,2)
   kv <- cumulants.half.norm(n)
   if(length(kv)>n) kv<-kv[-(n+1)]
   kv[2] <- kv[2]-1
@@ -147,7 +149,7 @@ sn.cumulants <- function(location = 0, scale = 1, shape = 0, dp=NULL, n=4)
   kappa[,2] <- kappa[,2]+1
   kappa <- kappa * outer(par[,2],(1:n),"^")
   kappa[,1] <- kappa[,1]+par[,1]
-  kappa[,,drop=TRUE]
+  kappa[,1:n0,drop=TRUE]
 }
 
 # lambda.of <- function(delta) delta/sqrt(1-delta^2)
@@ -246,35 +248,41 @@ dp.to.cp <- function(param){
   if(m==1) names(cp)[1] <- "mean"
   cp
 }
+ 
 
-zeta <- function(k,x){# k integer in (0,4)
-  if(k<0 | k>4 | k != round(k)) return(NULL)
+zeta <- function(k,x){# k integer in (0,5)
+  if(k<0 | k>5 | k != round(k)) return(NULL)
   k <- round(k)
   na<- is.na(x)
   x <- replace(x,na,0)
+  x2 <- x^2
   z <- switch(k+1,
-            pnorm(x, log.p=TRUE)+ log(2),
-            ifelse(x>(-20), dnorm(x)/pnorm(x), 
-              ifelse(x>(-200), exp(-x^2/2-0.5*log(2*pi) - pnorm(x,log.p=TRUE)),
-                               -x*(1+1/x^2-2/x^4))),              
+            pnorm(x, log.p=TRUE)+ log(2),           
+            ifelse(x>(-50), exp(dnorm(x,log=TRUE)-pnorm(x,log.p=TRUE)),
+                            -x/(1 -1/(x2+2) +1/((x2+2)*(x2+4)) 
+                              -5/((x2+2)*(x2+4)*(x2+6))
+                              +9/((x2+2)*(x2+4)*(x2+6)*(x2+8)) 
+                              -129/((x2+2)*(x2+4)*(x2+6)*(x2+8)*(x2+10)) )),
             (-zeta(1,x)*(x+zeta(1,x))),
-            (-zeta(2,x)*(x+zeta(1,x))-zeta(1,x)*(1+zeta(2,x))),
-            (-zeta(3,x)*(x+2*zeta(1,x))-2*zeta(2,x)*(1+zeta(2,x))),
+            (-zeta(2,x)*(x+zeta(1,x)) - zeta(1,x)*(1+zeta(2,x))),
+            (-zeta(3,x)*(x+2*zeta(1,x)) - 2*zeta(2,x)*(1+zeta(2,x))),
+            (-zeta(4,x)*(x+2*zeta(1,x)) -zeta(3,x)*(3+4*zeta(2,x))
+                 -2*zeta(2,x)*zeta(3,x)),
             NULL)
   neg.inf<- (x == -Inf)
   if(any(neg.inf))
     z <- switch(k+1,
                 z,
                 replace(z, neg.inf, Inf),
-                replace(z, neg.inf, 1),
+                replace(z, neg.inf, -1),
+                replace(z, neg.inf, 0),
                 replace(z, neg.inf, 0),
                 replace(z, neg.inf, 0),
                 NULL)
   if(k>1) z<- replace(z, x==Inf, 0)
   replace(z,na,NA)
 }
-
-
+ 
 sn.em <-function(X, y, fixed, p.eps=1e-4, l.eps=1.e-2, trace=FALSE, data=FALSE)
 {
 #

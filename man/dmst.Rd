@@ -25,10 +25,10 @@ rmst(n=1, dp=)
 }
 \arguments{
 \item{x}{
-for \code{dmsn}, this is either a vector of length \code{d},
+for \code{dmst}, this is either a vector of length \code{d},
 where \code{d=length(alpha)}, or a matrix with \code{d} columns, 
 giving  the coordinates of the point(s) where the density must be 
-avaluated; for \code{pmsn}, only a vector of length \code{d} is allowed.
+avaluated; for \code{pmst}, only a vector of length \code{d} is allowed.
 }
 \item{xi}{
 a numeric vector of lenght \code{d}, or a matrix with \code{d} columns,

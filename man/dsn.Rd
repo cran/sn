@@ -61,7 +61,7 @@ parameters cannot be set.
 }
 \item{engine}{
   character string to select the computing engine, which is either
-  \code{"T.Owen"} or \code{"bin.nt.prob"} (the latter from package 
+  \code{"T.Owen"} or \code{"biv.nt.prob"} (the latter from package 
   \code{mnormt}).
   If the parameter is missing, a default selection rule is applied.
 }
@@ -85,8 +85,8 @@ A multivariate version of the distribution exists.
 See the reference below for additional information.
 }
 \section{Details}{
-\code{psn} and \code{qsn} make use either of function \code{T.Owen}
-or \code{biv.nt.prob}
+\code{psn} and \code{qsn} make use either of function \code{\link{T.Owen}}
+or \code{\link[mnormt:dmt]{biv.nt.prob}}
 }
 \references{
 Azzalini, A. (1985).
@@ -96,7 +96,7 @@ A class of distributions which includes the normal ones.
 }
 \seealso{
  \code{\link{dmsn}}, \code{\link{dst}},  \code{\link{T.Owen}},
- \code{\link[mnormt]{biv.nt.prob}}
+ \code{\link[mnormt:dmt]{biv.nt.prob}}
 }
 \examples{
 pdf <- dsn(seq(-3,3,by=0.1), shape=3)

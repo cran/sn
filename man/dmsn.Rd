@@ -31,9 +31,10 @@ be evaluated;
 for \code{pmsn}, only a vector of length \code{d} is allowed.
 }
 \item{xi}{
-a numeric vector of length \code{d}, or a matrix with \code{d} columns,
+a numeric vector of length \code{d}
 representing the location parameter of the distribution.
-If \code{xi} is a matrix, its dimensions must agree with those of \code{x}.
+In a call to \code{dmsn}, \code{xi} can be a matrix; 
+in this case, its dimensions must agree with those of \code{x}.
 }
 \item{Omega}{
 a positive-definite covariance matrix of dimension \code{(d,d)}.
