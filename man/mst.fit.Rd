@@ -83,6 +83,16 @@ a list with elements \code{test} and \code{p.value}, which are the value
 of the likelihood ratio test statistic for normality (i.e. test that
  all components of the shape parameter are 0 and \code{df=Inf}), 
 and the corresponding p-value.
+}
+\item{mahalanobis}{
+a list of with elements \code{distance}, \code{prob} and \code{df}, which are 
+the Mahalanobis distances of the residuals from the origin, with respect
+to the metric associated to the matrix \code{Omega}, and the values
+\code{prob} of the associated probabilities computed from the Snedecor's F 
+distribution with  degrees of freedom given by the \code{df} vector of length 
+two, whose first component equals \code{ncol(y)} and the second component is 
+equal to the \code{df} parameter of fitted value ST distribution unless this 
+value has been selected by the used via \code{fixed.df}.
 }}
 \section{Side Effects}{
 Graphical output is produced if \code{(plot.it & missing(freq))==TRUE}. 

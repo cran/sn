@@ -73,6 +73,13 @@ a list of with elements \code{test} and \code{p.value}, which are the value
 of the likelihood ratio test statistic for normality (i.e. test that
 all components of the shape parameter are 0), and the corresponding
 p-value.
+}
+\item{mahalanobis}{
+a list of with elements \code{distance}, \code{prob} and \code{df}, which are 
+the Mahalanobis distances of the residuals from the origin, with respect
+to the metric associated to the matrix \code{Omega}, and the values
+\code{prob} of the associated probabilities computed from the chi-square 
+distribution with \code{df=ncol(y)} degrees of freedom.
 }}
 \section{Side Effects}{
 Graphical output is produced if \code{(plot.it \& missing(freq))=TRUE} and

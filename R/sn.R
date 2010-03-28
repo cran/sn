@@ -1033,13 +1033,17 @@ msn.fit <- function(X, y, freq, plot.it=TRUE, trace=FALSE, ... )
         ylab="Mahalanobis distances")
     abline(0,1,lty=3)
     title(main="QQ-plot for skew-normal distribution", sub=y.name)
-    cat("Press <Enter> to continue..."); readline()
-    plot((1:n)/(n+1), sort(pchisq(rad.n,k)), xlab="", ylab="")
-    abline(0,1,lty=3)
-    title(main="PP-plot for normal distribution", sub=y.name)
-    plot((1:n)/(n+1), sort(pchisq(rad.sn,k)), xlab="", ylab="")
-    abline(0,1,lty=3)
-    title(main="PP-plot for skew-normal distribution", sub=y.name)
+    prob <- pchisq(rad.sn, k)
+    mle$mahalanobis <- list(distance=rad.sn, prob=prob, df=k)
+    cat("Press <Enter> to continue, 'q' to quit..."); m <- readline()
+    if(tolower(m) != "q") { 
+      plot((1:n)/(n+1), sort(pchisq(rad.n,k)), xlab="", ylab="")
+      abline(0,1,lty=3)
+      title(main="PP-plot for normal distribution", sub=y.name)
+      plot((1:n)/(n+1), sort(prob), xlab="", ylab="")
+      abline(0,1,lty=3)
+      title(main="PP-plot for skew-normal distribution", sub=y.name)
+    }
     par(mfrow=c(1,1))
     } # end ploting
   dev.norm<- msn.dev(c(qr.coef(qrX,y),rep(0,k)), X, y, freq)
@@ -1576,14 +1580,20 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
         ylab="Mahalanobis distances")
     abline(0,1,lty=3)
     title(main="QQ-plot for skew-t distribution", sub=y.name)
-    cat("Press <Enter> to continue..."); readline()
-    plot((1:n)/(n+1), sort(pchisq(rad.n,d)), xlab="", ylab="")
-    abline(0,1,lty=3)
-    title(main="PP-plot for normal distribution", sub=y.name)
-    plot((1:n)/(n+1), sort(pf(rad.st/d,d,df)), xlab="", ylab="")
-    abline(0,1,lty=3)
-    title(main="PP-plot for skew-t distribution", sub=y.name)
+    prob <- pf(rad.st/d,d,df)
+    mle$mahalanobis <- list(distance=rad.st, prob=prob, df=c(d,df))
+    cat("Press <Enter> to continue, 'q' to quit...")
+    m <- readline()
+    if(tolower(m) != "q"){
+      plot((1:n)/(n+1), sort(pchisq(rad.n,d)), xlab="", ylab="")
+      abline(0,1,lty=3)
+      title(main="PP-plot for normal distribution", sub=y.name) 
+      plot((1:n)/(n+1), sort(prob), xlab="", ylab="")
+      abline(0,1,lty=3)
+      title(main="PP-plot for skew-t distribution", sub=y.name)
+    }
     par(mfrow=c(1,1))
+    
     } # end ploting
   dev.norm<- msn.dev(c(qr.coef(qrX,y),rep(0,d)), as.matrix(X), y, freq)
   test <- dev.norm + 2*mle$logL
@@ -2128,7 +2138,7 @@ sn.Einfo <- function(dp=NULL, cp=NULL, n=1, x=NULL)
   else
     {a0 <- sign(alpha)*0.7206/abs(alpha)
      a1 <- -sign(alpha)*(0.6797/alpha)^2
-     a2 <- 0.005897/alpha^2 + 30.611/alpha^4
+     a2 <- 2*pi^2/(pi^2+8*alpha^2)^1.5 # Bayes&Branco, (2.3)
     }
   I.dp[1:p,1:p] <- xx* (1+alpha^2*a0)/omega^2  
   I.dp[p+1,p+1] <- n * (2+alpha^2*a2)/omega^2
