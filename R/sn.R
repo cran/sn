@@ -2341,9 +2341,9 @@ log.pt <- function(x, df){
   if(interactive())
   {
     meta <- packageDescription("sn")
-    cat(paste("Package 'sn', ", meta$Version, " (", meta$Date, "). ", sep=""))
-    cat("Type 'help(SN)' for summary information\n")
+    packageStartupMessage(
+         "Package 'sn', ", meta$Version, " (", meta$Date, "). ",
+         "Type 'help(SN)' for summary information")
   }
   invisible()
-
 }
