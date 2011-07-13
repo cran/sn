@@ -10,7 +10,7 @@ Modified maximum likelihood estimation for skew-normal ans skew-t models
   a modification of maximum likelihood estimation.
 }
 \usage{
-sn.mmle(X, y, plot.it=TRUE, trace=FALSE, ...)
+sn.mmle(X, y, plot.it=TRUE, exact=FALSE, trace=FALSE, ...)
 st.mmle(X, y, df, trace=FALSE)
 }
 \arguments{
@@ -33,6 +33,11 @@ st.mmle(X, y, df, trace=FALSE)
   a plot of the nonparametric estimate of variable \code{y} (or the residuals,
   in the case of regression), and the parametric fit is superimposed.
   See below for details.
+}
+\item{exact}{
+  logical value which controls whether the exact or the approximate correction
+  term of the log-likelihood is used; see Background for additional
+  description. Default value is \code{FALSE}.
 }
 \item{trace}{
   logical value which controls printing of the algorithm convergence.
@@ -74,12 +79,20 @@ is searched.  If \code{sm.density} is not found, an histogram is plotted.
   score function; see the references below for a full discussion.
   The effect of this modification is "negligible" for large sample size,
   but it avoids estimates of the frontier of the parameter space.
-}
+  Since each evaluation of the correction term involves two numerical 
+  integrations, computations can be spedeed-up by adopting a simple but
+  effective approximation due to Bayes \& Branco.  } 
 \references{
-
 Azzalini, A. and Capitanio, A. (1999).
   Statistical applications of the multivariate skew-normal distribution.
   \emph{J.Roy.Statist.Soc. B} \bold{61}, 579--602.
+
+Bayes, C.~L. and Branco, M.~D. (2007).
+Bayesian inference for the skewness parameter of the scalar
+skew-normal distribution.
+\emph{REBRAPE: Brazilian Journal of Probability and Statistics},
+\bold{21}, 141--163.
+
 
 Firth, D.  (1993).
   Bias reduction of maximum likelihood estimates.

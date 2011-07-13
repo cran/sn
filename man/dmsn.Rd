@@ -32,12 +32,14 @@ for \code{pmsn}, only a vector of length \code{d} is allowed.
 }
 \item{xi}{
 a numeric vector of length \code{d}
-representing the location parameter of the distribution.
+representing the location parameter of the distribution; 
+see Background.
 In a call to \code{dmsn}, \code{xi} can be a matrix; 
 in this case, its dimensions must agree with those of \code{x}.
 }
 \item{Omega}{
-a positive-definite covariance matrix of dimension \code{(d,d)}.
+a symmetric positive-definite  matrix of dimension \code{(d,d)};
+see Background.
 }
 \item{alpha}{
 a numeric vector which regulates the shape of the density.
@@ -65,6 +67,11 @@ A vector of density values (\code{dmsn}), or a single probability
 The multivariate skew-normal distribution is discussed by
 Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)}
 parametrization adopted here is the one of Azzalini and Capitanio (1999).
+ Notice that the location vector \code{xi}
+does not represent the mean vector of the distribution (which in fact
+may not even exist if \code{df <= 1}), and similarly
+\code{Omega} is not \emph{the} covariance matrix of the distribution,
+although it is \emph{a} covariance matrix. 
 }
 \details{
   The positive-definiteness of \code{Omega} is not tested for

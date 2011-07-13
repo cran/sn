@@ -32,11 +32,11 @@ avaluated; for \code{pmst}, only a vector of length \code{d} is allowed.
 }
 \item{xi}{
 a numeric vector of lenght \code{d}, or a matrix with \code{d} columns,
-representing the location parameter of the distribution.
+representing the location parameter of the distribution; see Background.
 If \code{xi} is a matrix, its dimensions must agree with those of \code{x}.
 }
 \item{Omega}{
-a positive-definite covariance matrix of dimension \code{(d,d)}.
+a symmetric positive-definite matrix of dimension \code{(d,d)}; see Background.
 }
 \item{alpha}{
 a numeric vector which regulates the shape of the density.
@@ -71,7 +71,12 @@ multivariate Student's t family, via the introduction of a \code{shape}
 parameter which regulates skewness; when \code{shape=0}, the skew-t 
 distribution reduces to the usual t distribution. 
 When \code{df=Inf} the distribution reduces to the multivariate skew-normal 
-one; see \code{dmsn}. See the reference below for additional information.
+one; see \code{dmsn}. Notice that the location vector \code{xi}
+does not represent the mean vector of the distribution (which in fact
+may not even exist if \code{df <= 1}), and similarly
+\code{Omega} is not \emph{the} covariance matrix of the distribution,
+although it is \emph{a} covariance matrix. 
+See the reference below for additional information.
 }
 \details{
   The positive-definiteness of \code{Omega} is not tested for

@@ -32,7 +32,7 @@ sn.dev.gh(cp, X, y, trace=FALSE, hessian=FALSE)
 sn.logL.grouped(param, breaks, freq, trace=FALSE)
 solvePD(x)
 st.logL.grouped(param, breaks, freq, trace=FALSE)
-sn.SFscore(shape, z, trace=FALSE)
+sn.SFscore(delta, X, y, exact=FALSE, trace=FALSE)
 st.SFscore(shape, df, z, trace=FALSE)
 }
 \arguments{

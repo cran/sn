@@ -556,7 +556,7 @@ sn.dev <- function(cp, X, y, trace=FALSE)
   dp <- as.vector(cp.to.dp(cp))
   location <- as.vector(X %*% as.matrix(dp[1:m]))
   logL <- sum(dsn(y, location, dp[m+1], dp[m+2], log=TRUE))
-  if(trace) {cat("sn.dev: (cp,dev)="); print(c(cp,-2*logL))}
+  if(trace) {cat("sn.dev: (cp,dev) =", format(c(cp, -2*logL)))}
   return(-2*logL)
 }
 
@@ -719,7 +719,7 @@ dsn2.plot <- function(x, y, xi, Omega, alpha, dp=NULL, ...)
 }
 
 msn.quantities <- function(xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
-{# 21-12/1997; computes various quantities related to SN_d(xi,Omega,alpha)
+{# 21-12-1997; computes various quantities related to SN_d(xi,Omega,alpha)
   if(!is.null(dp)){
     if(any(!missing(xi) | !missing(Omega) | !missing(alpha))) 
       stop("you cat set either dp or its components, but not both")
@@ -1991,58 +1991,57 @@ st.dev.fixed <- function(free.param, X, y, freq, trace=FALSE,
 }
 
 #----
-
-sn.SFscore <- function(shape, z, trace=FALSE)
-{# Sartori-Firth's modified score function (2nd version)
-  a42<- integrate(function(x) dsn(x,0,1,shape) * x^4 * zeta(1,shape*x)^2,
-                   -Inf, Inf)$value
-  a22<- integrate(function(x) dsn(x,0,1,shape) * x^2 * zeta(1,shape*x)^2,
-                   -Inf, Inf)$value
-  score <- sum(zeta(1,shape*z)*z)-0.5*shape*a42/a22
-  if(trace) cat("sn.SFscore: (shape,score)=", shape, score,"\n")
+ 
+sn.SFscore <- function(delta, X, y, exact=FALSE, trace=FALSE)
+{# Sartori-Firth's modified score function, with Bayes-Branco approx
+  shape <- delta/sqrt(1-delta^2) 
+  dp <- sn.em(X, y, fixed = c(NA, NA, shape), trace=FALSE)$dp
+  z <- (y - X %*% dp[1:ncol(X)])/dp[ncol(X)+1]
+  if(exact) {
+    funct <- function(x, alpha, k=0) 
+      dsn(x, 0, 1, alpha) * x^k *  zeta(1, alpha * x)^2
+    a2 <- integrate(funct, -Inf, Inf, alpha=shape, k=2)$value
+    a4 <- integrate(funct, -Inf, Inf, alpha=shape, k=4)$value
+    M  <- (-0.5)*shape*a4/a2
+    } else  M <- (-3/2)*shape/(1+8*(shape/pi)^2)
+  score <- sum(zeta(1,shape*z)*z) + M
+  if(trace) cat("sn.SFscore: (shape,score)=", format(c(shape, score)), "\n")
+  attr(score, "dp") <- dp
   score
 }
 
-sn.mmle <- function(X, y, plot.it=TRUE, trace=FALSE,...)
-   {
-     n <- length(y)
-     if (missing(X)){
-         X <- as.matrix(rep(1, n))
-         colnames(X) <- "constant"
+sn.mmle <- function(X, y, plot.it=TRUE, exact=FALSE, trace=FALSE,...)
+{# Sartori-Firth method; function revised in 2011
+  n <- length(y)
+  if (missing(X)){
+    X <- as.matrix(rep(1, n))
+    colnames(X) <- "constant"
+    }
+  p  <- ncol(X)
+  dp <- cp.to.dp(sn.mle(X=X, y=y, plot.it=plot.it, trace=trace,...)$cp)
+  sk <- dp[length(dp)]
+  d0 <- sign(-sk)*0.01
+  d1 <- sign(sk)*0.99999
+  a <- uniroot(sn.SFscore, c(d0, d1), X=X, y=y, exact=exact, trace=trace)
+  score <- sn.SFscore(a$root, X, y, exact=exact)
+  dp <- attr(score, "dp")
+  names(dp)[p + 2] <- "shape"  
+  logL <- sum(dsn(y, as.vector(X %*% dp[1:p]), dp[p+1], dp[p+2], log=TRUE))
+  if(trace) cat("Modified MLE: ", dp, ", logL: ", logL, "\n")
+  if (plot.it) {
+     dp0 <- dp
+     if (all(X == rep(1, n)))
+       y0 <- y
+     else {
+       y0 <- y - as.vector(X %*% dp0[1:p])
+       dp0 <- c(0, dp0[p + 1], dp0[p + 2])
+       xlab <- "residuals"
        }
-     m  <- ncol(X)
-     dp <- cp.to.dp(sn.mle(X=X, y=y, plot.it=plot.it, trace=trace,...)$cp)
-     z  <- (y - as.vector(X %*% dp[1:m]))/dp[m+1]
-     start <- sign(dp[m+2])*min(5000,abs(dp[m+2]))
-     a0 <- start/4
-     f0 <- sn.SFscore(a0, z, trace=trace)
-     a1 <- start
-     f1 <- sn.SFscore(a1, z, trace=trace)
-     while(f0*f1 > 0){
-       a1 <- a0
-       f1 <- f0
-       a0 <- a0/4
-       f0 <- sn.SFscore(a0, z, trace=trace)
-       if(trace) cat("interval: ", a0,a1,"\n")
-       }
-     if(trace)cat("a0, a1: ",a0, a1,"\n")
-     a <- uniroot(sn.SFscore, interval=c(a0, a1), z=z, trace=trace)
-     dp <- sn.em(X, y, fixed=c(NA,NA,a$root), trace=trace)$dp
-     if (plot.it) {
-       dp0 <- dp
-       if (all(X == rep(1, n)))
-         y0 <- y
-       else {
-         y0 <- y - as.vector(X %*% dp0[1:m])
-         dp0 <- c(0, dp0[m + 1], dp0[m + 2])
-         xlab <- "residuals"
-         }
-       curve(dsn(x, dp=dp0), add=TRUE, lty=2, col=3)
-       }
-     names(dp)[m+2] <- "shape"
-     info <- sn.Einfo(dp=dp,x=X)
-     list(call=match.call(), dp=dp, se=info$se.dp, Einfo=info$info.dp)
-   }
+    curve(dsn(x, dp=dp0), add=TRUE, lty=2, col=3)
+    }
+  info <- sn.Einfo(dp=dp, x=X)
+  list(call=match.call(), dp=dp, se=info$se.dp, Einfo=info$info.dp)
+}
 
 st.SFscore <- function(shape, df, z, trace=FALSE)
 {# Sartori-Firth's modified score function for skew-t case  

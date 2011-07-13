@@ -20,7 +20,7 @@ version 0.3x (2003--2005)
 version 0.4-0 (2006-04-11)
   several changes and additions are included:
   - many routines allow use of composite parameter 'dp'  
-  - multivariate normal and t probabilities are now computed via package 'mnormt'
+  - multivariate normal and t probabilities are now computed by 'mnormt'
   - use of NAMESPACE introduced
   - some more routines introduced, eg. st.cumulants.inversion
   - various fixes/improvements in documentation
