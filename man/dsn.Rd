@@ -10,22 +10,13 @@ Skew-Normal Distribution
 Density function, distribution function, quantiles and random number
 generation for the skew-normal (SN) distribution.
 }
-\synopsis{
+\usage{
 dsn(x, location = 0, scale = 1, shape = 0, dp = NULL, log = FALSE)
 psn(x, location = 0, scale = 1, shape = 0, dp = NULL, engine, ...)
 qsn(p, location = 0, scale = 1, shape = 0, dp = NULL, tol = 1e-8, engine, ...) 
 rsn(n = 1, location = 0, scale = 1, shape = 0, dp = NULL)
 }
-\usage{
-dsn(x, location=0, scale=1, shape=0, log=FALSE)
-dsn(x, dp=, log=FALSE)
-psn(x, location=0, scale=1, shape=0, engine, ...)
-psn(x, dp=, engine, ...)
-qsn(p, location=0, scale=1, shape=0, tol=1e-8, ...)
-qsn(x, dp=, ...)
-rsn(n=1, location=0, scale=1, shape=0)
-rsn(x, dp=)
-}
+
 \arguments{
 \item{x}{
   vector of quantiles. Missing values (\code{NA}s) and \code{Inf}'s
@@ -74,20 +65,34 @@ quantile (\code{qsn}) or  random sample (\code{rsn})
 from the skew-normal distribution with given \code{location}, \code{scale}
 and \code{shape} parameters.
 }
+
+\section{Details}{
+Typical usages are
+\preformatted{%
+dsn(x, location=0, scale=1, shape=0, log=FALSE)
+dsn(x, dp=, log=FALSE)
+psn(x, location=0, scale=1, shape=0, engine, ...)
+psn(x, dp=, engine, ...)
+qsn(p, location=0, scale=1, shape=0, tol=1e-8, ...)
+qsn(x, dp=, ...)
+rsn(n=1, location=0, scale=1, shape=0)
+rsn(x, dp=)
+}
+\code{psn} and \code{qsn} make use either of function \code{\link{T.Owen}}
+or \code{\link[mnormt:dmt]{biv.nt.prob}}
+}
+
 \section{Background}{
 The family of skew-normal distributions is an extension of the normal
 family, via the introdution of a \code{shape} parameter which regulates
 skewness; when \code{shape=0}, the skew-normal distribution reduces to the
-normal one.  The density of the SN distribution in the "standard" case
-having \code{location=0} and \code{scale=1}  is
+normal one.  The density of the SN distribution in the "normalized" case
+having \code{location=0} and \code{scale=1} is
 \code{2*dnorm(x)*pnorm(shape*x)}.
 A multivariate version of the distribution exists.
 See the reference below for additional information.
 }
-\section{Details}{
-\code{psn} and \code{qsn} make use either of function \code{\link{T.Owen}}
-or \code{\link[mnormt:dmt]{biv.nt.prob}}
-}
+
 \references{
 Azzalini, A. (1985).
 A class of distributions which includes the normal ones.

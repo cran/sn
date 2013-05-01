@@ -7,13 +7,9 @@ Plot of Bivariate Skew-normal Density Function
 Produces a contour plot of the density function of a bivariate 
 skew-normal variate.
 }
-\synopsis{
-dsn2.plot(x, y, xi, Omega, alpha, dp = NULL, ...) 
-}
-\usage{
-dsn2.plot(x, y, xi, Omega, alpha, ...)
-dsn2.plot(x, y, dp=, ...)
-}
+
+\usage{dsn2.plot(x, y, xi, Omega, alpha, dp = NULL, ...) }
+
 \arguments{
 \item{x}{
 vector of values of the first component.
@@ -32,18 +28,24 @@ a vector of length 2 containing the shape parameter.
 }
 \item{dp}{
   a list with components named \code{xi, Omega, alpha}, containing
-  quantities as described above. If this parameter is set, then the
+  quantities as described above. If this parameter is set, the
   individual parameters must not be.
   }
 \item{...}{
 additional parameters to be passed to \code{contour}.
 }}
+
 \value{
 A list containing the original input parameters plus a matrix
 containing the density function evaluated at the grid formed 
 by the \code{x} and \code{y} values. 
 }
-\details{
+
+\details{Typical usages are
+\preformatted{%
+dsn2.plot(x, y, xi, Omega, alpha, ...)
+dsn2.plot(x, y, dp=, ...)
+}
   The density function is evalutate at the grid of points whose
   coordinates are given by vectors \code{x} and \code{y}.
   The actual computation is done by the  function \code{dmsn}.

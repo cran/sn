@@ -3,7 +3,7 @@ source(file.path(R.home("share"), "R", "examples-header.R"))
 options(warn = 1)
 library('sn')
 
-assign(".oldSearch", search(), pos = 'CheckExEnv')
+base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 cleanEx()
 nameEx("T.Owen")
 ### * T.Owen
@@ -458,7 +458,8 @@ nameEx("sn.2logL.profile")
 flush(stderr()); flush(stdout())
 
 ### Name: sn.2logL.profile
-### Title: Profile twice loglikelihood for skew-normal models
+### Title: Twice profile relative negative loglikelihood for skew-normal
+###   models
 ### Aliases: sn.2logL.profile
 ### Keywords: distribution
 
@@ -467,13 +468,15 @@ flush(stderr()); flush(stdout())
 data(ais, package="sn")
 attach(ais)
 a <- sn.2logL.profile(y=bmi)
-a <- sn.2logL.profile(y=bmi, use.cp=FALSE, param.range=c(3,6,1,5))
-a <- sn.2logL.profile(X=cbind(1,lbm), y=bmi, param.range=c(0,0.9),
-        npts=50)
-#
-data(frontier, package="sn")
-a <- sn.2logL.profile(y=frontier, param.range=c(0.8,1.6,10,30),
-        use.cp=FALSE, npts=11)
+## Not run: 
+##D a <- sn.2logL.profile(y=bmi, use.cp=FALSE, param.range=c(3,6,1,5))
+##D a <- sn.2logL.profile(X=cbind(1,lbm), y=bmi, param.range=c(0.5,0.95), npts=31)
+##D #
+##D data(frontier, package="sn")
+##D a <- sn.2logL.profile(y=frontier, param.range=c(0.8,2, 2,30),
+##D         use.cp=FALSE, npts=16)
+##D 	
+## End(Not run)
 
 
 
@@ -633,7 +636,7 @@ nameEx("st.2logL.profile")
 flush(stderr()); flush(stdout())
 
 ### Name: st.2logL.profile
-### Title: Profile twice loglikelihood for skew-t models
+### Title: Twice profile relative negative loglikelihood for skew-t models
 ### Aliases: st.2logL.profile
 ### Keywords: distribution
 
@@ -642,12 +645,15 @@ flush(stderr()); flush(stdout())
 data(ais, package="sn")
 attach(ais)
 a <- st.2logL.profile(y=bmi, xlab="alpha", ylab="log(df)")
-a <- st.2logL.profile(y=bmi, fixed.comp=4, fixed.values=log(c(1,25)))
-a <- st.2logL.profile(X=cbind(1,lbm), y=bmi, fixed.comp=5,  
-         fixed.values=log(c(5,25)), xlab="log(df)", npts=50)
-a <- st.2logL.profile(X=cbind(1,Ht), y=Wt, fixed.comp=c(4,5),
-         fixed.values=cbind(c(-1,5), log(c(2,25))),
-         xlab="alpha", ylab="log(df)")
+## Not run: 
+##D a <- st.2logL.profile(y=bmi, fixed.comp=4, fixed.values=log(c(1,25)), npts=26)
+##D a <- st.2logL.profile(X=cbind(1,lbm), y=bmi, fixed.comp=5,  
+##D          fixed.values=log(c(5,25)), xlab="log(df)", npts=26)
+##D a <- st.2logL.profile(X=cbind(1,Ht), y=Wt, fixed.comp=c(4,5),
+##D          fixed.values=cbind(c(-1,5), log(c(2,25))),
+##D          xlab="alpha", ylab="log(df)", npts=12)
+##D 	 
+## End(Not run)
 
 
 
@@ -697,7 +703,7 @@ legend(3.5, -0.5, legend=as.character(0:5), col=2:7, lty=1)
 
 ### * <FOOTER>
 ###
-cat("Time elapsed: ", proc.time() - get("ptime", pos = 'CheckExEnv'),"\n")
+base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
 grDevices::dev.off()
 ###
 ### Local variables: ***

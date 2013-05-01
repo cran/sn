@@ -5,17 +5,14 @@
 Cumulants of the skew-t distribution
 }
 \description{
-Cumulants of the skew-t distribution and inverse matching
+Cumulants of the skew-\eqn{t} distribution and inverse matching
 }
-\synopsis{
+\usage{
 st.cumulants(location = 0, scale = 1, shape = 0, df = Inf, dp = NULL,  n = 4) 
 st.cumulants.inversion(cum, abstol = 1e-08) 
 }
-\usage{
-st.cumulants(location = 0, scale = 1, shape = 0, df = Inf, n = 4)
-st.cumulants(dp=, n = 4)
-st.cumulants.inversion(cum, abstol = 1e-08)
-}
+
+
 \arguments{
 \item{location}{
  location parameter (vector)
@@ -55,12 +52,18 @@ is a vector of length \code{n} if the parameters are all scalar,
 otherwise a matrix with \code{n} columns.
 
 \code{st.cumulants.inversion} returns a vector with the \code{dp} parameters 
-of the  matching skew-t distribution
+of the matching skew-\eqn{t} distribution
 }
-\details{
-Expressions of the moments and other details on the skew-t distribution are 
-given in the reference below. These formulae are used by \code{st.cumulants}
-to compute the cumulants.
+\details{Typical usages are
+\preformatted{%
+st.cumulants(location = 0, scale = 1, shape = 0, df = Inf, n = 4)
+st.cumulants(dp=, n = 4)
+st.cumulants.inversion(cum, abstol = 1e-08)
+}
+
+Expressions of the moments and other details on the skew-\eqn{t} distribution
+are given in the reference below. These formulae are used by
+\code{st.cumulants} to compute the cumulants.
 
 \code{st.cumulants.inversion} searches the set of \code{shape} and \code{df}
 parameters of the skew-t family, attempting to match  the third and fourth 
@@ -75,7 +78,7 @@ After this step, the other two parameters (\code{location} and
 }
 \note{
   The joint use \code{st.cumulants.inversion} and
-  \code{sample.centralmoments} allows to fit a skew-t distribution by
+  \code{sample.centralmoments} allows to fit a skew-\eqn{t} distribution by
   the methods of moments; see the example below. Note however, that for
   stability reasons, this is \emph{not} adopted as the standard method
   for producing initial values of MLE search.

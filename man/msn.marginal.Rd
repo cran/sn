@@ -7,13 +7,10 @@ Marginal components of a multivariate skew-normal distribution
 Computes the marginal distribution of a subset of components of a
 multivariate skew-normal distribution.
 }
-\synopsis{
+\usage{
 msn.marginal(xi=rep(0, length(alpha)), Omega, alpha, comp=1:d, dp=NULL)
 }
-\usage{
-msn.marginal(xi, Omega, alpha, comp)
-msn.marginal(dp=, comp)
-}
+
 \arguments{
 \item{xi}{
   a numeric vector of length \code{d}, say, giving the location parameter.
@@ -35,10 +32,17 @@ the components of \code{comp} do not need to be sorted.
   specified, then the indicidual components must not be in the calling
   statement
 }}
+
+\details{Typical usages are
+\preformatted{%
+msn.marginal(xi, Omega, alpha, comp)
+msn.marginal(dp=, comp)
+}}
+
 \value{
 A list containing  components \code{xi, Omega, alpha} with the 
-parameters of the marginal distribution. If \code{length(comp)} is  equal to
-\code{m}, say, then the new components are of size \code{m, (m,m), n}, 
+parameters of the marginal distribution. If \code{length(comp)} is equal to
+\code{m}, say, then the new components are of size \code{m, (m,m), m}, 
 respectively.
 }
 \section{Background}{

@@ -27,21 +27,20 @@ a list containing the following components:
 \item{dp, cp}{
 DP and CP parameters; one of the two vectors is the one supplied on
 input, the other one  matches the previous one in the alternative
-parametrization
-}
+parametrization}
 
 \item{info.dp, info.cp}{
-matrices of Fisher expected information in the two parametrizations
-}
+matrices of Fisher expected information in the two parametrizations}
 
 \item{se.dp, se.cp}{
-vectors of standard errors in the two parametrizations
+vectors of standard errors in the two parametrizations}
+
+\item{aux}{a list containing two elements: (1) a matrix 
+\code{D} of derivatives of DP parameters with respect to CP parameters, 
+(2) a vector \code{a.int} which contains the coefficients \code{a0, a1, a2}
+described in the reference below.}
 }
 
-\item{D}{
-matrix of derivatives of DP parameters with respect to CP parameters
-}
-}
 \section{Details}{
 When \code{x} is not set, then a simple random sample is assumed and a
  matrix \code{x} with a single column of all 1's is constructed; in this
@@ -51,9 +50,9 @@ length \code{ncol(x)+2}.
 }
 \section{Background}{
   For the description of the DP and CP parametrizations and
-  for the expression of the exptected Fisher information of the DP
-  parametrizations, see Azzalini (1985). Further discussion is in
-  Azzalini and Capitanio (1999).
+  for the expression of the expected Fisher information of the DP
+  parametrizations, see Azzalini (1985). Further discussion is given
+  by Azzalini and Capitanio (1999).
 }
 \references{
 Azzalini, A. (1985).

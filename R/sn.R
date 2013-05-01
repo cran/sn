@@ -4,7 +4,7 @@
 # Home-page: http://azzalini.stat.unipd.it/SN
 # major updates: 29/8/1997, 10/12/1997, 1/10/1998, 12/10/1998, 01/04/1999, 
 # 15/06/2002, 01/04/2006
-# It requires R 2.2.0, plus package mnormt 
+# It requires R 2.2.0 and package mnormt 
 #
 #------- 
 
@@ -21,7 +21,7 @@ dsn <- function(x, location=0, scale=1, shape=0, dp=NULL, log=FALSE)
    if(log)
      y <- (-0.9189385332046727-logb(scale)-z^2/2+zeta(0,shape*z))
    else
-     y <- 2*dnorm(z)*pnorm(z*shape)/scale
+     y <- 2 * dnorm(z) * pnorm(z*shape) / scale
    replace(y, scale<= 0, NaN)
  }
 
@@ -372,11 +372,6 @@ gamma1.to.lambda<- function(gamma1){
   as.vector(lambda)
 }
 
-# Examples:
-#  a<-sn.2logL.profile(y=otis)
-#  a<-sn.2logL.profile(y=otis, use.cp=FALSE)
-#  a<-sn.2logL.profile(X=cbind(1,lbm), y=bmi, npts=50)
-#  a<-sn.2logL.profile(y=frontier,param.range=c(0.8,1.6,10,30), use.cp=FALSE, npts=11)
 
 sn.2logL.profile<-function(X=matrix(rep(1,n)), y, 
       param.range=c(sqrt(var(y))*c(2/3, 3/2), -0.95, 0.95),
@@ -441,13 +436,13 @@ sn.2logL.profile<-function(X=matrix(rep(1,n)), y,
   f <- 2*(llik-max(llik))	
   if(plot.it){
     if(d==1) plot(param1, f, type="l", 
-            xlab=xlab, ylab="profile relative 2(logL)")
+            xlab=xlab, ylab="profile deviance")
     else contour(param1, param2, f, labcex=0.5, 
             xlab=xlab, ylab=ylab,
             levels=-c(0.57, 1.37, 2.77, 4.6, 5.99, 9.2), 
             labels=c(0.25, 0.5,  0.75, 0.90,0.95, 0.99))
-    title(main=paste("dataset:", deparse(substitute(y)),
-        "\nProfile relative 2(logLikelihood)", sep= " "))	
+    title(main=paste("Dataset:", deparse(substitute(y)),
+        "\nProfile deviance function", sep= " "))	
   }
   invisible( list(param1=param1, param2=param2,
       param.names=c(xlab,ylab), two.logL=f, maximum=2*max(llik)))
@@ -523,13 +518,13 @@ sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
       dp0<-c(0,dp0[m+1],dp0[m+2])
       xlab<-"residuals"
       }
-    x<-seq(min(pretty(y0,10)),max(pretty(y0,10)),length=100)
-    pdf.sn <- dsn(x,dp0[1],dp0[2],dp0[3])
-    if(exists("sm.density",mode="function"))
+    x <- seq(min(pretty(y0,10)), max(pretty(y0,10)), length=200)
+    pdf.sn <- dsn(x, dp0[1], dp0[2], dp0[3])
+    if("package:sm" %in% search() )
       {
-      a<-sm.density(x=y0, eval.points=x, h=hnorm(y0)/1.5, display="none")
-      a<-sm.density(x=y0, eval.points=x, h=hnorm(y0)/1.5, xlab=xlab, 
-                    lty=3, ylim=c(0,max(a$estimate,pdf.sn)))
+      a <- sm::sm.density(x=y0, eval.points=x, h=sm::hnorm(y0)/1.5, display="none")
+      a <- sm::sm.density(x=y0, eval.points=x, h=sm::hnorm(y0)/1.5, xlab=xlab,
+                  lty=2, ylim=c(0,max(a$estimate,pdf.sn)))
       }
     else 
       {
@@ -537,7 +532,7 @@ sn.mle <- function(X, y, cp, plot.it=TRUE, trace=FALSE, method="L-BFGS-B",
       hist(y0, freq=FALSE, breaks="FD", xlim=c(min(x),max(x)),
            xlab=xlab, main=xlab, ylim=c(0, max(pdf.sn, h$density)))
       }
-    if(n<101) points(y0,rep(0,n),pch=1)
+    if(n<101) points(y0, rep(0,n), pch=1)
     # title(deparse(substitute(y)))
     curve(dsn(x, dp0[1], dp0[2], dp0[3]), add=TRUE, col=2)
   }
@@ -651,7 +646,7 @@ dmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL, log=FALSE)
     Q <- apply((solvePD(Omega) %*% X) * X, 2, sum)
     L <- as.vector(t(X/sqrt(diag(Omega))) %*% as.matrix(alpha))
     logDet <- sum(logb(abs(diag(qr(Omega)$qr))))
-    logPDF <- (logb(2) - 0.5 * Q + pnorm(L, log = TRUE)
+    logPDF <- (logb(2) - 0.5 * Q + pnorm(L, log.p = TRUE)
                - 0.5 * (d * logb(2 * pi) + logDet))
     if (log) logPDF
     else exp(logPDF)
@@ -900,7 +895,7 @@ msn.cond.plot <- function(xi, Omega, alpha, fixed.comp, fixed.values, n=35)
   cond$pdf<-list(x=x,y=y,f.fitted=pdf.fit)
   levels<-pretty(pdf.fit,5)
   contour(x,y,pdf.fit,levels=levels,add=TRUE,col=2)
-  # fino a qui per il calcolo della densità approx;
+  # fino a qui per il calcolo della densita` approx;
   # ora otteniamo quella esatta
   numer <- msn.pdf2.aux(x, y, xi, Omega, alpha, fc, fv)
   marg  <- msn.marginal(xi, Omega, alpha, fc)
@@ -1026,12 +1021,12 @@ msn.fit <- function(X, y, freq, plot.it=TRUE, trace=FALSE, ... )
     plot(pp, sort(rad.n), pch=1, ylim=c(0,max(rad.n,rad.sn)),
         xlab="Percentiles of chi-square distribution", 
         ylab="Mahalanobis distances")
-    abline(0,1,lty=3)
+    abline(0, 1, lty=2)
     title(main="QQ-plot for normal distribution", sub=y.name)
     plot(pp, sort(rad.sn), pch=1, ylim=c(0,max(rad.n,rad.sn)),
         xlab="Percentiles of chi-square distribution", 
         ylab="Mahalanobis distances")
-    abline(0,1,lty=3)
+    abline(0, 1, lty=2)
     title(main="QQ-plot for skew-normal distribution", sub=y.name)
     prob <- pchisq(rad.sn, k)
     mle$mahalanobis <- list(distance=rad.sn, prob=prob, df=k)
@@ -1188,7 +1183,7 @@ msn.dev.grad <- function(param, X, y, freq, trace=FALSE){
 
 num.deriv1 <- function(x, FUN, ...)
 {# calcola gradiente in modo numerico, se FUN calcola la funzione
-   FUN <- get(FUN, inherit = TRUE)
+   FUN <- get(FUN, inherits = TRUE)
    value <- FUN(x, ...)
    p <- length(x)
    grad <- numeric(p)
@@ -1204,7 +1199,7 @@ num.deriv1 <- function(x, FUN, ...)
     
 num.deriv2 <- function(x, FUN, ...)
 {# derivate seconde numeriche, se FUN calcola il gradiente
-   FUN <- get(FUN, inherit = TRUE)
+   FUN <- get(FUN, inherits = TRUE)
    values <- FUN(x, ...)
    p <- length(values)
    H <- matrix(0, p, p)
@@ -1231,12 +1226,12 @@ dst <-  function (x, location=0, scale=1, shape=0, df=Inf, dp=NULL, log=FALSE)
      shape <- dp[3]
      df <- dp[4]
     }
-  if(df==Inf) return(dsn(x,location,scale,shape, log=log))
+  if(df > 1e6 ) return(dsn(x,location,scale,shape, log=log))
   z   <- (x - location)/scale
   pdf <- dt(z, df=df, log=log)
-  cdf <- pt(shape*z*sqrt((df+1)/(z^2+df)), df=df+1, log=log)
+  cdf <- pt(shape*z*sqrt((df+1)/(z^2+df)), df=df+1, log.p=log)
   if(log)
-    log(2) + pdf + cdf -logb(scale)
+    logb(2) + pdf + cdf -logb(scale)
   else
     2 * pdf * cdf / scale
 }
@@ -1272,9 +1267,9 @@ pst <- function (x, location=0, scale=1, shape=0, df=Inf, dp=NULL, ...)
       shape <- dp[3]
       df <- dp[4]
      }
-    fp <- function(v, shape, df, t.value) psn(sqrt(v) * t.value, 0, 1, 
-                    shape) * dchisq(v * df, df = df) * df
-    if (df == Inf) 
+    fp <- function(v, shape, df, t.value)  
+            psn(sqrt(v) * t.value, 0, 1, shape) * dchisq(v * df, df = df) * df
+    if (df > 1e6) # (== Inf) 
         p <- psn(x, location, scale, shape)
     else 
       {
@@ -1299,7 +1294,7 @@ pst <- function (x, location=0, scale=1, shape=0, df=Inf, dp=NULL, ...)
 }
 
 qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,  
-                 tol = 1e-08, dp = NULL, ...)
+                 tol = 1e-06, dp = NULL, ...)
 {
     if(!is.null(dp)) {
       if(!missing(shape)) 
@@ -1309,7 +1304,7 @@ qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,
       shape <- dp[3]
       df <- dp[4]
       }
-    if (df == Inf) 
+    if (df > 1e4) # (== Inf) 
         return(qsn(p, location, scale, shape))
     max.q <- sqrt(qf(p, 1, df))
     min.q <- -sqrt(qf(1 - p, 1, df))
@@ -1339,7 +1334,7 @@ qst <- function (p, location = 0, scale = 1, shape = 0, df=Inf,
     x <- replace(x, na, NA)
     x <- replace(x, zero, -Inf)
     x <- replace(x, one, Inf)
-    return(location + scale * x)
+    return(as.numeric(location + scale * x))
 }
 
 st.cumulants <- function(location=0, scale=1, shape=0, df=Inf, dp=NULL, n=4)
@@ -1401,8 +1396,8 @@ dmst <- function(x, xi = rep(0, length(alpha)), Omega, alpha,
          const <- (-0.5*d*logb(2)+ log1p((d/2)*(d/2-1)/df))
          log1Q <- log1p(Q/df)
          }
-    log.dmt <- const - 0.5*(d * logb(pi) + logDet + (df + d)* log1Q)                
-    log.pt <- pt(L * sqrt((df + d)/(Q + df)), df = df + d, log = TRUE)
+    log.dmt <- const - 0.5*(d * logb(pi) + logDet + (df + d)* log1Q)
+    log.pt <- pt(L * sqrt((df + d)/(Q + df)), df = df + d, log.p = TRUE)
     logPDF <-  logb(2) + log.dmt + log.pt
     if (log) logPDF
     else exp(logPDF)
@@ -1564,14 +1559,14 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
       }
     cat("Press <Enter> to continue..."); readline()
     par(mfrow=c(1,2))
-    pp  <- d*qf((1:n)/(n+1),d,df)
+    pp  <- d * qf((1:n)/(n+1),d,df)
     pp2 <- qchisq((1:n)/(n+1),d)
     # Xb  <- qr.fitted(qrX,y)
     res <- qr.resid(qrX,y)
     rad.n  <- apply(res    * (res %*% solvePD(var(res))), 1, sum)
     rad.st <- apply((y-xi) * ((y-xi) %*% solvePD(Omega)), 1, sum)
     plot(pp2, sort(rad.n), pch=1, ylim=c(0,max(rad.n,rad.st)),
-        xlab="Percentiles of scaled F distribution", 
+        xlab="Percentiles of chi-square distribution", 
         ylab="Mahalanobis distances")
     abline(0,1,lty=3)
     title(main="QQ-plot for normal distribution", sub=y.name)
@@ -1584,7 +1579,7 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
     mle$mahalanobis <- list(distance=rad.st, prob=prob, df=c(d,df))
     cat("Press <Enter> to continue, 'q' to quit...")
     m <- readline()
-    if(tolower(m) != "q"){
+    if(tolower(m) != "q") {
       plot((1:n)/(n+1), sort(pchisq(rad.n,d)), xlab="", ylab="")
       abline(0,1,lty=3)
       title(main="PP-plot for normal distribution", sub=y.name) 
@@ -1595,7 +1590,7 @@ mst.fit <- function(X, y, freq, start, fixed.df=NA, plot.it=TRUE,
     par(mfrow=c(1,1))
     
     } # end ploting
-  dev.norm<- msn.dev(c(qr.coef(qrX,y),rep(0,d)), as.matrix(X), y, freq)
+  dev.norm <- msn.dev(c(qr.coef(qrX,y),rep(0,d)), as.matrix(X), y, freq)
   test <- dev.norm + 2*mle$logL
   p.value <-  1-pchisq(test,d+1)
   if(trace) {
@@ -1953,7 +1948,7 @@ st.2logL.profile<-function(X=matrix(rep(1,n)), y, freq, trace=FALSE,
       points(x=best$fixed.comp1, y=best$fixed.comp2, pch=1,cex=0.5)  
     }
   }    
-  title(main=paste("dataset:", deparse(substitute(y)),
+  title(main=paste("Dataset:", deparse(substitute(y)),
         "\nProfile deviance", sep= " "))
   invisible(list(call=match.call(), param1=param1, param2=param2,
             deviance=dev, max.logL=max.logL, best=best))
@@ -2037,6 +2032,7 @@ sn.mmle <- function(X, y, plot.it=TRUE, exact=FALSE, trace=FALSE,...)
        dp0 <- c(0, dp0[p + 1], dp0[p + 2])
        xlab <- "residuals"
        }
+    x <- seq(min(pretty(y0,10)),max(pretty(y0,10)), length=200)
     curve(dsn(x, dp=dp0), add=TRUE, lty=2, col=3)
     }
   info <- sn.Einfo(dp=dp, x=X)

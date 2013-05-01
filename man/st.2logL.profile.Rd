@@ -1,11 +1,11 @@
 \name{st.2logL.profile}
 \alias{st.2logL.profile}
 \title{
-Profile twice loglikelihood for skew-t models
+Twice profile relative negative loglikelihood  for skew-\eqn{t} models
 }
 \description{
 Computation and plot of 1-dimensional and 2-dimensional profile
-(negative) twice log-likelihood function for skew-t regression models.
+relative (-2)*loglikelihood function for skew-\eqn{t} regression models.
 }
 \usage{
 st.2logL.profile(X=matrix(rep(1, n)), y, freq, trace=FALSE,
@@ -81,19 +81,19 @@ a list with the output of \code{optim} at the best evaluated point,
 that is the one with higher log-likelihood. 
 }}
 \section{Side Effects}{
-If \code{plot.it=TRUE}, a plot of the profile twice relative loglikeliood is
-produced on a graphical device. 
-If \code{length(fixed.comp)=1}, a plot of the `deviance' is produced
+If \code{plot.it=TRUE}, a plot of the profile twice relative negative 
+loglikeliood (called the `deviance') is produced on a graphical device. 
+When \code{length(fixed.comp)=1}, a plot of the deviance is produced
 as a function of the chosen parameter component.
-If \code{length(fixed.comp)=2}, this plot takes the form of a contour plot 
-whose contour lines correspond to confidence regions of approximate
-probability levels \code{c(0.25, 0.5,  0.75, 0.90,0.95, 0.99)}.
+When \code{length(fixed.comp)=2}, a contour plot of the deviance is produced
+with contour lines corresponding to confidence regions of approximate
+probability levels \code{c(0.25, 0.5, 0.75, 0.90, 0.95, 0.99)}.
 }
 \section{Background}{
-The family of skew-t distributions is an extension of the Student's t
+The family of skew-t distributions is an extension of the Student's \eqn{t}
 family, via the introduction of a \code{shape} parameter which regulates
-skewness; when \code{shape=0}, the skew-t distribution reduces to the
-usual t distribution. A multivariate version of the distribution exists.
+skewness; when \code{shape=0}, the skew-\eqn{t} distribution reduces to the
+usual \eqn{t} distribution. A multivariate version of the distribution exists.
 See the reference below for additional information.
 }
 \references{
@@ -109,11 +109,13 @@ Azzalini, A. and Capitanio, A. (2003).
 data(ais, package="sn")
 attach(ais)
 a <- st.2logL.profile(y=bmi, xlab="alpha", ylab="log(df)")
-a <- st.2logL.profile(y=bmi, fixed.comp=4, fixed.values=log(c(1,25)))
+\dontrun{
+a <- st.2logL.profile(y=bmi, fixed.comp=4, fixed.values=log(c(1,25)), npts=26)
 a <- st.2logL.profile(X=cbind(1,lbm), y=bmi, fixed.comp=5,  
-         fixed.values=log(c(5,25)), xlab="log(df)", npts=50)
+         fixed.values=log(c(5,25)), xlab="log(df)", npts=26)
 a <- st.2logL.profile(X=cbind(1,Ht), y=Wt, fixed.comp=c(4,5),
          fixed.values=cbind(c(-1,5), log(c(2,25))),
-         xlab="alpha", ylab="log(df)")
+         xlab="alpha", ylab="log(df)", npts=12)
+	 }
 }
 \keyword{distribution}

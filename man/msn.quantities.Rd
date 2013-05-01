@@ -7,13 +7,8 @@ Quantities related to the multivariate skew-normal distribution.
 Computes mean vector, variance matrix and other relevant quantities
 of a given multivariate skew-normal distribution.
 }
-\synopsis{
-msn.quantities(xi=rep(0,length(alpha)), Omega, alpha, dp = NULL)
-}
-\usage{
-msn.quantities(xi=rep(0,length(alpha)), Omega, alpha)
-msn.quantities(dp= )
-}
+\usage{msn.quantities(xi=rep(0,length(alpha)), Omega, alpha, dp = NULL)}
+
 \arguments{
 \item{xi}{
 numeric vector giving the location parameter, of length \code{d}, say.
@@ -76,9 +71,13 @@ distributions; this is related to \code{lambda}
 numeric vector with marginal indices of skewness (the standardised
 third cumulant).
 }}
-\details{
-The meaning of the parameters is explained in the references below,
-especially Azzalini and Capitanio (1999).
+\details{Typical usages are
+\preformatted{%
+msn.quantities(xi=rep(0,length(alpha)), Omega, alpha)
+msn.quantities(dp= )
+}
+The meaning of the parameters is explained in the references below;
+see especially Azzalini and Capitanio (1999).
 }
 \references{
 Azzalini, A. and Dalla Valle, A. (1996).

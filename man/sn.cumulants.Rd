@@ -6,13 +6,10 @@ Cumulants of the skew-normal distribution
 \description{
 Cumulants of the skew-normal distribution.
 }
-\synopsis{
+\usage{
 sn.cumulants(location = 0, scale = 1, shape = 0, dp = NULL, n = 4) 
 }
-\usage{
-sn.cumulants(location = 0, scale = 1, shape = 0,  n = 4)
-sn.cumulants(dp=, n = 4)
-}
+
 \arguments{
 \item{location}{
  location parameter (vector)
@@ -35,7 +32,11 @@ shape parameter (vector)
 the cumulants up to order \code{n} of the skew-normal distribution
 with \code{location=0}, \code{scale=1} and \code{shape} as selected.
 }
-\details{
+\details{Typical usages are
+\preformatted{%
+sn.cumulants(location = 0, scale = 1, shape = 0,  n = 4)
+sn.cumulants(dp=, n = 4)
+}
 The moment generating function (hence the cumulant generating function)
 of the distribution is given in the refence below.
 The computations method used is proved analytically up to \code{n=3} but it is

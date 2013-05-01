@@ -9,18 +9,11 @@ Multivariate skew-normal distribution
 Probability density function, distribution function and random number 
 generation for the multivariate skew-normal (MSN) distribution.
 }
-\synopsis{
-dmsn(x, xi = rep(0, length(alpha)), Omega, alpha, dp = NULL, log = FALSE) 
-pmsn(x, xi = rep(0, length(alpha)), Omega, alpha, dp = NULL, ...) 
-rmsn(n = 1, xi = rep(0, length(alpha)), Omega, alpha, dp = NULL) 
-}
+
 \usage{
-dmsn(x, xi=rep(0,length(alpha)), Omega, alpha, log=FALSE)
-dmsn(x, dp=, log=FALSE)
-pmsn(x, xi=rep(0,length(alpha)), Omega, alpha, ...)
-pmsn(x, dp=)
-rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha)
-rmsn(n=1, dp=)
+dmsn(x, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL, log=FALSE)
+pmsn(x, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL, ...)
+rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
 }
 \arguments{
 \item{x}{
@@ -38,23 +31,23 @@ In a call to \code{dmsn}, \code{xi} can be a matrix;
 in this case, its dimensions must agree with those of \code{x}.
 }
 \item{Omega}{
-a symmetric positive-definite  matrix of dimension \code{(d,d)};
+a symmetric positive-definite matrix of dimension \code{(d,d)};
 see Background.
 }
 \item{alpha}{
-a numeric vector which regulates the shape of the density.
+a numeric vector which regulates the shape of the density; see Background.
 }
 \item{dp}{
 a list with three elements named \code{xi}, \code{Omega} and \code{alpha}
-containing quantities as described above. If \code{dp} is specified, this
-overrides the individual parameter specification. 
+containing quantities as described above. If \code{dp} is specified, 
+individual parameters must not be specified. 
 }
 \item{n}{
 a numeric value which represents the number of random vectors
 to be drawn.
 }
 \item{log}{ 
-logical; if TRUE, densities  are given as log-densities.
+logical (default value: \code{FALSE}); if TRUE, log-densities are returned.
 }
 \item{...}{
 additional parameters passed to \code{pmnorm}
@@ -63,22 +56,30 @@ additional parameters passed to \code{pmnorm}
 A vector of density values (\code{dmsn}), or a single probability 
 (\code{pmsn}) or a matrix of random  points (\code{rmsn}).
 }
-\section{Background}{
-The multivariate skew-normal distribution is discussed by
-Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)}
-parametrization adopted here is the one of Azzalini and Capitanio (1999).
- Notice that the location vector \code{xi}
-does not represent the mean vector of the distribution (which in fact
-may not even exist if \code{df <= 1}), and similarly
-\code{Omega} is not \emph{the} covariance matrix of the distribution,
-although it is \emph{a} covariance matrix. 
+\details{Typical usages are
+\preformatted{%
+dmsn(x, xi=rep(0,length(alpha)), Omega, alpha, log=FALSE)
+dmsn(x, dp=, log=FALSE)
+pmsn(x, xi=rep(0,length(alpha)), Omega, alpha, ...)
+pmsn(x, dp=)
+rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha)
+rmsn(n=1, dp=)
 }
-\details{
   The positive-definiteness of \code{Omega} is not tested for
   efficiency reasons. Function \code{pmsn} requires \code{pmnorm}
   from package \code{mnormt};
   the accuracy of its computation can be controlled via use of \code{...}
 }
+\section{Background}{
+The multivariate skew-normal distribution is discussed by
+Azzalini and Dalla Valle (1996); the \code{(Omega,alpha)}
+parametrization adopted here is the one of Azzalini and Capitanio (1999).
+ Notice that the location vector \code{xi}
+does not represent the mean vector of the distribution  and similarly
+\code{Omega} is not \emph{the} covariance matrix of the distribution,
+although it is \emph{a} covariance matrix. 
+}
+
 \references{
 Azzalini, A. and Dalla Valle, A. (1996).
 The multivariate skew-normal distribution.

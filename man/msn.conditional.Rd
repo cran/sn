@@ -9,14 +9,11 @@ distribution conditionally on the values taken on by some of
 its components, and finds a multivariate skew-normal distribution
 with the same cumulants.
 }
-\synopsis{
-   msn.conditional(xi = rep(0, length(alpha)), Omega, alpha, fixed.comp, 
-                  fixed.values, dp = NULL) 
-}
+
 \usage{
-msn.conditional(xi, Omega, alpha, fixed.comp, fixed.values)
-msn.conditional(dp=, fixed.comp, fixed.values)
-}
+msn.conditional(xi = rep(0, length(alpha)), Omega, alpha, fixed.comp, 
+                fixed.values, dp = NULL) }
+
 \arguments{
 \item{xi}{
 a numeric vector of length \code{d}, say, giving the location parameter.
@@ -51,13 +48,17 @@ a list containing the parameters of the fitted skew-normal
 distribution in the \code{(xi,Omega,alpha)} parametrization, plus
 the vector \code{delta}.
 }}
-\details{
+\details{Typical usages are
+\preformatted{%
+msn.conditional(xi, Omega, alpha, fixed.comp, fixed.values)
+msn.conditional(dp=, fixed.comp, fixed.values)
+}
 See the reference below for details and background.
 }
 \references{
 Azzalini, A. and Capitanio, A. (1999).
 Statistical applications of the multivariate skew-normal distribution.
-\emph{J.Roy.Statist.Soc. B}
+\emph{J. Roy. Statist. Soc. B}
 \bold{61}, 579--602.
 }
 \seealso{
