@@ -1,0 +1,124 @@
+%  file sn/man/makeSECdistr.Rd  
+%  This file is a component of the package 'sn' for R
+%  copyright (C) 2013 Adelchi Azzalini
+%---------------------
+\name{makeSECdistr}
+\encoding{UTF-8}
+\alias{makeSECdistr}
+\concept{skew-elliptical distribution}
+\title{Build a skew-elliptically contoured distribution}
+
+\description{Build an object which identifies a skew-elliptically contoured 
+  distribution (\acronym{SEC}), in the univariate and in the multivariate case.
+  The term \sQuote{skew-elliptical distribution} is a synonym of \acronym{SEC} 
+  distribution.}
+
+\usage{makeSECdistr(dp, family, name, compNames)}
+
+\arguments{
+
+  \item{dp}{a numeric vector (in the univariate case) or a list (in the
+    multivariate case) of parameters which identify the specific distribution
+    within the named \code{family}. See \sQuote{Details} for their expected 
+    structure.}
+
+  \item{family}{a character string which identifies the parametric
+    family; currently, possible values are: \kbd{"SN"}, \kbd{"ESN"}, 
+    \kbd{"ST"}, \kbd{"SC"}. 
+    See \sQuote{Details} for additional information.}
+
+  \item{name}{an optional character string with the name of the distribution.
+    If missing, one is created.}
+
+  \item{compNames}{in the multivariate case, an optional vector of character
+    strings with the names of the component variables; its length must be 
+    equal to the dimensionality of the distribution being generated. 
+    If missing, the components are named \code{"V1"}, \code{"V2"}, \dots}
+}
+
+\details{If \code{dp} is a vector, a univariate distribution is built. 
+  Alternatively, if \code{dp} is a list, a multivariate distribution is 
+  built. In both cases, the expected number of components of \code{dp} 
+  depends on \code{family}: it must be is \code{3} for \kbd{"SN"} and 
+  \kbd{"SC"}; it must be \code{4} for \kbd{"ESN"} and \kbd{"ST"}.
+
+  In the univariate case, the first three components of \code{dp} represent 
+  what in their specific distributions are denoted \code{xi} (location), 
+  \code{omega} (scale, positive) and \code{alpha} (slant); see functions 
+  \code{\link{dsn}}, \code{\link{dst}}, \code{\link{dsc}} for their
+  description. 
+  The fourth component, when it exists, represents either \code{tau} 
+  (hidden variable mean) for \kbd{"ESN"} or \code{nu} (degrees of freedom) 
+  for \kbd{"ST"}. The names of the individual parameters are attached
+  to the components of \code{dp} in the returned object.
+  
+  In the multivariate case, \code{dp} is a list with components having 
+  similar role as in the univariate case, but \code{xi=dp[[1]]} and 
+  \code{alpha=dp[[3]]} are now vectors and the scale parameter
+  \code{Omega=dp[[2]]} is a symmetric positive-definite matrix. 
+  For a multivariate distribution of dimension 1 (which can be created, 
+  although a warning message is issued), \code{Omega} corresponds to the 
+  square of \code{omega} in the univariate case. 
+  Vectors \code{xi} and \code{alpha} must be of length \code{ncol(Omega)}.
+  See also functions \code{\link{dmsn}}, \code{\link{dmst}} and 
+  \code{\link{dmsc}}.
+  The fourth component, when it exists, is a scalar with the same role as 
+  in the univariate case. 
+  
+  In the univariate case \code{alpha=Inf} is allowed, but in the multivariate
+  case all components of the vector \code{alpha} must be finite.
+
+  For background information, see Azzalini and Capitanio (2014), specifically
+  Chapers 2 and 4 for univariate cases, Chapters 5 and 6 for multivariate
+  cases; Section 6.1 provides a general formulation of \acronym{SEC}
+  distributions.
+}
+
+\value{In the univariate case, an object of class \code{SECdistrUv};
+  in the multivariate case, an object of class \code{SECdistrMv}.
+  See \code{\link{SECdistrUv-class}} and \code{\link{SECdistrMv-class}}
+  for their description.
+}
+
+\references{
+  Azzalini, A. with the collaboration of Capitanio, A. (2014). 
+  \emph{The Skew-Normal and Related Families}. 
+  Cambridge University Press, IMS Monographs series.
+}
+
+\author{Adelchi Azzalini}
+
+\seealso{
+
+ The description of classes  \code{\link{SECdistrUv-class}} and
+ \code{\link{SECdistrMv-class}}
+
+ \code{\link{plot.SECdistr}} for plotting and 
+ \code{\link{summary.SECdistr}} for summaries
+
+ Related functions \code{\link{dsn}}, \code{\link{dst}}, \code{\link{dsc}}, 
+ \code{\link{dmsn}}, \code{\link{dmst}},  \code{\link{dp2cp}}
+ 
+ Objects of class  \code{\link{SECdistrMv-class}} can be manipulated with
+ \code{\link{affineTransSECdistr}} and \code{\link{conditionalSECdistr}}
+}
+
+\examples{    
+f1 <- makeSECdistr(dp=c(3,2,5), family="SN", name="First-SN")
+show(f1)
+summary(f1)
+plot(f1)
+plot(f1, probs=c(0.1, 0.9))
+#
+f2 <- makeSECdistr(dp=c(3, 5, -4, 8), family="ST", name="First-ST")
+f9 <- makeSECdistr(dp=c(5, 1, Inf, 0.5), family="ESN", name="ESN,alpha=Inf")
+#
+dp0 <- list(xi=1:2, Omega=diag(3:4), alpha=c(3, -5))
+f10 <- makeSECdistr(dp=dp0, family="SN", name="SN-2d", compNames=c("u1", "u2"))
+#
+dp1 <- list(xi=1:2, Omega=diag(1:2)+outer(c(3,3),c(2,2)), alpha=c(-3, 5), nu=6)
+f11 <- makeSECdistr(dp=dp1, family="ST", name="ST-2d", compNames=c("t1", "t2"))
+} 
+
+\keyword{distribution}
+\keyword{multivariate} 

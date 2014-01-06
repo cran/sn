@@ -1,0 +1,35 @@
+
+# S3method(residuals, selm)
+# S3method(residuals, mselm)
+# S3method(fitted, selm)
+# S3method(fitted, mselm)
+
+import("methods") 
+importFrom("graphics", plot)
+importFrom("stats", optim, nlminb)
+importFrom("stats", residuals)
+importFrom("stats", fitted)
+import("stats4")
+importFrom("mnormt", pmnorm, dmt, pmt, pd.solve)
+importFrom("numDeriv", grad, hessian)
+
+
+export(T.Owen, zeta, sn.cumulants, st.cumulants,
+  dsn, psn, qsn, rsn,
+  dst, pst, qst, rst,
+  dsc, psc, qsc, rsc,
+  dmsn, pmsn, rmsn, 
+  dmst, pmst, rmst,
+  dmsc, pmsc, rmsc,
+  makeSECdistr, marginalSECdistr, affineTransSECdistr, conditionalSECdistr, 
+  cp2dp, dp2cp, 
+  sn.infoUv, sn.infoMv,
+  selm, MPpenalty, Qpenalty,
+  selm.fit, sn.mple,  st.mple, msn.mle, msn.mple, mst.mple
+  )
+ 
+exportMethods("show", "plot", "summary", "coef",  "logLik",  "vcov",
+  "residuals", "fitted")
+
+exportClasses("SECdistrUv", "SECdistrMv", "summary.SECdistrUv", 
+ "summary.SECdistrMv", "selm", "mselm", "summary.selm", "summary.mselm")

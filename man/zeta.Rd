@@ -1,40 +1,70 @@
+%  file sn/man/zeta.Rd  
+%  This file is a component of the package 'sn' for R
+%  copyright (C) 1998,2013 Adelchi Azzalini
+%---------------------
 \name{zeta}
 \alias{zeta}
-\title{
-Function `log(2*pnorm(x))' and its derivatives
-}
-\description{
-  The function \code{log(2*(pnorm(x))} and its derivatives up to order 4.
-}
-\usage{
-zeta(k, x)
-}
+\concept{Mills ratio}
+
+\title{Function `log(2*pnorm(x))' and its derivatives}
+
+\description{The function \code{log(2*(pnorm(x))} and its derivatives, 
+  including inverse Mills ratio.}
+  
+\usage{zeta(k, x)}
+
 \arguments{
-\item{k}{
-  an integer scalar between 0 and 4.
+\item{k}{an integer scalar between 0 and 5.}
+
+\item{x}{a numeric vector. Missing values (\code{NA}s)  and \code{Inf}s are 
+  allowed}
 }
-\item{x}{
-  a vector. Missing values (\code{NA}s)  and \code{Inf}s are allowed
-}}
+
 \value{
-  a vector giving the \code{k}-th order derivative evaluated at \code{x}
-}
+a vector representing the \code{k}-th order derivative evaluated at \code{x}}
+
 \details{
-  For \code{k} between 0 and 4, the derivative of  order \code{k}
-  of \code{log(2*pnorm(x))} is  evaluated, where the derivative of
+  For \code{k} between 0 and 5, the derivative of  order \code{k}
+  of \code{log(2*pnorm(x))} is  evaluated;   the derivative of
   order \code{k=0} refers to  the function itself.
   If \code{k} is not integer, it is converted to integer and a warning
   message is generated.
-  If \code{k<0} or \code{k>4},  \code{NULL} is returned.
-  This function is used by \code{sn.dev} and \code{msn.dev}, among others.
+  If \code{k<0} or \code{k>5},  \code{NULL} is returned.
 }
-\seealso{
-\code{\link{sn.mle}}, \code{\link{msn.mle}}
+
+\section{Background}{
+  The computation for \code{k>1} is reduced to the case \code{k=1}, making use
+  of expressions given by Azzalini and Capitanio (1999); see especially the
+  full-length version of the paper. The main facts are summarized in Section 
+  2.1.4 of Azzalini and Capitanio (2014).
+  
+  For numerical stability, the evaluation of \code{zeta(1,x)} when 
+  \code{x < -50} makes use of the asymptotic expansion (26.2.13) of 
+  Abramowitz and Stegun (1964).
+
+  \code{zeta(1,-x)} equals \code{dnorm(x)/pnorm(-x)} (in principle, apart from
+  the above-mentioned asymptotic expansion), called the  
+  \emph{inverse Mills ratio}.
+}
+
+\references{
+  Abramowitz, M. and Stegun, I. A., editors (1964).
+  \emph{Handbook of Mathematical Functions}. 
+  Dover Publications.
+
+  Azzalini, A. and Capitanio, A. (1999).
+  Statistical applications of the multivariate skew normal distribution.
+  \emph{J.Roy.Statist.Soc. B} \bold{61}, 579--602. Full-length version 
+  available at \url{http://arXiv.org/abs/0911.2093}
+     
+ Azzalini, A. with the collaboration of Capitanio, A. (2014). 
+ \emph{The Skew-Normal and Related Families}. 
+ Cambridge University Press, IMS Monographs series. 
 }
 \examples{
 y <- zeta(2,seq(-20,20,by=0.5))
 #
-for(k in 0:4) curve(zeta(k,x), from=-1, to=5, col = k+2, add = k > 0)
-legend(3, -0.5, legend=as.character(0:4), col=2:6, lty=1)
+for(k in 0:5) curve(zeta(k,x), from=-1.5, to=5, col = k+2, add = k > 0)
+legend(3.5, -0.5, legend=as.character(0:5), col=2:7, lty=1)
 }
 \keyword{math}

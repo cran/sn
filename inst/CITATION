@@ -1,22 +1,20 @@
-citHeader("To cite the sn package in publications use:")
+citHeader("To cite the 'sn' package in publications use:")
+
+if(!exists("meta") || is.null(meta)) meta <- packageDescription("sn")
 
 citEntry(entry="manual",
-         title = paste("{R} package 'sn':",
-                  "The skew-normal and skew-t distribution (version ",  
-                  strsplit(.sn.version," ",fixed=TRUE)[[1]][1],").", sep=""),
+         title = paste("The {R} \\texttt{sn} package : ",
+                  "The skew-normal and skew-$t$ distributions (version ",  
+                  meta$Version, ")", sep=""),
          author = personList(as.person("A. Azzalini")),
-         address      = "Università di Padova, Italia",
-         year         = substr(strsplit(
-                        .sn.version," ",fixed=TRUE)[[1]][2], 2,5),
-         url          = "URL http://azzalini.stat.unipd.it/SN",
+         address      = "Universit\\`a di Padova, Italia",
+         year         = substr(meta$Date, 1, 4),
+         url          = "http://azzalini.stat.unipd.it/SN",
          
          textVersion = 
-         paste("Azzalini, A. (",
-               substr(strsplit( .sn.version," ",fixed=TRUE)[[1]][2], 2,5), 
-               "). ",
-               "R package 'sn': The skew-normal and skew-t distributions",
-	       " (version ", 
-               strsplit(.sn.version," ",fixed=TRUE)[[1]][1],"). ",
+         paste("Azzalini, A. (", substr(meta$Date, 1, 4), "). ",
+           "The R 'sn' package: The skew-normal and skew-t distributions",
+	       " (version ", meta$Version, "). ",
                "URL http://azzalini.stat.unipd.it/SN",
                sep="")
 )

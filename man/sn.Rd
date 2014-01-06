@@ -1,132 +1,114 @@
+%  file sn/man/sn.Rd  
+%  This file is a component of the package 'sn' for R
+%  copyright (C) 2013 Adelchi Azzalini
+%---------------------
 \name{SN}
+\docType{package}
+\encoding{UTF-8}
 \alias{SN}
-\title{
-Package `sn': summary information
-}
+\alias{sn-package}
+\concept{skew-elliptical distribution}
+\concept{skew-normal distribution}
+
+\title{Package \pkg{sn}: overview}
 \description{
-This package provides functions related to the skew-normal (SN) and
-the skew-t (ST) probability distributions, both for the univariate 
-and for the the multivariate case, including regression models.
+  The \pkg{sn} package  provides facilities to  define and manipulate 
+  probability distributions of the skew-normal (\acronym{SN}) family and 
+  some related ones, notably the skew-\eqn{t} (\acronym{ST}) family, 
+  and to apply connected statistical methods for data fitting and 
+  diagnostics, in the univariate and the multivariate case.
 }
-\section{Functions}{
-% The functions of the scalar case section are:
-% \code{dsn}, \code{psn}, \code{qsn}, \code{rsn}, \code{T.Owen}, 
-% \code{cp.to.dp}, \code{dp.to.cp}, \code{zeta},
-% \code{gamma1.to.lambda}, \code{sn.cumulants}, \code{sn.em}, 
-% \code{sn.2logL.profile}, \code{sn.mle}, \code{sn.dev}, 
-% \code{sn.dev.gh}.
-% 
-% 
-% The functions of the multivariate section are: \code{dmsn},
-% \code{rmsn}, \code{plot.dsn2}, \code{msn.quantities},
-% \code{msn.conditional}, \code{msn.marginal}, \code{plot.msn.cond},
-% \code{msn.fit}, \code{msn.mle}, \code{msn.dev}, \code{msn.dev.grad},
-% \code{msn.moment.fit}, \code{num.deriv}.
+ 
+\section{A substantial upgrade}{The first version of the package has been
+written in 1997 (on CRAN since 1998); subsequent versions have evolved 
+gradually up to version 0.4-18 in May 2013.  The present \sQuote{version 1} 
+of the package is a substantial re-writing of the earlier \sQuote{version 0}.  
+Differences between \sQuote{version 0} and \sQuote{version 1} concern the core
+computational and graphical part as well as the user interface. 
+The S4 protocol for classes and methods has been adopted.
 
-The package includes several functions, a number of which are intended
-as services to other functions, not really to be called directly by the
-users. The following ones are those more relevant for practical use. 
+Broadly speaking, the available tools can be divided in two groups: the
+probability section and the statistics section.  For a quick start, one 
+could look at their key functions, \code{\link{makeSECdistr}} and
+\code{\link{selm}}, respectively, and from here explore the rest.
+In the probability section, one finds also functions \code{\link{dsn}},
+\code{\link{dst}}, \code{\link{dmsn}} and others alike; these functions 
+existed also in \sQuote{version 0} and their working is still very much 
+the same (not necessarily so their code).
 
-\emph{SN distribution:}
-\code{\link{dsn}}, \code{\link{psn}}, \code{\link{qsn}},
-\code{\link{rsn}}, \code{\link{cp.to.dp}}, \code{\link{dp.to.cp}},
-\code{\link{sn.mle}}, \code{\link{sn.em}}, 
-%\code{\link{sn.mle.grouped}} 
-for the univariate case, and 
-\code{\link{dmsn}}, \code{\link{pmsn}}, \code{\link{rmsn}}, 
-\code{\link{msn.fit}}, \code{\link{msn.mle}}, \code{\link{dsn2.plot}} 
-for the multivariate case. 
+The upgrade to \sQuote{version 1} appears more or less at the time when the
+companion book by Azzalini and Capitanio (2014) is published. Although the two
+projects are formally separate, they adopt the same notation, terminology 
+and logical frame. This matching and the numerous references in the software 
+documentation to specific sections of the book for background information 
+should facilitate familiarizing with these tools.}
+
+\section{Backward Compatibility}{%
+ 
+There is a partial backward compatibility of \sQuote{version 1} versus
+\sQuote{version 0}. Some functions of the older version would work as before
+with virtually no change; a wider set arguments is now allowed. Functions
+\code{\link{dsn}}, \code{\link{dst}}, \code{\link{dmsn}} and alike fall in
+this category: typically, the names of the arguments have been altered, but
+they work as before if called with unnamed arguments; similar cases are
+\code{\link{msn.mle}}, \code{\link{sn.cumulants}} and \code{\link{T.Owen}}.
+Notice, however, that \code{\link{msn.mle}} and other fitting functions have
+effectively been subsumed into the more general fitting function
+\code{\link{selm}}.
+
+A second group of functions will work with little or even minimal changes.
+Specific examples are functions \code{sn.mle} and \code{sn.mle} which have
+become \code{\link{sn.mple}} and \code{\link{st.mple}}, with some additional
+arguments (again, one can achieve the same result via \code{\link{selm}}) and
+\code{dp.to.cp}, which has been replaced by the more general function
+\code{\link{dp2cp}}.
+
+Finally, some functions are not there any longer, with no similarly-working
+functions in the new version. The more prominent set of cases is represented
+by the functions for computing profile log-likelihoods. There is a long-term
+plan to re-instate similar facilities, possibly in a more flexible form, but
+not in the near future. }
 
 
-\emph{ST distribution:}
-\code{\link{dst}}, \code{\link{pst}}, \code{\link{rst}}, \code{\link{st.mle}}, 
-%\code{\link{st.mle.grouped}} 
-for the univariate case,
-and \code{\link{dmst}},\code{\link{pmst}}, \code{\link{rmst}}, 
-\code{\link{mst.fit}}, \code{\link{mst.mle}}, \code{\link{dst2.plot}} 
-for the multivariate case. 
-
-It is suggested that a user starts by reading the  documentation of 
-(some of) these.
-}
 \section{Requirements}{
-R 1.0.1.  Two functions  require  \code{library(mvtnorm)}: 
-\code{pmsn}, \code{pmst}.
+  \R version 2.15-3 or higher, plus  packages \pkg{mnormt}, 
+  \pkg{numDeriv}, \pkg{stats4} and \pkg{methods} in addition to `standard' 
+  packages (\pkg{graphics},  etc.)
 }
+
 \section{Version}{
-The version level of the package is given by the  command 
-\code{print(.sn.version)}.
+The command \code{citation("sn")} indicates, among other information,
+the running version of the package.
 The most recent version of the package can be obtained from
 the WWW page: \url{http://azzalini.stat.unipd.it/SN}
-which also contains other related material
+which also contains other related material.
 }
-\section{Manual}{
-There is no manual  besides on-line documentation and its derived versions. 
-The papers listed below provide background information. 
-}
-\section{Author}{
-Adelchi Azzalini, Dipart. Scienze Statistiche, Universit‡ di Padova, Italia.
-Please send comments, error reports, etc. to the author whose WWW page
+
+\section{Author}{Adelchi Azzalini.
+% Dipart. Scienze Statistiche, Universit√† di Padova, Italia.
+Please send comments, error reports, etc. to the author whose web page
 is \url{http://azzalini.stat.unipd.it/}.
 }
-\section{Acknowledgements}{The package has evolved through several 
-versions, developed over some years.
 
-For versions up to 0.20, the following people and institutions 
-have contributed. Many thanks go to Antonella Capitanio for testing 
-the procedures, and to Brian Ripley and Martin Maechler for useful 
-advice on R.  The function \code{num.deriv} is based on a similar 
-function written  by Monica Chiogna. 
-This software and part of the associated theoretical work has been developed 
-while the author was at the Nuffield College, Oxford, under the Jemolo 
-Fellowship scheme; the generous support of the  college is gratefully 
-acknowledged. 
-Additional support for the development of the theoretical research work has 
-been  provided by the "Consiglio Nazionale delle Ricerche" of Italy, grant 
-no.97.01331.CT10.
-
-Versions 0.21 to 0.30 have been supported by "MIUR", Italy, under grant 
-scheme PRIN 2000. Again, thanks to Antonella Capitanio for additional
-testing of the new version of the package.
-
-For acknowledgemets to the use of this package, see \code{citation("sn")}.
-}
-\references{
-Azzalini, A. (1985).
-A class of distributions which includes the normal ones.
-\emph{Scand. J. Statist.}
-\bold{12}, 171--178.
-
-
-Azzalini, A. (1986).
-Further results on a class of distributions which includes 
-the normal ones.
-\emph{Statistica}
-\bold{46},199--208.
-
-
-Azzalini, A. and Dalla Valle, A. (1996).
-The multivariate skew-normal distribution.
-\emph{Biometrika}
-\bold{83}, 715--726.
-
-
-Azzalini, A. and Capitanio, A. (1999).
-Statistical applications of the multivariate skew-normal distribution.
-\emph{J.Roy. Statist. Soc. B}
-\bold{61}, 579--602.
-
-Azzalini, A. and Capitanio, A. (2003).
-Distributions generated by perturbation of symmetry 
-with emphasis on a multivariate skew-\emph{t} distribution.
-\emph{J.Roy. Statist. Soc. B}  \bold{65}, 367--389.
-
-}
 \section{Licence}{
-This package and its documentation are usable under the terms of the 
-"GNU General Public License", a copy of which is distributed with the 
-package.
+This package and its documentation are usable under the terms of 
+the \dQuote{GNU General Public License} version 3 or version 2,
+as you prefer; a copy of them is available from 
+\url{http://www.R-project.org/Licenses/}.
+  
+While the software is freely usable, it would be appreciated
+if a reference is inserted in publications or other work
+which makes use of it; for this purpose, see the command
+\code{citation("sn")}. 
 }
+
+\references{
+Azzalini, A. with the collaboration of Capitanio, A. (2014). 
+ \emph{The Skew-Normal and Related Families}. 
+ Cambridge University Press, IMS Monographs series.
+}
+
 \keyword{multivariate}
 \keyword{distribution}
+\keyword{univar}
 \keyword{regression}
