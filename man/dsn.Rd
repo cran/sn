@@ -46,7 +46,7 @@ rsn(n=1, xi=0, omega=1, alpha=0, tau=0,  dp=NULL)
  \item{n}{sample size.}
 
  \item{tol}{a scalar value which regulates the accuracy of the result of 
-   \code{qsn}.}
+   \code{qsn}, measured on the probability scale.}
 
   \item{log}{logical flag used in \code{dsn} (default \code{FALSE}).
    When \code{TRUE}, the logarithm of the density values is returned.}

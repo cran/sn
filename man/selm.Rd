@@ -66,12 +66,13 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    the procedure.}
 
   \item{fixed.param}{a list of assignments of parameter values which must
-   be kept fixed in the numerical maximization process. 
-   Currently, there is only one such option, of the form
-   \code{list(nu=<value>)}, to fix the degrees of freedom at the named 
-   \code{<value>} when \code{family="ST"}, for instance
-   \code{list(nu=3)}. Setting \code{fixed.param=list(nu=1)} is equivalent to
-   select \code{family="SC"}.}
+   be kept fixed in the estimation process. 
+   Currently, there only two types of admissible constraint: one is to
+   set \code{alpha=0} to impose a symmetry condition of the distribution; 
+   the other is to set \code{nu=<value>}, to fix the degrees of freedom  
+   at the named \code{<value>} when \code{family="ST"}, for instance
+   \code{list(nu=3)}.  See \sQuote{Details} for additional information.
+   }
 
   \item{method}{a character string which selects the estimation method to be
    used for fitting. Currently two options exist: \code{"MLE"} (default) and
@@ -109,8 +110,9 @@ selm(formula, family = "SN", data, weights, subset, na.action,
         implemented only for the \acronym{SN} family.
 
     \item \code{opt.method}: a character string which selects the numerical
-        optimization method, among the possible values \code{"nlminb",
-        "Nelder-Mead", "BFGS", "CG", "SANN"}. If \code{opt.method="nlminb"}
+        optimization method, among the possible values 
+        \code{"nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"}. 
+        If \code{opt.method="nlminb"}
         (default), function \code{\link[stats]{nlminb}} is called, 
         otherwise function \code{\link[stats]{optim}} is called with 
         \code{method} equal to \code{opt.method}.
@@ -140,10 +142,10 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   \acronym{DP} parameter sets, the methods associated to the objects created
   by this function communicate, by default, their outcomes in the \acronym{CP}
   parameter set, or its variant form pseudo-\acronym{CP} when \acronym{CP}
-  does not exist; the \sQuote{Note} at
-  \code{\link{summary.selm}} explains why. A more detailed discussion is
-  available in Sections 3.1.4--6 and 5.2.3 of Azzalini and Capitanio (2014)
-  and in Section 4 of Arellano-Valle and Azzalini (2008).
+  does not exist; the \sQuote{Note} at \code{\link{summary.selm}} explains why. 
+  A more detailed discussion is available in Sections 3.1.4--6 and 5.2.3 of 
+  Azzalini and Capitanio (2014) and in Section 4 of Arellano-Valle and 
+  Azzalini (2008).
   
   There is a known open issue which affects computation of the information
   matrix of the multivariate skew-normal distribution when the slant
@@ -157,6 +159,33 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   work except in remote cases when (i) the estimated degrees of freedom
   \code{nu} diverge and (ii) still \code{alpha} remains at the origin.
 
+  The optional argument \code{fixed.param=list(alpha=0)} imposes the
+  constraint \eqn{\alpha=0} in the estimation process; in the multivariate 
+  case, the expression is interpreted in the sense that all components  
+  of the vector \eqn{alpha} are zero, which implies symmetry of the
+  error distribution, irrespectively of the parameterization 
+  subsequently adopted for summaries and diagnostics.
+  When this restriction is selected, the estimation method cannot be
+  set to \code{"MPLE"}. Under the constraint \eqn{\alpha=0},
+  if \code{family="SN"}, the model is  fitted similarly to \code{lm}, except
+  that here \acronym{MLE} is used for estimation of the covariance matrix. 
+  If \code{family="ST"} or \code{family="SC"}, a symmetric Student's \eqn{t} 
+  of Cauchy distribution is adopted. 
+  
+  Under the constraint  \eqn{\alpha=0}, the location parameter \eqn{\xi}{xi}
+  coincides with the mode and the mean of the distribution, when the latter 
+  exists; in addition, when the covariance matrix exists, it differs from 
+  \eqn{\Omega}{Omega} only by a multiplicative factor. For this reason,
+  the summaries of a model of this sort automatically adopt the \acronym{DP}
+  parametrization.
+  
+  The other possible form of constraint allows to fix the degrees of
+  freedom when \code{family="ST"}. The two constraints can be combined 
+  writing, for instance,  \code{fixed.param=list(alpha=0, nu=6)}.
+  The constraint \code{nu=1} is equivalent to select \code{family="SC"}.
+  In practice, an expression of type \code{fixed.param=list(..)} can be
+  abbreviated to \code{fixed=list(..)}.
+  
   In some cases, especially for small sample size, the \acronym{MLE} occurs on
   the frontier of the parameter space, leading to \acronym{DP} estimates with
   \code{alpha=Inf} or to a similar situation in the multivariate case or in an
@@ -219,6 +248,10 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   \eqn{\pi} for \eqn{\alpha} by setting \eqn{Q=-\log\pi}{Q=-log(\pi)}, 
   leading to a maximum \emph{a posteriori} estimate in the stated sense. 
   See \code{\link{Qpenalty}} for more information and an illustration.
+  
+  The actual computations are not performed within \code{selm} which only 
+  sets-up ingredients for work of \code{\link{selm.fit}} and other functions
+  further below this one.  See \code{\link{selm.fit}} for more information.
 }
 
 \value{an S4 object of class \code{selm} or \code{mselm}, depending on whether
@@ -230,7 +263,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
 Arellano-Valle, R. B., and Azzalini, A. (2008).
  The centred parametrization for the multivariate skew-normal distribution.
  \emph{J. Multiv. Anal.} \bold{99}, 1362--1382.
-  Corrigendum: vol.100 (2009), p.816.
+  Corrigendum: \bold{100} (2009), 816.
 
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 
  \emph{The Skew-Normal and Related Families}. 
@@ -298,7 +331,7 @@ coef(m1, "DP")
 var <- vcov(m1)
 #
 m1a <- selm(log(Fe) ~ BMI + LBM, family="SN", method="MPLE", data=ais)  
-m1b <- selm(log(Fe) ~ BMI + LBM, family="ST", fixed.par=list(nu=8), data=ais)  
+m1b <- selm(log(Fe) ~ BMI + LBM, family="ST", fixed.param=list(nu=8), data=ais)  
 #
 data(barolo)
 attach(barolo)
@@ -322,9 +355,12 @@ data(wines)
 m28 <- selm(cbind(chloride, glycerol, magnesium) ~ 1, family="ST", 
             subset=(wine=="Grignolino"), data=wines)            
 dp28 <- coef(m28, "DP", vector=FALSE) 
-plot(m28, param.type="dp") 
-# cfr Figures 6.1 and 6.2 of Azzalini & Capitanio (2014), pp.181-2
-plot(m28, param.type="pseudo-CP") 
+pcp28 <- coef(m28, "pseudo-CP", vector=FALSE) 
+plot(m28)
+#
+m4 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines)
+m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
+print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # testing for symmetry
 #
 \donttest{
 m31 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais)

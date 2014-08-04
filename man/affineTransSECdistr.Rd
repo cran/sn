@@ -8,9 +8,9 @@
 \title{Affine transformations and marginals of a skew-elliptical distribution}
 
 \description{
-  Compute the distribution of a (multiple) marginal or of an affine 
-  transformation \eqn{a + A^{\top}Y}{a + A'Y} of a multivariate variable 
-  \eqn{Y} with  skew-elliptical distribution.}
+  Compute the distribution of a (multivariate) marginal or the distribution
+  of an affine  transformation \eqn{a + A^{\top}Y}{a + A'Y} of a multivariate 
+  variable \eqn{Y} with  skew-elliptical distribution.}
 
 \usage{
   affineTransSECdistr(object, a, A, name, compNames, drop=TRUE)
@@ -34,16 +34,20 @@
     if missing, one such vector is constructed.}
    
   \item{drop}{a logical flag (default value: \code{TRUE}), operating only if
-    \code{ncol(A)==1},  which indicates whether the returned object
-     must be of class \code{SECdistrUv}.}
+    the returned object is has dimension \code{1}, in which case it indicates
+     whether this object must be of class \code{SECdistrUv}.}
   
   \item{comp}{a vector formed by a subset of \code{1:d} which indicates which
     components must be extracted from \code{object}, on denoting by \code{d} 
     its dimensionality.}
       
 }
-\value{an object of class \code{SECdistrMv}, except when \code{drop=TRUE}
-   operates, leading to an object of class \code{SECdistrUv}.}
+\value{If \code{object} defines the distribution of a \acronym{SEC} random
+ variable \eqn{Y}, \code{affineTransSECdistr} computes  the 
+ distribution of \eqn{a+A'Y} and \code{marginalSECdistr} computes the marginal
+ distribution of the \code{comp} components. In both cases the returned
+ object is of class \code{SECdistrMv}, except when \code{drop=TRUE}
+ operates, leading to an object of class \code{SECdistrUv}.}
 
 \section{Background}{These functions implement formulae given in Sections 
 5.1.4, 5.1.6 and 6.2.2 of the reference below.}

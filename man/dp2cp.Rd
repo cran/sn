@@ -5,6 +5,8 @@
 \name{dp2cp}
 \alias{dp2cp}
 \alias{cp2dp}
+\alias{dp2op}
+\alias{op2dp}
 \title{Conversion between parametrizations of a skew-elliptical distribution}
 
 \description{
@@ -14,17 +16,22 @@
 \usage{
 dp2cp(dp, family, obj = NULL, cp.type = "proper", upto = NULL) 
 cp2dp(cp, family)
+dp2op(dp, family)
+op2dp(op, family)
 }
  
 \arguments{
 
 \item{dp}{a vector (in the univariate case) or a list (in the multivariate
-  case) as described in \code{\link{makeSECdistr}}; see \sQuote{Details} 
-  for an extented form of usage.}
+  case) as described in \code{\link{makeSECdistr}}; see \sQuote{Background 
+  and Details} for an extented form of usage.}
 
 \item{cp}{a vector or a list, in agreement with \code{dp} as for type and
   dimension.}
 
+\item{op}{a vector or a list, in agreement with \code{dp} as for type and
+  dimension.}
+  
 \item{family}{a characther string, as described in \code{\link{makeSECdistr}}.}
 
 \item{obj}{optionally, an S4 object of class \code{SECdistrUv} or
@@ -49,14 +56,14 @@ cp2dp(cp, family)
    (in the multivariate case) of \code{cp} parameters; for  \code{cp2dp}, 
    a similar object of \code{dp} parameters.}			
 			
-\section{Details and Background}{For a description of the \acronym{DP}
+\section{Background and Details}{For a description of the \acronym{DP}
 parameters, see Section \sQuote{Details} of \code{\link{makeSECdistr}}.  The
 \acronym{CP} form of parameterization is cumulant-based. For a univariate
 distribution, the \acronym{CP} components are the mean value (first cumulant), 
 the standard deviation (square root of the 2nd cumulant), the coefficient of 
 skewness (3rd standardized cumulant) and,  for the \acronym{ST}, 
 the coefficient of excess kurtosis (4th standardized cumulant). 
-For a multivariate distribution, there exists an extension based on the \
+For a multivariate distribution, there exists an extension based on the 
 same logic; its components represent the
 vector mean value, the variance matrix, the vector of marginal coefficients of
 skewness and, only for the \acronym{ST}, the Mardia's coefficient of excess
@@ -67,7 +74,7 @@ components printed in summary output are composed by adding a \code{~}
 after the usual component name; for example, the first one is denoted
 \code{mean~}.
 
-Background information is provided by Azzalini and Capitanio (2014).
+Additional information is provided by Azzalini and Capitanio (2014).
 Specifically, their Section 3.1.4 presents \acronym{CP} in the univariate 
 \acronym{SN} case, Section 4.3.4 \acronym{CP} for the \acronym{ST} case and 
 the `pseudo-\acronym{CP}' version. Section 5.2.3 presents the multivariate
@@ -86,7 +93,24 @@ transformed parameter set; the motivation is given in Section 3.1.4 of
 Azzalini and Capitanio (2014). In the multivariate case, \code{dp[[1]]} and
 \code{cp[[1]]} can be matrices instead of vectors; the rows beyond the first
 one are transferred unchanged to \code{cp[[1]]} and \code{dp[[1]]},
-respectively. }
+respectively. 
+
+The \acronym{OP} parameterization is very similar to \acronym{DP}, from which 
+it differs only for the components which regulate dispersion (or scatter) 
+and slant.  Its relevance lies essentially in the multivariate case, where 
+the components of the slant parameter can be interpreted component-wise and
+remain unaffected if marginalization with respect to some other components 
+is performed. 
+In the multivariate \acronym{SN} case, the components of \acronym{OP}, denoted
+\eqn{\xi, \Psi, \lambda}, are associated to the expression of the density
+function (5.30) of Azzalini \& Capitanio (2014); see pp.128--131 for more
+information. In the univariate case, the slant component of \acronym{DP},
+and the one of \acronym{OP} coincide, that is, \eqn{\alpha=\lambda},
+Parameter \eqn{\xi} and other parameters which may exist with other families 
+remain the same of the \acronym{DP} set. The term \acronym{OP} stands for
+`original parameterization' since this is, up to an negligible difference, 
+the parameterization adopted by Azzalini & Dalla Valle (1996).
+}
 
 
 \references{
@@ -97,11 +121,16 @@ distribution. \emph{J. Multiv. Analysis} \bold{113}, 73-90.
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 
 \emph{The Skew-Normal and Related  Families}. 
 Cambridge University Press, IMS Monographs series.
+
+Azzalini, A. and Dalla Valle, A. (1996).
+The multivariate skew-normal distribution.
+\emph{Biometrika} \bold{83}, 715--726.
 }
 
 \seealso{
   \code{\link{makeSECdistr}}, \code{\link{summary.SECdistr}}, 
-  \code{\link{sn.cumulants}}, the \sQuote{Note} at \code{\link{summary.selm}} 
+  \code{\link{sn.cumulants}}, the \sQuote{Note} at \code{\link{summary.selm}},
+  the \sQuote{Examples} at \code{\link{rmsn}}
 }
 
 \examples{
@@ -114,6 +143,9 @@ dp <- cp2dp(cp, "SN")
 dp3 <- list(xi=1:3, Omega=toeplitz(1/(1:3)), alpha=c(-3, 8, 5), nu=6)
 cp3 <- dp2cp(dp3, "ST")
 dp3.back <- cp2dp(cp3, "ST")
+#
+op3 <- dp2op(dp3, "ST")
+dp3back <- op2dp(op3,"ST")
 }
 
 \keyword{distribution}

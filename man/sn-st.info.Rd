@@ -22,10 +22,11 @@ sn.infoUv(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,  norm2.tol=1e-06)
     
 sn.infoMv(dp, x=NULL, y, w,  norm2.tol=1e-06)
 
-st.infoUv(dp=NULL, cp=NULL, x=NULL, y, fixed.nu=NULL, w, penalty=NULL, 
-  norm2.tol=1e-06) 
+st.infoUv(dp = NULL, cp = NULL, x = NULL, y, w, fixed.nu = NULL, 
+    symmetr = FALSE, penalty = NULL, norm2.tol = 1e-06) 
 
-st.infoMv(dp, x=NULL, y, fixed.nu=NULL, w, penalty=NULL, norm2.tol=1e-06) 
+st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE, 
+    penalty = NULL, norm2.tol = 1e-06) 
 }
 
 \arguments{
@@ -44,7 +45,7 @@ st.infoMv(dp, x=NULL, y, fixed.nu=NULL, w, penalty=NULL, norm2.tol=1e-06)
    response.  In the \acronym{SN} case ( \code{sn.infoUv} and
    \code{sn.infoMv}), \code{y} can be missing, and in this case the observed
    information matrix is computed; otherwise the observed information is
-   computed. In the \acronym{ST} case ( \code{st.infoUv} and \code{st.infoMv},
+   computed. In the \acronym{ST} case (\code{st.infoUv} and \code{st.infoMv},
    \code{y} is a required argument, since only the observed information matrix
    for \acronym{ST} distributions is implemented. See \sQuote{Details} for
    additional information.}
@@ -55,11 +56,14 @@ st.infoMv(dp, x=NULL, y, fixed.nu=NULL, w, penalty=NULL, norm2.tol=1e-06)
 \item{fixed.nu}{an optional numeric value which declared a fixed value of the
    degrees of freedom, \code{nu}. If not \code{NULL}, the information matrix
    has a dimension reduced by 1.}
+   
+\item{symmetr}{a logical flag which indicates whether a symmetry condition of 
+   the distribution is being imposed; default is \code{symmetr=FALSE}.}   
 
 \item{penalty}{a optional string?? with the same  penalty function used in 
-  the call to \code{\link{selm}}; see this function for its description;}
+   the call to \code{\link{selm}}; see this function for its description;}
 
- \item{norm2.tol}{for the observed information case, the Mahalanobis squared
+\item{norm2.tol}{for the observed information case, the Mahalanobis squared
    distance of the score 0 is evaluated; if it exceeds \code{norm2.tol}, a
    warning message is issued, since the \sQuote{information matrix} so
    evaluated may be not positive-definite.  See \sQuote{Details} for

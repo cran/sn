@@ -1,14 +1,15 @@
-%  file sn/man/sn.Rd  
+%  file sn/man/sn-package.Rd  
 %  This file is a component of the package 'sn' for R
 %  copyright (C) 2013 Adelchi Azzalini
 %---------------------
-\name{SN}
+\name{sn-package}
 \docType{package}
 \encoding{UTF-8}
-\alias{SN}
 \alias{sn-package}
+\alias{SN}
 \concept{skew-elliptical distribution}
 \concept{skew-normal distribution}
+\concept{symmetric distribution}
 
 \title{Package \pkg{sn}: overview}
 \description{
@@ -19,13 +20,15 @@
   diagnostics, in the univariate and the multivariate case.
 }
  
-\section{A substantial upgrade}{The first version of the package has been
-written in 1997 (on CRAN since 1998); subsequent versions have evolved 
-gradually up to version 0.4-18 in May 2013.  The present \sQuote{version 1} 
-of the package is a substantial re-writing of the earlier \sQuote{version 0}.  
-Differences between \sQuote{version 0} and \sQuote{version 1} concern the core
-computational and graphical part as well as the user interface. 
-The S4 protocol for classes and methods has been adopted.
+\section{Development}{%
+The first version of the package was written in 1997 (on CRAN since 1998);
+subsequent versions have evolved  gradually up to version 0.4-18 in May 2013.  
+In January 2014, version 1.0-0 has been uploaded to CRAN; this represented
+a substantial re-writing of the earlier \sQuote{version 0.x}.  
+Differences between the \sQuote{version 0} and the \sQuote{version 1} series 
+are radical; they concern the core computational and graphical part as well 
+as the user interface. 
+Since version 1.0-0, the S4 protocol for classes and methods has been adopted.
 
 Broadly speaking, the available tools can be divided in two groups: the
 probability section and the statistics section.  For a quick start, one 
@@ -36,24 +39,30 @@ In the probability section, one finds also functions \code{\link{dsn}},
 existed also in \sQuote{version 0} and their working is still very much 
 the same (not necessarily so their code).
 
-The upgrade to \sQuote{version 1} appears more or less at the time when the
-companion book by Azzalini and Capitanio (2014) is published. Although the two
-projects are formally separate, they adopt the same notation, terminology 
-and logical frame. This matching and the numerous references in the software 
-documentation to specific sections of the book for background information 
-should facilitate familiarizing with these tools.}
+The first version of \sQuote{version 1}  series (that is, 1.0-0) has appeared
+about at the time when the companion book by Azzalini and Capitanio
+(2014) was published. 
+Although the two projects are formally separate, they adopt the same notation, 
+terminology and logical frame. This matching and the numerous references 
+in the software documentation to specific sections of the book for background 
+information should facilitate familiarizing with these tools.
+
+Since version 1.1-0,  the error distribution of a linear model can be 
+constrained to be symmetric. 
+
+}
 
 \section{Backward Compatibility}{%
- 
-There is a partial backward compatibility of \sQuote{version 1} versus
-\sQuote{version 0}. Some functions of the older version would work as before
+There is a partial backward compatibility of \sQuote{version 1.x} versus
+\sQuote{version 0-4.18}. 
+Some functions of the older version would work as before
 with virtually no change; a wider set arguments is now allowed. Functions
 \code{\link{dsn}}, \code{\link{dst}}, \code{\link{dmsn}} and alike fall in
-this category: typically, the names of the arguments have been altered, but
-they work as before if called with unnamed arguments; similar cases are
+this category: in some cases, the names of the arguments have been altered, 
+but they work as before if called with unnamed arguments; similar cases are
 \code{\link{msn.mle}}, \code{\link{sn.cumulants}} and \code{\link{T.Owen}}.
 Notice, however, that \code{\link{msn.mle}} and other fitting functions have
-effectively been subsumed into the more general fitting function
+effectively been subsumed into the more comprehensive fitting function
 \code{\link{selm}}.
 
 A second group of functions will work with little or even minimal changes.
@@ -72,21 +81,27 @@ not in the near future. }
 
 \section{Requirements}{
   \R version 2.15-3 or higher, plus  packages \pkg{mnormt}, 
-  \pkg{numDeriv}, \pkg{stats4} and \pkg{methods} in addition to `standard' 
-  packages (\pkg{graphics},  etc.)
+  \pkg{numDeriv}, \pkg{stats4}   in addition to standard
+  packages (\pkg{methods}, \pkg{graphics},  etc.)
 }
 
 \section{Version}{
 The command \code{citation("sn")} indicates, among other information,
 the running version of the package.
 The most recent version of the package can be obtained from
-the WWW page: \url{http://azzalini.stat.unipd.it/SN}
+the web page: \url{http://azzalini.stat.unipd.it/SN}
 which also contains other related material.
+
+From the above-indicated web page, one can also obtain the package 
+\sQuote{sn0} which is essentially the last \sQuote{version 0} 
+(that is, 0.4-18) with suitable renaming of  certain  ingredients.
+This allows to have both the current and the old package installed 
+at the same time.
 }
 
 \section{Author}{Adelchi Azzalini.
 % Dipart. Scienze Statistiche, Università di Padova, Italia.
-Please send comments, error reports, etc. to the author whose web page
+Please send comments, error reports, etc. to the author, whose web page
 is \url{http://azzalini.stat.unipd.it/}.
 }
 
@@ -98,8 +113,8 @@ as you prefer; a copy of them is available from
   
 While the software is freely usable, it would be appreciated
 if a reference is inserted in publications or other work
-which makes use of it; for this purpose, see the command
-\code{citation("sn")}. 
+which makes use of it. For the appropriate way of referencing it, 
+see the command \code{citation("sn")}. 
 }
 
 \references{

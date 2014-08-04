@@ -34,6 +34,7 @@ setClass("summary.SECdistrUv",
      np <- 3 + as.numeric(object@family %in% c("ST","ESN"))
      if(length(object@dp) != np) return(FALSE) 
      if(object@dp[2] <= 0) return(FALSE)
+     # if(length(object@op) != length(object@dp)) return(FALSE)
      if(length(object@cp) != length(object@dp)) return(FALSE)
      TRUE
    }
@@ -64,7 +65,8 @@ setClass("SECdistrMv",
 
 setClass("summary.SECdistrMv",
    representation(family="character", dp="list", name="character", 
-     compNames="character", cp="list", cp.type="character", aux="list"),
+     compNames="character",     # op="list", 
+     cp="list", cp.type="character", aux="list"),
    validity=function(object){
      family <- object@family
      if(!(family %in% c("SN","ST","SC","ESN"))) return(FALSE)
@@ -78,6 +80,7 @@ setClass("summary.SECdistrMv",
      if(length(object@compNames) != d) return(FALSE)
      if(length(object@name) != 1) return(FALSE)
      if(length(object@cp) != length(object@dp)) return(FALSE)
+     # if(length(object@op) != length(object@dp)) return(FALSE)
      TRUE
    }
 )
@@ -120,13 +123,15 @@ setMethod("show", "summary.SECdistrUv",
       cat("Probability distribution of variable '", obj@name, "'\n", sep="")
     cat("\nSkew-elliptical distribution of univariate family", obj@family,"\n")
     cat("\nDirect parameters (DP):\n")
-    print(c("",format(obj@dp)), quote=FALSE)
+    print(c("", format(obj@dp)), quote=FALSE)
+    # cat("\nOriginal parameters (OP):\n")
+    # print(c("", format(obj@op)), quote=FALSE)
     cp <- obj@cp
     note <- if(obj@cp.type == "proper") NULL else ", type=pseudo-CP" 
     cat(paste("\nCentred parameters (CP)", note, ":\n", sep=""))
-    print(c("",format(cp)), quote=FALSE)
+    print(c("", format(cp)), quote=FALSE)
     cat("\nAuxiliary quantities:\n")
-    print(c("",format(c(delta=obj@aux$delta, mode=obj@aux$mode))), quote=FALSE)
+    print(c("", format(c(delta=obj@aux$delta, mode=obj@aux$mode))), quote=FALSE)
     cat("\nQuantiles:\n")
     q <- obj@aux$quantiles
     q0 <- c("q", format(q))
@@ -143,6 +148,7 @@ setMethod("show", "summary.SECdistrUv",
 setMethod("show","summary.SECdistrMv",
   function(object){
     obj <- object
+    #------ DP
     dp <- obj@dp
     if(obj@name != "") cat("Probability distribution of",obj@name,"\n")
     cat("Skew-elliptically contoured distribution of ", length(dp[[3]]),
@@ -159,6 +165,23 @@ setMethod("show","summary.SECdistrMv",
       # print(extra)
       for(j in 1:length(extra)) cat(names(extra)[j], "=", extra[j], "\n")
       }
+    #------ OP
+    if(FALSE) {
+    op <- obj@op  
+    cat("\nOriginal parameters (OP):\n")
+    attr(op[[2]], "dimnames") <- 
+         list(paste("  Psi[", obj@compNames, ",]", sep=""),NULL)
+    out.op <- rbind("  xi"=op[[1]], "  psi"=op[[2]],"  lambda"=op[[3]])
+    colnames(out.op) <- obj@compNames
+    print(out.op)
+    if(length(op) > 3){
+      extra <- unlist(op[-(1:3)])
+      names(extra) <- paste("  ",names(op[-(1:3)]), sep="")
+      # print(extra)
+      for(j in 1:length(extra)) cat(names(extra)[j], "=", extra[j], "\n")
+      }  
+    }
+    #------ CP  
     cp <- obj@cp
     note <- if(obj@cp.type == "proper") NULL else ", type=pseudo-CP" 
     cat("\nCentred parameters (CP)", note, ":\n", sep="")
@@ -173,7 +196,8 @@ setMethod("show","summary.SECdistrMv",
       for(j in 1:length(extra)) cat(names(extra)[j], "=", extra[j], "\n")
       }
     aux <- obj@aux
-    out.aux <- rbind("  delta"=aux$delta, "  mode"= aux$mode)
+    out.aux <- rbind("  delta" = aux$delta, "  mode" = aux$mode) 
+        #"  lambda"=aux$lambda, 
     colnames(out.aux) <- obj@compNames
     cat("\nAuxiliary quantities:\n")
     print(out.aux)
@@ -238,11 +262,10 @@ setMethod("show", "selm",
       cat("Weighted number of observations:", object@size["nw.obs"], "\n")
     cat("Number of covariates:", object@size["p"], "(including constant)\n")
     cat("Number of parameters:", object@size["n.param"], "\n")
-    show.family <- slot(object,"family")
-    cat("Family:", show.family,"\n")
-    fixed <- slot(object, "fixed.param") 
-    if(length(fixed) > 0) { fixed.char <-
-        paste(names(fixed), format(fixed), sep=" = ", collapse=", ")
+    cat("Family:", slot(object,"family"),"\n")
+    fixed <- slot(object, "param")$fixed
+    if(length(fixed) > 0) { 
+      fixed.char <- paste(names(fixed), format(fixed), sep=" = ", collapse=", ")
       cat("Fixed parameters:", fixed.char, "\n") }  
     method <- slot(object, "method") 
     u <- if(length(method)==1) NULL else 
@@ -265,7 +288,7 @@ setClass("summary.selm",
      method="character",
      param.type="character",   param.table="matrix", param.fixed="list",
      resid="numeric",  control="list", aux="list",
-     size="vector", boundary="logical"),
+     size="vector", boundary="logical", note="character"),
    validity=function(object){
      if(!(object@family %in% c("SN","ST","SC","ESN"))) return(FALSE)
      TRUE
@@ -327,16 +350,15 @@ setMethod("show", "mselm",
     cat("Dimension of the response:", object@size["d"], "\n")
     cat("Number of covariates:", object@size["p"], "(including constant)\n")
     cat("Number of parameters:", object@size["n.param"], "\n")
-    show.family <- slot(object, "family")
-    cat("Family:", show.family,"\n")
-    method <- slot(object, "method")
-    u <- if(length(method)==1) NULL else 
-         paste(", penalty function:", method[2])
-    cat("Estimation method: ", method[1], u, "\n", sep="")
-    fixed <- slot(object, "param")$fixed 
-    if(length(fixed) > 0) {  fixed.char <-
-         paste(names(fixed), format(fixed), sep=" = ", collapse=", ")
+    cat("Family:", slot(object, "family"),"\n")
+    fixed <- slot(object,"param")$fixed
+    if(length(fixed) > 0) { 
+      fixed.char <- paste(names(fixed), format(fixed), sep=" = ", collapse=", ")
       cat("Fixed parameters:", fixed.char, "\n") }
+    method <- slot(object, "method")
+    u <- if(length(method) == 1) NULL else 
+            paste(", penalty function:", method[2])   
+    cat("Estimation method: ", method[1], u, "\n", sep="")
     cat("Log-likelihood:", format(object@logL, nsmall=2),"\n")
     if(object@param$boundary) 
       cat("Estimates on/near the boundary of the parameter space\n")
@@ -344,7 +366,7 @@ setMethod("show", "mselm",
   }
 )
 
-
+ 
 #----------------------------------
 setClass("summary.mselm",
    representation(call="call", family="character", logL="numeric",

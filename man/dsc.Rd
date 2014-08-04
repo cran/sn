@@ -63,7 +63,7 @@ rsc(x, dp=)
 
 \section{Background}{
 The skew-Cauchy distribution can be thought as a skew-\eqn{t} with tail-weight
-parameter \code{nu=1}. In this case special closed-form expressions of the 
+parameter \code{nu=1}. In this case, closed-form expressions of the 
 distribution function and the quantile function have been obtained by
 Behboodian \emph{et al.} (2006).
 The key facts are summarized in Complement 4.2 of Azzalini and Capitanio (2014).
@@ -82,7 +82,7 @@ A new class of skew-Cauchy distributions.
 
 }
 
-\seealso{ \code{\link{dst}},  \code{\link{dmsc}}}
+\seealso{\code{\link{dst}},  \code{\link{dmsc}}}
 
 \examples{
 pdf <- dsc(seq(-5,5,by=0.1), alpha=3)

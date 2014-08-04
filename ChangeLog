@@ -1,6 +1,8 @@
+R package 'sn' history file
+----------------------------
 
 version 0.20 (Oct.1998):
-  first public release and distribution via WWW, use optim
+  first public release and distribution via WWW 
 
 version 0.22.1 (2001-05-17)
 
@@ -8,8 +10,8 @@ version 0.22.2 (2002-01-05)
   fix error in sn.dev.gh, improved qsn
 
 version 0.30 (2002-06-15)
-  main change is the addition of routines for (multiple) skew-t distribution;
-  also some other routines, e.g. mle for grouped data
+  main change is the addition of routines for (multivariate) skew-t 
+  distribution; also some other routines, e.g. mle for grouped data
 
 version 0.3x (2003--2005)
   added some new functions (these include msn.affine, sn.mmle, sn.Einfo, 
@@ -24,8 +26,14 @@ version 0.4-0 (2006-04-11)
   - some more routines introduced, eg. st.cumulants.inversion
   - various fixes/improvements in documentation
 
+version 0.4-1 to 0.4-14 (2007-2013)
+  various minor adjustments, many of them to fulfill CRAN programming standards
+
 version 1.0-0 (2014-01-06)
   a major upgrade of the package: key new functions are selm and makeSECdistr, 
-  with several related ones; S4 methods are adopted. Many existing functions 
-  are updated.
+  with several related functions and methods; S4 methods are adopted; many 
+  existing functions are updated, a few are dropped (see sn.Rd for details)
 	
+version 1.1-0 (2014-08-06)
+  allow to set the constraint alpha=0, introduce OP parameterization; more
+  details in documentation of pst and other places, fix a bug in qst

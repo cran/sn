@@ -14,32 +14,34 @@
 
 \description{A call to \code{selm} activates a call to \code{selm.fit} and
   from here to some other function which actually performs the parameter
-  search, one among those listed below. These lower-level functions can be 
+  search, among those listed below. These lower-level functions can be 
   called directly for increased efficiency, at the expense of a little more 
   programming effort.}
 
 \usage{ 
 selm.fit(x, y, family = "SN", start = NULL, w, fixed.param = list(), 
-     offset = NULL, selm.control)
+    offset = NULL, selm.control)
 
 sn.mple(x, y, cp = NULL, w, penalty = NULL, trace = FALSE) 
 
-st.mple(x, y, dp = NULL, fixed.nu = NULL, w, penalty = NULL, trace = FALSE) 
+st.mple(x, y, dp = NULL, w, fixed.nu = NULL, symmetr = FALSE, penalty = NULL, 
+    trace = FALSE) 
 
 msn.mle(x, y, start = NULL, w, trace = FALSE, opt.method = c("nlminb", 
-   "Nelder-Mead", "BFGS", "CG", "SANN"), control = list())
+    "Nelder-Mead", "BFGS", "CG", "SANN"), control = list())
 
 msn.mple(x, y, start = NULL, w, trace = FALSE, penalty = NULL, 
-   opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
-   control = list()) 
+    opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
+    control = list()) 
 
-mst.mple(x, y, start = NULL, w, penalty, fixed.nu = NULL, trace = FALSE, 
-   opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
-   control = list()) 
+mst.mple(x, y, start = NULL, w, fixed.nu = NULL, symmetr=FALSE, 
+    penalty = NULL, trace = FALSE, 
+    opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
+    control = list()) 
 }
 
 \arguments{
-  \item{x}{a design matrix with the first column of all 1's.}
+  \item{x}{a full-rank design matrix with the first column of all 1's.}
 
   \item{y}{a vector or a matrix of response values such that
      \code{NROW(y)=nrow(x)}.}
@@ -60,9 +62,6 @@ mst.mple(x, y, start = NULL, w, penalty, fixed.nu = NULL, trace = FALSE,
 
   \item{w}{a vector of non-negative integer weights of length equal to 
     \code{NROW(y)}; if missing, a vector of all 1's is generated.}
-
-  \item{penalty}{the penalty function of the log-likelihood; default value 
-   \code{NULL} corresponds to no penalty.}
     
   \item{fixed.param}{a list of assignments of parameter values to be kept
    fixed during the optimization process. Currently, there is only one such
@@ -70,6 +69,9 @@ mst.mple(x, y, start = NULL, w, penalty, fixed.nu = NULL, trace = FALSE,
    of freedom at the named \code{'value'} when \code{family="ST"}, for instance
    \code{list(nu=3)}. Setting \code{fixed.param=list(nu=1)} is equivalent to
    select \code{family="SC"}.}
+   
+  \item{penalty}{the penalty function of the log-likelihood; default value 
+   \code{NULL} corresponds to no penalty.}
 
   \item{offset}{this can be used to specify an \emph{a priori} known
    component to be included in the linear predictor during fitting.  This
@@ -85,6 +87,9 @@ mst.mple(x, y, start = NULL, w, penalty, fixed.nu = NULL, trace = FALSE,
   \item{fixed.nu}{a positive value to keep fixed the parameter \code{nu} 
    of the \acronym{ST} distribution in the optimization process; with default
    value \code{NULL}, \code{nu} is estimated like the other parameters.}
+   
+  \item{symmetr}{a logical flag indicating whether a contraint of symmetry is
+   imposed on the slant parameter; default is \code{symmetr=FALSE}.}  
 
   \item{opt.method}{a character string which selects the optimization method
     within the set \code{c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN")};
@@ -100,7 +105,11 @@ mst.mple(x, y, start = NULL, w, penalty, fixed.nu = NULL, trace = FALSE,
 A call to \code{selm} produces a call to \code{selm.fit} which
 selects the appropriate function among \code{sn.mple}, \code{st.mple},
 \code{msn.mle}, \code{msn.mple}, \code{mst.mple}, depending on the
-arguments of the calling statement.
+arguments of the calling statement. In the adopted scheme for function names, 
+\code{msn} refers to a  multivariate skew-normal distribution and  
+\code{mst} refers to a multivariate skew-\eqn{t} distribution, while
+\code{mle} and \code{mple} refers to maximum likelihood and maximum
+penalized likelihood estimation, respectively.
 Of these functions, \code{sn.mple} works in \acronym{CP} space; the others
 in the \acronym{DP} space. In all cases, a correspondig mapping to the 
 alternative parameter space is performed before exiting \code{selm.fit},
@@ -117,10 +126,14 @@ The components of \code{selm.control} are as follows:
     \item \code{opt.control}: a list of control parameters of \code{opt.method}.
     }
     
-Function \code{msn.mle} is unchanged from version 0.4-x of the package. 
+Function \code{msn.mle}, for \acronym{MLE} estimation of linear models with
+\acronym{SN} errors, is unchanged from version 0.4-x of the package. 
+Function \code{msn.mple} is similar to \code{msn.mle} but allows to introduce
+a penalization of the log-likelihood; when \code{penalty=NULL}, a call to 
+\code{msn.mle} is more efficient.
 Functions \code{sn.mple} and \code{mst.mple} work like \code{sn.mle} and
-\code{mst.mle} in version 0.4-x if argument \code{penalty} is not 
-set or is set to \code{NULL}.
+\code{mst.mle} in version 0.4-x if the argument \code{penalty} is not 
+set or it is set to \code{NULL}.
 }
 
 \value{A list whose specific components depend on the named function.
@@ -148,7 +161,7 @@ The same procedure is not feasible when one adopts \acronym{MPLE};
 hence function \code{msn.mple} has to maximize over a larger parameter space.
 
 Maximization of the univariate \acronym{ST} log-likelihood is speeded-up 
-by using the expressions of the gradient given by DiCicio and Monti (2011),
+by using the expressions of the gradient given by DiCiccio and Monti (2011),
 reproduced with inessential variants in Section 4.3.3 of Azzalini and 
 Capitanio (2014).
 
@@ -175,7 +188,7 @@ version of the paper.
   \emph{The Skew-Normal and Related Families}. 
   Cambridge University Press, IMS Monographs series.
 
-  T. J. DiCicio and A. C. Monti (2011).  
+  DiCiccio,  T. J. and Monti, A. C. (2011).  
   Inferential aspects of the skew \eqn{t}-distribution.
   \emph{Quaderni di Statistica} \bold{13}, 1--21.
 }

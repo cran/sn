@@ -1,6 +1,6 @@
 %  file sn/man/makeSECdistr.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2013 Adelchi Azzalini
+%  copyright (C) 2013-2014 Adelchi Azzalini
 %---------------------
 \name{makeSECdistr}
 \encoding{UTF-8}
@@ -67,13 +67,23 @@
   
   In the univariate case \code{alpha=Inf} is allowed, but in the multivariate
   case all components of the vector \code{alpha} must be finite.
-
-  For background information, see Azzalini and Capitanio (2014), specifically
-  Chapers 2 and 4 for univariate cases, Chapters 5 and 6 for multivariate
-  cases; Section 6.1 provides a general formulation of \acronym{SEC}
-  distributions.
 }
 
+\section{Background}{
+  For background information, see Azzalini and Capitanio (2014), specifically
+  Chapters 2 and 4 for univariate cases, Chapters 5 and 6 for multivariate
+  cases; Section 6.1 provides a general formulation of \acronym{SEC}
+  distributions.
+  
+  If the slant parameter \code{alpha} is \code{0} (or a vector of \code{0}'s,
+  in the multivariate case), the distribution is of classical elliptical 
+  type.
+  
+  Among the admissible families, the \acronym{ESN} distribution is not,
+  strictly speaking, of \acronym{SEC} type, but it is nevertheless included 
+  because of its strong connection.
+  }
+  
 \value{In the univariate case, an object of class \code{SECdistrUv};
   in the multivariate case, an object of class \code{SECdistrMv}.
   See \code{\link{SECdistrUv-class}} and \code{\link{SECdistrMv-class}}

@@ -22,7 +22,7 @@ export(T.Owen, zeta, sn.cumulants, st.cumulants,
   dmst, pmst, rmst,
   dmsc, pmsc, rmsc,
   makeSECdistr, marginalSECdistr, affineTransSECdistr, conditionalSECdistr, 
-  cp2dp, dp2cp, 
+  cp2dp, dp2cp, dp2op, op2dp,
   sn.infoUv, sn.infoMv,
   selm, MPpenalty, Qpenalty,
   selm.fit, sn.mple,  st.mple, msn.mle, msn.mple, mst.mple

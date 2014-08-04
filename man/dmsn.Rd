@@ -89,9 +89,6 @@ matrix of the distribution, although it is \emph{a} covariance matrix.
 }
 
 \references{
-Azzalini, A. and Dalla Valle, A. (1996).
-The multivariate skew-normal distribution.
-\emph{Biometrika} \bold{83}, 715--726.
 
 Azzalini, A. and Capitanio, A. (1999).
 Statistical applications of the multivariate skew normal distribution.
@@ -102,9 +99,14 @@ Azzalini, A. with the collaboration of Capitanio, A. (2014).
 \emph{The Skew-Normal and Related Families}. 
 Cambridge University Press, IMS Monographs series.
 
+Azzalini, A. and Dalla Valle, A. (1996).
+The multivariate skew-normal distribution.
+\emph{Biometrika} \bold{83}, 715--726.
+
 }
 
-\seealso{\code{\link{dsn}},  \code{\link{dmst}}, \code{\link[mnormt]{dmnorm}}}
+\seealso{\code{\link{dsn}},  \code{\link{dmst}}, \code{\link[mnormt]{dmnorm}},
+  \code{\link{op2dp}}}
 
 \examples{
 x <- seq(-3,3,length=15)
@@ -113,9 +115,16 @@ Omega <- diag(2)
 Omega[2,1] <- Omega[1,2] <- 0.5
 alpha <- c(2,-6)
 pdf <- dmsn(cbind(x, 2*x-1), xi, Omega, alpha)
-rnd <- rmsn(10, xi, Omega, alpha)
 p1 <- pmsn(c(2,1), xi, Omega, alpha)
 p2 <- pmsn(c(2,1), xi, Omega, alpha, abseps=1e-12, maxpts=10000)
+#
+rnd <- rmsn(10, xi, Omega, alpha)
+# Reecall: the components of alpha are not the slant parameters of the marginal 
+# distributions; to fix these parameters, it is convenient to start 
+# from the OP parameterization, for instance as follows:
+op <- list(xi=c(0,1), Psi=matrix(c(2,2,2,3), 2, 2), lambda=c(5, -2))
+rnd2 <- rmsn(10, dp=op2dp(op,"SN"))
+
 }
 
 \keyword{distribution}
