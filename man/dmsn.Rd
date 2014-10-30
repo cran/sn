@@ -23,11 +23,10 @@ rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha,  tau=0, dp=NULL)
 
 \arguments{
 
-\item{x}{for \code{dmsn}, this is either a vector of length \code{d}, 
+\item{x}{either a vector of length \code{d}, 
   where \code{d=length(alpha)}, or a matrix with \code{d} columns, 
-  giving the coordinates of the point(s) where the density must 
-  be evaluated. For \code{pmsn}, only a vector of length \code{d} is 
-  allowed.}
+  giving the coordinates of the point(s) where the density or the
+  distribution function must be evaluated.}
 
  \item{xi}{a numeric vector of length \code{d} representing the 
    location parameter of the distribution; see \sQuote{Background}.
@@ -60,7 +59,7 @@ additional parameters passed to \code{pmnorm}
 }}
 
 \value{
-A vector of density values (\code{dmsn}), or a single probability 
+A vector of density values (\code{dmsn}) or of probabilities
 (\code{pmsn}) or a matrix of random  points (\code{rmsn}).
 }
 \details{Typical usages are
@@ -115,11 +114,13 @@ Omega <- diag(2)
 Omega[2,1] <- Omega[1,2] <- 0.5
 alpha <- c(2,-6)
 pdf <- dmsn(cbind(x, 2*x-1), xi, Omega, alpha)
+cdf <- pmsn(cbind(x, 2*x-1), xi, Omega, alpha)
 p1 <- pmsn(c(2,1), xi, Omega, alpha)
 p2 <- pmsn(c(2,1), xi, Omega, alpha, abseps=1e-12, maxpts=10000)
 #
 rnd <- rmsn(10, xi, Omega, alpha)
-# Reecall: the components of alpha are not the slant parameters of the marginal 
+#
+# Recall: the components of alpha are not the slant parameters of the marginal 
 # distributions; to fix these parameters, it is convenient to start 
 # from the OP parameterization, for instance as follows:
 op <- list(xi=c(0,1), Psi=matrix(c(2,2,2,3), 2, 2), lambda=c(5, -2))

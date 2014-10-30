@@ -65,7 +65,7 @@ rmsc(n=1, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
 
 \value{A vector of density values (\code{dmst} and \code{dmsc}) or a single
    probability (\code{pmst} and \code{pmsc}) or a matrix of random points
-   (\code{rmst} and \code{rmst}).}
+   (\code{rmst} and \code{rmsc}).}
 
 \details{Typical usages are
 \preformatted{%

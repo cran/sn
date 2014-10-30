@@ -71,33 +71,36 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
       }
     else { # SNbook: formula (2.48), p.40
       R <- matrix(c(1, -delta[k], -delta[k], 1), 2, 2)
-      p[k] <- mnormt::biv.nt.prob(0, rep(-Inf,2), c(z[k], tau), rep(0, 2), R)/p.tau
+      p[k]<- mnormt::biv.nt.prob(0, rep(-Inf,2), c(z[k], tau), c(0, 0), R)/p.tau
       }
     }}
   p <- pmin(1, pmax(0, as.numeric(p)))
   replace(p, omega <= 0, NaN)
 }
- 
-qsn <- function (p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, 
-           tol = 1e-08, ...) 
-{   if(!is.null(dp)) {
-      if(!missing(alpha)) 
+
+#
+qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08, 
+         solver="NR", ...)            
+{ if(!is.null(dp)) {
+    if(!missing(alpha)) 
         stop("You cannot set both 'dp' and component parameters")
       xi <- dp[1]
       omega <- dp[2]
       alpha <- dp[3]
-      tau <- if(length(dp)>3) dp[4] else 0
+      tau <- if(length(dp) > 3) dp[4] else 0
       }
-    max.q <- sqrt(qchisq(p,1)) + tau
-    min.q <- -sqrt(qchisq(1-p,1)) + tau
-    if(tau == 0) {
-      if(alpha == Inf)  return(as.numeric(xi + omega * max.q))
-      if(alpha == -Inf) return(as.numeric(xi + omega * min.q))
-      }
-    na <- is.na(p) | (p < 0) | (p > 1)
-    zero <- (p == 0)
-    one <- (p == 1)
-    p <- replace(p, (na | zero | one), 0.5)
+  max.q <- sqrt(qchisq(p,1)) + tau
+  min.q <- -sqrt(qchisq(1-p,1)) + tau
+  if(tau == 0) {
+    if(alpha == Inf)  return(as.numeric(xi + omega * max.q))
+    if(alpha == -Inf) return(as.numeric(xi + omega * min.q))
+    }
+  na <- is.na(p) | (p < 0) | (p > 1)
+  zero <- (p == 0)
+  one <- (p == 1)
+  p <- replace(p, (na | zero | one), 0.5)
+  dp0 <- c(0, 1, alpha, tau)
+  if(solver == "NR") {
     dp0 <- c(0, 1, alpha, tau)
     cum <- sn.cumulants(dp=dp0, n=4)
     g1 <- cum[3]/cum[2]^(3/2)
@@ -117,14 +120,46 @@ qsn <- function (p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL,
       x <- x1
       px <- psn(x, dp=dp0, ...)
       max.err <- max(abs(px-p))
+      if(is.na(max.err)) stop('failed convergence, try with solver="RFB"')
     }
     x <- replace(x, na, NA)
     x <- replace(x, zero, -Inf)
     x <- replace(x, one, Inf)
     q <- as.numeric(xi + omega * x)
-    # p0 <- psn(q, dp=dp)
-    # cat("qsn check:\n"); print(cbind(p,p0,q))
-    q
+  } else { if(solver == "RFB") {
+	  abs.alpha <- abs(alpha)
+	  if(alpha < 0) p <- (1-p)
+	  x <- xa <- xb <- xc <- fa <- fb <- fc <- rep(NA, length(p))
+	  nc <- rep(TRUE, length(p)) # not converged (yet)
+	  nc[(na| zero| one)] <- FALSE
+	  fc[!nc] <- 0
+	  xa[nc] <- qnorm(p[nc])
+	  xb[nc] <- sqrt(qchisq(p[nc], 1)) + abs(tau) 
+	  fa[nc] <- psn(xa[nc], 0, 1, abs.alpha, tau, ...) - p[nc]
+	  fb[nc] <- psn(xb[nc], 0, 1, abs.alpha, tau, ...) - p[nc]
+	  regula.falsi <- FALSE
+	  while (sum(nc) > 0) { # alternate regula falsi/bisection
+		xc[nc] <- if(regula.falsi) 
+		   xb[nc] - fb[nc] * (xb[nc] - xa[nc])/(fb[nc] - fa[nc])    else
+		   (xb[nc] + xa[nc])/2
+		fc[nc] <- psn(xc[nc], 0, 1, abs.alpha, tau, ...) - p[nc]
+		pos <- (fc[nc] > 0)
+		xa[nc][!pos] <- xc[nc][!pos]
+		fa[nc][!pos] <- fc[nc][!pos]
+		xb[nc][pos] <- xc[nc][pos]
+		fb[nc][pos] <- fc[nc][pos]
+		x[nc] <- xc[nc]
+		nc[(abs(fc) < tol)] <- FALSE
+		regula.falsi <- !regula.falsi 
+		}
+	  # x <- replace(x, na, NA)
+	  x <- replace(x, zero, -Inf)
+	  x <- replace(x, one, Inf)
+	  Sign <- function(x) sign(x) + as.numeric(x==0)
+	  q <- as.numeric(xi + omega * Sign(alpha)* x)
+  } else stop("unknown solver")}
+  names(q) <- names(p)
+  return(q)
 }
 #
 rsn <- function(n=1, xi=0, omega=1, alpha=0, tau=0, dp=NULL)
@@ -206,31 +241,20 @@ pmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, tau=0,
     }
   if(any(abs(alpha) == Inf)) stop("Inf's in alpha are not allowed")
   d <- length(alpha)
-  Omega<- matrix(Omega,d,d) 
-  omega<- sqrt(diag(Omega))
+  Omega <- matrix(Omega, d, d) 
+  omega <- sqrt(diag(Omega))
   delta_etc <- delta.etc(alpha, Omega)
   delta <- delta_etc$delta
   Ocor <- delta_etc$Omega.cor
   Obig <- matrix(rbind(c(1,-delta), cbind(-delta,Ocor)), d+1, d+1)
-  nx <- if(is.matrix(x)) nrow(x) else 1
-  p.tau <- pnorm(tau)
-  if(nx == 1) { 
-    if(!is.vector(x)) stop("x must be either a vector or a matrix")
-    z0 <- c(tau,(x-xi)/omega)
-    p <- mnormt::pmnorm(z0, mean=rep(0,d+1), varcov=Obig, ...)/p.tau
-    }
-  else {
-    p <- numeric(nx)
-    z <- t(t(x - outer(rep(1,nx), xi))/omega)
-    z0 <- cbind(tau, z)
-    for(k in seq_len(nx)) p[k] <-
-      mnormt::pmnorm(z0[k,], mean=rep(0,d+1), varcov=Obig, ...)/p.tau
-    }
-  p
+  x <- if (is.vector(x)) matrix(x, 1, d) else data.matrix(x)
+  if (is.vector(xi))  xi <- outer(rep(1, nrow(x)), xi)
+  z0 <- cbind(tau, t(t(x - xi))/omega) 
+  mnormt::pmnorm(z0, mean=rep(0,d+1), varcov=Obig, ...)/pnorm(tau) 
 }
 
 rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
-{# generates SN_d(..) variates using transformation method
+{# generates SN_d(..) variates using additive (=transformation) method
   # if(!(missing(alpha) & missing(Omega) & !is.null(dp)))
   #     stop("You cannot set both component parameters and dp")
   if(!is.null(dp)) {  
@@ -246,7 +270,7 @@ rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
     truncN <- abs(rnorm(n))  
   else 
     truncN <- qnorm(runif(n, min=pnorm(-dp0$tau), max=1))
-  truncN <- matrix(rep(truncN,d), ncol=d)
+  truncN <- matrix(rep(truncN, d), ncol=d)
   delta  <- lot$aux$delta
   z <- delta * t(truncN) + sqrt(1-delta^2) * t(y)
   y <- t(dp0$xi + lot$aux$omega * z)
@@ -408,7 +432,7 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
   regula.falsi <- FALSE
   while (sum(nc) > 0) { # alternate regula falsi/bisection
     xc[nc] <- if(regula.falsi) 
-       xb[nc] - fb[nc] * (xb[nc] - xa[nc])/(fb[nc] - fa[nc]) else
+       xb[nc] - fb[nc] * (xb[nc] - xa[nc])/(fb[nc] - fa[nc])    else
        (xb[nc] + xa[nc])/2
     fc[nc] <- pst(xc[nc], 0, 1, abs.alpha, nu, method=method, ...) - p[nc]
     pos <- (fc[nc] > 0)
@@ -423,7 +447,7 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
   # x <- replace(x, na, NA)
   x <- replace(x, zero, -Inf)
   x <- replace(x, one, Inf)
-  Sign <- function(x) sign(x)+ as.numeric(x==0)
+  Sign <- function(x) sign(x) + as.numeric(x==0)
   q <- as.numeric(xi + omega * Sign(alpha)* x)
   names(q) <- names(p)
   return(q)
@@ -1784,7 +1808,7 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
 
 #------------------------------------------------------
 selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(), 
-                 offset = NULL,  selm.control) 
+                 offset = NULL, selm.control) 
 {
     if (!(toupper(family) %in% c("SN", "ST", "SC")))
         stop(gettextf("I do not know family '%s'", family), domain = NA)
@@ -1802,8 +1826,10 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
     if (NROW(y) != n)  stop("incompatible dimensions")
     if (missing(w) || is.null(w)) w <- rep(1, n)
     nw <- sum(w)
-    if(missing(selm.control)) selm.control <- list(penalty=NULL, trace=FALSE, 
-       info.type="observed", opt.method="nlminb", opt.control=list())
+    contr <- list(method="MLE", penalty=NULL, trace=FALSE,  
+                 info.type="observed", opt.method="nlminb", opt.control=list())
+    control <- selm.control
+    contr[(namc <- names(control))] <- control   
     symmetr <- FALSE   
     if(length(fixed.param) > 0) {
       if(!all(names(fixed.param)  %in%  c("nu", "alpha")))
@@ -1828,7 +1854,6 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
       }
     storage.mode(x) <- "double"
     storage.mode(y) <- "double"
-    contr <- selm.control
     info.type <- contr$info.type # so far, only "observed"
     y0 <- if(contr$info.type == "observed") y else NULL
     penalty <- if(is.null(contr$penalty)) NULL else 
@@ -1859,7 +1884,6 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         else { # proper SN case 
         cp <- if(is.null(start)) NULL else dp2cpUv(start, "SN")
         fit <- sn.mple(x, y, cp, w, penalty, trace)
-        fit$opt.method <- fit$opt.method
         fit$opt.method$called.by <- "sn.mple"
         fit$dp <- cp2dpUv(cp=fit$cp, family="SN")
         boundary <- fit$boundary
@@ -1871,7 +1895,6 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         fixed.nu <- fixed.param$nu  
         npar <- p + 2 + as.numeric(is.null(fixed.nu)) - as.numeric(symmetr)
         fit <- st.mple(x, y, dp=start, w, fixed.nu, symmetr, penalty, trace)
-        fit$opt.method <- fit$opt.method
         fit$opt.method$called.by <- "st.mple"
         dp <- fit$dp
         cp <- st.dp2cp(dp, cp.type="proper", fixed.nu=fixed.nu, 
@@ -1923,7 +1946,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
           param <- c(beta, vech(s2))
           conc <- solve(s2)
           betaBlock <- conc %x% (t(x) %*% (w*x))
-          D <- duplication_matrix(d)
+          D <- duplicationMatrix(d)
           varBlock <- (n/2) * t(D) %*% (conc %x% conc) %*% D
           m0 <- matrix(0, p*d, d*(d+1)/2)
           j <- rbind(cbind(betaBlock, m0), cbind(t(m0), varBlock)) 
@@ -2015,8 +2038,9 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
     fv <- drop(x %*% beta.dp)
     if(is.matrix(fv)) colnames(fv) <- colnames(y)
     size <- c(d=d, p=p, n.param=npar, n.obs=NROW(y), nw.obs=sum(w)) 
-    z <- list(logL=fit$logL, param=param, param.var=param.var, fitted.dp=fv,
-              resid.dp=y-fv, size=size, opt.method=fit$opt.method)
+    z <- list(call=match.call(), logL=fit$logL, param=param, 
+            param.var=param.var, fitted.dp=fv, resid.dp=y-fv, size=size,
+            selm.control=contr, opt.method=fit$opt.method)
     r1 <- y - z$resid.dp 
     z$weights <- w
     if (zero.weights) {
@@ -2451,7 +2475,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
   c1 <- sqrt(2/pi)/sqrt(1+alpha.star^2)
   c2 <- 1/(pi*sqrt(1+2*alpha.star^2))
   # theta <- c(beta,vOmega,eta)
-  D <- duplication_matrix(d)
+  D <- duplicationMatrix(d)
   # i1 <- 1:prod(dim(beta))
   # i2 <- max(i1) + 1:(d*(d+1)/2)
   # i3 <- max(i2) + 1:d
@@ -2735,9 +2759,11 @@ msn.moment.fit <- function(y)
   
 st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE, 
   penalty=NULL, trace=FALSE)
-{ # MLE of DP for univariate ST distribution, including symmetric 't' if alpha0
-  if(!is.vector(y)) stop("parameter y must be a vector")
-  if(!is.matrix(x)) stop("parameter x must be a matrix")
+{ # MLE of DP for univariate ST distribution, allowing case symmetr[ic]=TRUE
+  if(missing(y)) stop("required argument y is missing")
+  if(!is.vector(y) | !is.numeric(y)) stop("argument y must be a numeric vector")
+  x <- if(missing(x)) matrix(rep(1, length(y)), ncol = 1) else data.matrix(x)
+  if(!is.matrix(x)) stop("argument x must be a matrix")
   y.name <- deparse(substitute(y))
   x.name <- deparse(substitute(x))
   if(any(x[,1] != 1)) stop("first column of x must have all 1's")
@@ -2921,7 +2947,7 @@ st.pdev.hessian <- function(dp, x, y, fixed.nu=NULL, symmetr=FALSE, w,
 
 st.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, fixed.nu=NULL, 
    symmetr=FALSE, penalty=NULL, norm2.tol=1e-06)
-{# computes observed Fisher information matrix for univariatate ST variates
+{# computes observed Fisher information matrix for univariate ST variates
   if(missing(y)) stop("y is missing")
   if(!is.numeric(y)) stop("y is non-numeric")
   type <- "observed"
@@ -3023,22 +3049,23 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
                 control = list()) 
 {
   opt.method <- match.arg(opt.method)
+  if(missing(y)) stop("required argument y is missing")
+  if(!is.matrix(y) | !is.numeric(y)) stop("argument y must be a numeric matrix") 
   y.name <- deparse(substitute(y))
   y.names <- dimnames(y)[[2]]
-  y <- data.matrix(y)
-  x <- if (missing(x)) matrix(rep(1, nrow(y)), ncol = 1)        
-            else data.matrix(x)
-  if (missing(w)) w <- rep(1, nrow(y))
+  n <- nrow(y)
+  x <- if (missing(x)) matrix(rep(1, n), ncol = 1) else data.matrix(x)
+  if (missing(w)) w <- rep(1, n)
+  nw <- sum(w)
   x.names <- dimnames(x)[[2]]
   d <- ncol(y)
-  n <- sum(w)
   p <- ncol(x)
   if (is.null(start)) {
     ls <- lm.wfit(x, y, w, singular.ok=FALSE)
     beta <- coef(ls)
-				Omega <-  var(resid(ls))
-				omega <- sqrt(diag(Omega))
-				alpha <- rep(0, d)
+	Omega <-  var(resid(ls))
+	omega <- sqrt(diag(Omega))
+	alpha <- rep(0, d)
     nu <- if(is.null(fixed.nu)) 8 else fixed.nu
     if (trace) cat("mst.mple: starting dp = (",
          c(beta, Omega[!upper.tri(Omega)], alpha, nu),  ")\n")
@@ -3123,7 +3150,8 @@ mst.pdev <- function(param, x, y, w, fixed.nu=NULL, symmetr=FALSE,
 
 mst.pdev.grad <- function(param, x, y, w, fixed.nu=NULL, symmetr=FALSE, 
   penalty=NULL, trace=FALSE)
-{
+{ # based on Appendix B of Azzalini & Capitanio (2003, arXiv-0911.2342)
+  # except for a few quite patent typos (transposed matrices, etc) 
   d <- ncol(y)
   p   <- ncol(x)
   beta<- matrix(param[1:(p*d)],p,d)
@@ -3138,13 +3166,14 @@ mst.pdev.grad <- function(param, x, y, w, fixed.nu=NULL, symmetr=FALSE,
   u.w  <- u * w
   Q    <- as.vector(rowSums((u %*% Oinv) * u.w))
   L    <- as.vector(u.w %*% eta)
-  sf   <- if(nu < 1e4) sqrt((nu+d)/(Q+nu)) else sqrt((1+d/nu)/(1+Q/nu))
-  t.   <- L*sf
-  dlogft<- (-0.5)*(1+d/nu)/(1+Q/nu)
-  dt.dL <- sf
-  dt.dQ <- (-0.5)*L*sf/(Q+nu)
+  sf   <- if(nu < 1e4) sqrt((nu+d)/(nu+Q)) else sqrt((1+d/nu)/(1+Q/nu))
+  t.   <- L*sf                                     # t(L,Q,nu) in \S 5.1
+  # dlogft<- (-0.5)*(1+d/nu)/(1+Q/nu)              # \tilde{g}_Q
+  dlogft <- (-0.5)*sf^2                            # \tilde{g}_Q, again
+  dt.dL <- sf                                      # \dot{t}_L
+  dt.dQ <- (-0.5)*L*sf/(Q+nu)                      # \dot{t}_Q
   logT. <- pt(t., nu+d, log.p=TRUE)
-  dlogT.<- exp(dt(t., nu+d, log=TRUE) - logT.)
+  dlogT.<- exp(dt(t., nu+d, log=TRUE) - logT.)     # \tilde{T}_1
   Dbeta <- (-2* t(x) %*% (u.w*dlogft) %*% Oinv 
             - outer(as.vector(t(x) %*% (dlogT. * dt.dL* w)), eta)
             - 2* t(x) %*% (dlogT.* dt.dQ * u.w) %*% Oinv )
@@ -3158,7 +3187,7 @@ mst.pdev.grad <- function(param, x, y, w, fixed.nu=NULL, symmetr=FALSE,
   M <- (A %*% t(u*dlogft + u*dlogT.*dt.dQ) %*% u.w %*% t(A))
   if(d>1) DD <- diag(M) + 0.5*sum(w)/D
      else DD <- as.vector(M + 0.5*sum(w)/D) 
-  grad <- (-2)*c(Dbeta,DD*(-2*D), DA, if(!symmetr) Deta)
+  grad <- (-2) * c(Dbeta, DD*(-2*D), DA, if(!symmetr) Deta)
   if(is.null(fixed.nu)) {
     df0 <- min(nu, 1e8)
     if(df0 < 10000){
@@ -3219,7 +3248,7 @@ mst.theta.jacobian <- function(theta, p, d, cp.type="proper")
   omega <- sqrt(diag(Omega))
   alpha <- eta*omega
   # delta <- delta.etc(alpha, Omega)$delta
-  D <- duplication_matrix(d)
+  D <- duplicationMatrix(d)
   P <- matrix(0, d^2, d^2)
   for (i in 1:d) {
     Eii <- matrix(0,d,d)
@@ -3810,7 +3839,7 @@ force.symmetry <- function(x, tol=10*sqrt(.Machine$double.eps))
   return((x + t(x))/2)
 }
  
-duplication_matrix <- function (n=1)
+duplicationMatrix <- duplication_matrix <- function (n=1)
 {# translated by AA from Octave code written of <Kurt.Hornik@wu-wien.ac.at>
   if ( (n<1) |  (round (n) != n) ) stop ("n must be a positive integer")
   d <- matrix (0, n * n, n * (n + 1) / 2)

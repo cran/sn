@@ -112,8 +112,8 @@ selm(formula, family = "SN", data, weights, subset, na.action,
     \item \code{opt.method}: a character string which selects the numerical
         optimization method, among the possible values 
         \code{"nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"}. 
-        If \code{opt.method="nlminb"}
-        (default), function \code{\link[stats]{nlminb}} is called, 
+        If \code{opt.method="nlminb"} (default),
+        function \code{\link[stats]{nlminb}} is called, 
         otherwise function \code{\link[stats]{optim}} is called with 
         \code{method} equal to \code{opt.method}.
 

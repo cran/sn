@@ -1,39 +1,58 @@
-R package 'sn' history file
-----------------------------
+R package 'sn' changelog file
+-----------------------------
 
-version 0.20 (Oct.1998):
-  first public release and distribution via WWW 
+Version 1.1-1 (2014-10-30)
+Function qsn has an additional argument 'solver'. Function pmsn can now be 
+called with argument 'xi' of matrix type. More functions are now 'exported' 
+in NAMESPACE. Fixed a bug about selm.control argument of selm.fit.
+Improved documentation of various functions.
 
-version 0.22.1 (2001-05-17)
+Version 1.1-0 (2014-08-06)
+Main few feature is the possibility to set the constraint alpha=0 in function 
+selm; also, introduce OP parameterization; more detailed documentation of 
+pst and other places, fix a bug in qst; improved coding of dmsn and dmst; 
+pmsn can now be called with argument 'x' of matrix type.
 
-version 0.22.2 (2002-01-05)
-  fix error in sn.dev.gh, improved qsn
+Version 1.0-0 (2014-01-06)
+This is a major upgrade of the package, with much of the code completely new 
+or largely re-written, leading to changes in the syntax and the user interface.
+The key new functions are selm and makeSECdistr, with various related functions
+and methods; S4 methods are adopted. Many existing functions are updated, 
+a few are dropped; see help(SN) for specifications.
 
-version 0.30 (2002-06-15)
-  main change is the addition of routines for (multivariate) skew-t 
-  distribution; also some other routines, e.g. mle for grouped data
+Version 1 is started (beginning in June 2007)
+------------------------------------------------------------------------------
 
-version 0.3x (2003--2005)
-  added some new functions (these include msn.affine, sn.mmle, sn.Einfo, 
-  sn.mle.grouped), fix various errors, and other improvements 
-  (eg. improved pst)
+Version 0.4-1 to 0.4-18 (2007-2013)
+Various minor adjustments, many of them to fulfill CRAN programming standards
   
-version 0.4-0 (2006-04-11)
-  several changes and additions are included:
+Version 0.4-0 (2006-04-11)
+Several changes and additions are included:
   - many routines allow use of composite parameter 'dp'  
   - multivariate normal and t probabilities are now computed by 'mnormt'
   - use of NAMESPACE introduced
   - some more routines introduced, eg. st.cumulants.inversion
   - various fixes/improvements in documentation
 
-version 0.4-1 to 0.4-14 (2007-2013)
-  various minor adjustments, many of them to fulfill CRAN programming standards
+Version 0.3x (2003--2005)
+Added some new functions (these include msn.affine, sn.mmle, sn.Einfo, 
+sn.mle.grouped), fix various errors, and other improvements (eg. improved pst)
 
-version 1.0-0 (2014-01-06)
-  a major upgrade of the package: key new functions are selm and makeSECdistr, 
-  with several related functions and methods; S4 methods are adopted; many 
-  existing functions are updated, a few are dropped (see sn.Rd for details)
+Version 0.30 (2002-06-15)
+The main change is the addition of routines for (multivariate) skew-t 
+distribution; also some other routines, e.g. mle for grouped data
+
+Version 0.22.2 (2002-01-05)
+Fix error in sn.dev.gh, improved qsn
+
+Version 0.22.1 (2001-05-17)
+         
+Version 0.20 (Oct.1998):
+This is the first public release and distribution via WWW 
+
+
+
+  
+
+
 	
-version 1.1-0 (2014-08-06)
-  allow to set the constraint alpha=0, introduce OP parameterization; more
-  details in documentation of pst and other places, fix a bug in qst

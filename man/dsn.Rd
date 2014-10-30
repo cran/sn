@@ -16,7 +16,7 @@
 \usage{
 dsn(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, log=FALSE)
 psn(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
-qsn(p, xi=0, omega=1, alpha=0, tau=0, dp=NULL, tol=1e-8,  ...) 
+qsn(p, xi=0, omega=1, alpha=0, tau=0, dp=NULL, tol=1e-8, solver="NR", ...) 
 rsn(n=1, xi=0, omega=1, alpha=0, tau=0,  dp=NULL)
 }
 
@@ -48,17 +48,20 @@ rsn(n=1, xi=0, omega=1, alpha=0, tau=0,  dp=NULL)
  \item{tol}{a scalar value which regulates the accuracy of the result of 
    \code{qsn}, measured on the probability scale.}
 
-  \item{log}{logical flag used in \code{dsn} (default \code{FALSE}).
+ \item{log}{logical flag used in \code{dsn} (default \code{FALSE}).
    When \code{TRUE}, the logarithm of the density values is returned.}
 
-  \item{engine}{a character string  which selects the computing engine;
+\item{engine}{a character string  which selects the computing engine;
    this is either \code{"T.Owen"} or \code{"biv.nt.prob"}, the latter from 
    package \code{mnormt}. If \code{tau != 0} or \code{length(alpha)>1}, 
    \code{"biv.nt.prob"} must be used. If this argument is missing, a default 
    selection rule is applied.}
 
-  \item{...}{ additional parameters passed to \code{T.Owen}}
-
+\item{solver}{a character string which selects the numerical method used for 
+   solving the quantile equation; possible options are \code{"NR"} (default)
+   and \code{"RFB"}, described in the \sQuote{Details} section.}
+   
+\item{...}{ additional parameters passed to \code{T.Owen}}
 }
 
 \value{density (\code{dsn}), probability (\code{psn}), quantile (\code{qsn})
@@ -80,6 +83,12 @@ rsn(x, dp=)
 }
 \code{psn} and \code{qsn} make use  of function \code{\link{T.Owen}}
  or \code{\link[mnormt:dmt]{biv.nt.prob}}
+ 
+In \code{qsn}, the choice \code{solver="NR"} selects the Newton-Raphson method 
+for solving the quantile equation, while option \code{solver="RFB"}
+alternates a step of \emph{regula falsi} with one of bisection. 
+The \code{"NR"} method is generally more efficient, but \code{"RFB"} is 
+occasionally required in some problematic cases.
 }
 
 \section{Background}{
@@ -88,12 +97,15 @@ family, via the introdution of a \code{alpha} parameter which regulates
 asymmetry; when \code{alpha=0}, the skew-normal distribution reduces to 
 the normal one.  The density function of the \acronym{SN} distribution 
 in the \sQuote{normalized}  case having \code{xi=0} and \code{omega=1} is 
-\code{2*dnorm(x)*pnorm(alpha*x)}. 
+\eqn{2\phi(x)\Phi(\alpha x)}, if \eqn{\phi} and \eqn{\Phi} denote the
+standard normal density and distribution function.
 An early discussion of the skew-normal distribution is given by 
 Azzalini (1985); see Section 3.3 for the \acronym{ESN} variant, 
 up to a slight difference in the parameterization.
-An updated extensive account is provided by Chapter 2 of Azzalini and 
+
+An updated exposition is provided in Chapter 2 of Azzalini and 
 Capitanio (2014); the \acronym{ESN} variant is presented Section 2.2. 
+See Section 2.3 for an historical account.   
 A multivariate version of the distribution is examined in Chapter 5.}
 
 \references{
@@ -118,5 +130,6 @@ pdf <- dsn(seq(-3, 3, by=0.1), alpha=3)
 cdf <- psn(seq(-3, 3, by=0.1), alpha=3)
 q <- qsn(seq(0.1, 0.9, by=0.1), alpha=-2)
 r <- rsn(100, 5, 2, 5)
+qsn(1/10^(1:4), 0, 1, 5, 3, solver="RFB")  
 }
 \keyword{distribution}

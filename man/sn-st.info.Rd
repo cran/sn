@@ -43,7 +43,7 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
  \item{y}{a numeric vector (for \code{sn.infoUv} and \code{st.infoUv})
    or a matrix (for \code{sn.infoMv} and \code{st.infoMv}) representing the
    response.  In the \acronym{SN} case ( \code{sn.infoUv} and
-   \code{sn.infoMv}), \code{y} can be missing, and in this case the observed
+   \code{sn.infoMv}), \code{y} can be missing, and in this case the expected
    information matrix is computed; otherwise the observed information is
    computed. In the \acronym{ST} case (\code{st.infoUv} and \code{st.infoMv},
    \code{y} is a required argument, since only the observed information matrix
@@ -116,18 +116,30 @@ case these represent merely the matrices of second derivatives;
   Section 5.2.2 of this monograph summarizes briefly the findings of 
   Arellano-Valle and Azzalini (2008).
  
-  For \acronym{ST} ??
+  For \acronym{ST} distributions, only the observed information matrix is 
+  provided currently. Computation for the univariate case is based on 
+  DiCiccio and Monti (2011). For the multivariate case, the score function is
+  computed using expression of Arellano-Valle (2010) followed by numerical
+  differentiation.
 }
 
 \references{
+  Arellano-Valle, R. B. (2010).
+  The information matrix of the multivariate skew-$t$ distribution.
+  \emph{Metron}, \bold{LXVIII}, 371--386.
+
   Arellano-Valle, R. B., and Azzalini, A. (2008).
   The centred parametrization for the multivariate skew-normal distribution.
-  \emph{J.\ Multiv.\ Anal.} \bold{99}, 1362--1382.
+  \emph{J. Multiv. Anal.} \bold{99}, 1362--1382.
   Corrigendum: vol.\,100 (2009), p.\,816.
 
   Azzalini, A. with the collaboration of Capitanio, A. (2014). 
   \emph{The Skew-Normal and Related Families}. 
   Cambridge University Press, IMS Monographs series.
+  
+  DiCiccio,  T. J. and Monti, A. C. (2011).  
+  Inferential aspects of the skew \eqn{t}-distribution.
+  \emph{Quaderni di Statistica} \bold{13}, 1--21.
 }
 
 \seealso{\code{\link{dsn}}, \code{\link{dmsn}}, \code{\link{dp2cp}}}

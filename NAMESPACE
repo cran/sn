@@ -23,9 +23,10 @@ export(T.Owen, zeta, sn.cumulants, st.cumulants,
   dmsc, pmsc, rmsc,
   makeSECdistr, marginalSECdistr, affineTransSECdistr, conditionalSECdistr, 
   cp2dp, dp2cp, dp2op, op2dp,
-  sn.infoUv, sn.infoMv,
+  sn.infoUv, sn.infoMv, st.infoUv, st.infoMv,
   selm, MPpenalty, Qpenalty,
-  selm.fit, sn.mple,  st.mple, msn.mle, msn.mple, mst.mple
+  selm.fit, sn.mple,  st.mple, msn.mle, msn.mple, mst.mple,
+  vech, vech2mat, duplicationMatrix
   )
  
 exportMethods("show", "plot", "summary", "coef",  "logLik",  "vcov",

@@ -87,17 +87,17 @@ A multivariate version of the distribution exists; see \code{dmst}.
 \section{Details}{
 For evaluation of \code{pst}, and so indirectly of
 \code{qst}, four different methods are employed.
-Method~1 consists in using \code{pmst} with dimension \code{d=1}.
-Method~2 applies \code{integrate} to the density function \code{dst}.
-Method~3 again uses \code{integrate} too but with a different integrand,
+Method 1 consists in using \code{pmst} with dimension \code{d=1}.
+Method 2 applies \code{integrate} to the density function \code{dst}.
+Method 3 again uses \code{integrate} too but with a different integrand,
 as given in Section 4.2 of Azzalini & Capitanio (2003), full version of
 the paper.
-Method~4 consists in the recursive procedure of Jamalizadeh, Khosravi and
+Method 4 consists in the recursive procedure of Jamalizadeh, Khosravi and
 Balakrishnan (2009), which is recalled in Complement 4.3 on 
 Azzalini & Capitanio (2014); the recursion over \code{nu} starts from 
 the explicit expression for \code{nu=1} given by \code{psc}.
 Of these, Method 1 and 4 are only suitable for integer values of \code{nu}.
-Method~4 becomes progressively less efficient as \code{nu} increases,
+Method 4 becomes progressively less efficient as \code{nu} increases,
 because its value corresponds to the number of nested calls, but the
 decay of efficiency is slower for larger values of \code{length(x)}.
 If the default argument value \code{method=0} is retained, an automatic choice

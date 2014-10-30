@@ -6,7 +6,7 @@
 \alias{zeta}
 \concept{Mills ratio}
 
-\title{Function `log(2*pnorm(x))' and its derivatives}
+\title{Function \eqn{log(2\Phi(x))} and its derivatives}
 
 \description{The function \code{log(2*(pnorm(x))} and its derivatives, 
   including inverse Mills ratio.}
@@ -14,7 +14,7 @@
 \usage{zeta(k, x)}
 
 \arguments{
-\item{k}{an integer scalar between 0 and 5.}
+\item{k}{an integer number between 0 and 5.}
 
 \item{x}{a numeric vector. Missing values (\code{NA}s)  and \code{Inf}s are 
   allowed}
@@ -25,8 +25,9 @@ a vector representing the \code{k}-th order derivative evaluated at \code{x}}
 
 \details{
   For \code{k} between 0 and 5, the derivative of  order \code{k}
-  of \code{log(2*pnorm(x))} is  evaluated;   the derivative of
-  order \code{k=0} refers to  the function itself.
+  of \eqn{log(2\Phi(x))} is  evaluated, where \eqn{\Phi(x)} denotes the
+  \eqn{N(0,1)} cumulative distribution function.
+  The derivative of order \code{k=0} refers to the function itself.
   If \code{k} is not integer, it is converted to integer and a warning
   message is generated.
   If \code{k<0} or \code{k>5},  \code{NULL} is returned.
@@ -34,9 +35,9 @@ a vector representing the \code{k}-th order derivative evaluated at \code{x}}
 
 \section{Background}{
   The computation for \code{k>1} is reduced to the case \code{k=1}, making use
-  of expressions given by Azzalini and Capitanio (1999); see especially the
-  full-length version of the paper. The main facts are summarized in Section 
-  2.1.4 of Azzalini and Capitanio (2014).
+  of expressions given by Azzalini and Capitanio (1999); see especially 
+  Section 4 of the full-length version of the paper.   The main facts are 
+  summarized in Section 2.1.4 of Azzalini and Capitanio (2014).
   
   For numerical stability, the evaluation of \code{zeta(1,x)} when 
   \code{x < -50} makes use of the asymptotic expansion (26.2.13) of 

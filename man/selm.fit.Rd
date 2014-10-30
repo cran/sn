@@ -133,7 +133,8 @@ a penalization of the log-likelihood; when \code{penalty=NULL}, a call to
 \code{msn.mle} is more efficient.
 Functions \code{sn.mple} and \code{mst.mple} work like \code{sn.mle} and
 \code{mst.mle} in version 0.4-x if the argument \code{penalty} is not 
-set or it is set to \code{NULL}.
+set or it is set to \code{NULL}, except that \code{mst.mple} does not
+handle a univariate response (use \code{st.mple} for that).
 }
 
 \value{A list whose specific components depend on the named function.

@@ -47,9 +47,8 @@ terminology and logical frame. This matching and the numerous references
 in the software documentation to specific sections of the book for background 
 information should facilitate familiarizing with these tools.
 
-Since version 1.1-0,  the error distribution of a linear model can be 
-constrained to be symmetric. 
-
+Since version 1.1-0, the error distribution of a linear model can be 
+constrained to be symmetric in the fitting process of \code{\link{selm}}.
 }
 
 \section{Backward Compatibility}{%
@@ -66,7 +65,7 @@ effectively been subsumed into the more comprehensive fitting function
 \code{\link{selm}}.
 
 A second group of functions will work with little or even minimal changes.
-Specific examples are functions \code{sn.mle} and \code{sn.mle} which have
+Specific examples are functions \code{sn.mle} and \code{st.mle} which have
 become \code{\link{sn.mple}} and \code{\link{st.mple}}, with some additional
 arguments (again, one can achieve the same result via \code{\link{selm}}) and
 \code{dp.to.cp}, which has been replaced by the more general function
