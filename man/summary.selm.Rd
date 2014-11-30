@@ -58,18 +58,27 @@
 \note{
 There are two reasons why the default choice of \code{param.type} is
 \code{CP}.  One is the the easier interpretation of cumulant-based quantities
-such as mean value, standard deviation, coefficient of skewness. The other
-reason is more technical and applies only to cases when the estimate of the
-slant parameter \code{alpha} of the \acronym{SN} distribution is close to the
-origin: standard asymptotic distribution theory of maximum likelihood
-estimates does not apply in these cases and the corresponding standard errors
-are not trustworthy, especially those of \code{alpha} and \code{xi} or the
-intercept in the regression case.  The problem is especialy severe at
-\code{alpha=0} but to some extent propagates to its vicinity.  For background
-information, see Sections 3.1.4--6 and 5.2.3 of Azzalini and Capitanio (2014) 
-and references therein.  This problem does not occur with the the \acronym{SC} 
-and the \acronym{ST} distribution (unless its tail-weight parameter \code{nu} 
-diverges, hence approaching the \code{SN} case). }
+such as mean value, standard deviation, coefficient of skewness. 
+
+The other reason is more technical and applies only to cases when the 
+estimate of the slant parameter \eqn{alpha} of the \acronym{SN} distribution 
+is close to the origin: standard asymptotic distribution theory of maximum 
+likelihood estimates (MLE's) does not apply in this case and the
+corresponding standard errors are not trustworthy. 
+The problem is especialy severe at
+\eqn{\alpha=0} but to some extent propagates to its vicinity. 
+If \eqn{d=1}, adoption of \code{CP} leads to MLE's with regular asymptotic 
+distribution across the parameter space, including \eqn{\alpha=0}. 
+For \eqn{d>1} and \eqn{\alpha=0,} the problem is still unsolved at the 
+present time,  which is the reason why \code{selm} issues a warning
+message when the MLE is in the vicinity of \eqn{\alpha=0}; 
+see \sQuote{Details} of \code{\link{selm}}.  
+For background information, see Sections 3.1.4--6 and 5.2.3 of 
+Azzalini and Capitanio (2014)  and references therein.  
+
+This problem does not occur with the the \acronym{SC} and the \acronym{ST}
+distribution (unless its tail-weight parameter \code{nu} diverges, that is, 
+when we are effectively approaching the \code{SN} case). }
 
 \references{
   Azzalini, A. with the collaboration of Capitanio, A. (2014). 

@@ -226,6 +226,8 @@ setClass("selm",
    }
 )
 
+setMethod("coef", "selm", coef.selm)
+
 setMethod("logLik", "selm", 
    function(object){
      logL <- slot(object,"logL")
@@ -235,13 +237,6 @@ setMethod("logLik", "selm",
      }
    )
    
-setMethod("coef", "selm", function(object, param.type="CP") {
-    param <- slot(object,"param")[[tolower(param.type)]]
-    if(is.null(param) & tolower(param.type)=="cp") {
-        message("CP not defined, consider param.type='DP' or 'pseudo-CP'")
-        return(NULL)}
-    param}
-   )
    
 setMethod("vcov", "selm", function(object, param.type="CP") {
     vcov <- slot(object, "param.var")[[tolower(param.type)]]
@@ -311,6 +306,8 @@ setClass("mselm",
    }
 )
 
+setMethod("coef", "mselm", coef.mselm)  
+
 setMethod("logLik", "mselm",
    function(object){
      logL <- slot(object,"logL")
@@ -319,17 +316,6 @@ setMethod("logLik", "mselm",
      return(logL)
      }
    )   
-
-setMethod("coef", "mselm", 
-  function(object, param.type="CP", vector=TRUE) {
-    list <- slot(object,"param")[[tolower(param.type)]]
-    if(is.null(list) & tolower(param.type)=="cp") {
-        message("CP not defined, consider param.type='DP' or 'pseudo-CP'")
-        return(NULL)}
-    if(!vector) return(list)
-    as.vector(c(list[[1]], vech(list[[2]]), unlist(list[3:length(list)])))
-    }
-   )  
 
 setMethod("vcov", "mselm", function(object, param.type="CP") {
     vcov <- slot(object,"param.var")[[tolower(param.type)]]

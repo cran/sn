@@ -1,29 +1,31 @@
 %  file sn/man/selm-class.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2013 Adelchi Azzalini
+%  copyright (C) 2013-2014 Adelchi Azzalini
 %---------------------
 \name{selm-class}
 \Rdversion{1.1}
 \docType{class}
-\alias{selm-class}
-\alias{coef,selm-method}
+\alias{selm-class}               
+%\alias{coef,selm-method}           % superseded by coef.selm.Rd
 \alias{logLik,selm-method}
 \alias{plot,selm,ANY-method}
 \alias{plot,selm,missing-method}
 \alias{show,selm-method}
-\alias{fitted,selm-method}
-\alias{residuals,selm-method}
+% \alias{fitted,selm-method}       % superseded by residuals.selm.Rd
+% \alias{residuals,selm-method}    % superseded by residuals.selm.Rd
 \alias{vcov,selm-method}
+\alias{weights,selm-method}
 %
 \alias{mselm-class}
-\alias{coef,mselm-method}
+% \alias{coef,mselm-method}        % superseded by coef.selm.Rd
 \alias{logLik,mselm-method}
 \alias{plot,mselm,ANY-method}
 \alias{plot,mselm,missing-method}
 \alias{show,mselm-method}
-\alias{fitted,mselm-method}
-\alias{residuals,mselm-method}
+%\alias{fitted,mselm-method}       % superseded by residuals.selm.Rd
+%\alias{residuals,mselm-method}    % superseded by residuals.selm.Rd
 \alias{vcov,mselm-method}
+\alias{weights,mselm-method}
 
 \title{Classes \code{"selm"} and \code{"mselm"} of objects created by 
 function \code{selm}}
@@ -70,6 +72,7 @@ An object can be created by a successful call to function \code{selm}.}
     \code{residuals} \tab \code{signature(object = "selm")}: ... \cr
     \code{fitted} \tab \code{signature(object = "selm")}: ... \cr
     \code{vcov} \tab \code{signature(object = "selm")}: ... \cr
+    \code{weights} \tab \code{signature(object = "selm")}: ... \cr
     \tab \cr
     \code{coef} \tab \code{signature(object = "mselm")}: ... \cr
     \code{logLik} \tab \code{signature(object = "mselm")}: ... \cr
@@ -79,6 +82,7 @@ An object can be created by a successful call to function \code{selm}.}
     \code{residuals} \tab \code{signature(object = "mselm")}: ... \cr
     \code{fitted} \tab \code{signature(object = "mselm")}: ... \cr
     \code{vcov} \tab \code{signature(object = "mselm")}: ... \cr
+    \code{weights} \tab \code{signature(object = "mselm")}: ... \cr
 	}
 }
 

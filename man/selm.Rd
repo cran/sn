@@ -201,8 +201,8 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   which implements the penalization:
      \deqn{Q(\alpha) = c_1 \log(1 + c_2 \alpha_*^2)}{%
            Q(\alpha)= c₁ log(1 + c₂ [\alpha*]²)}
-  where \eqn{c_1}{c₁} and \eqn{c_2}{c₂} are positive constants, but
-  depending on the degrees of freedom \code{nu} in the \code{"ST"} case,
+  where \eqn{c_1}{c₁} and \eqn{c_2}{c₂} are positive constants, which
+  depends on the degrees of freedom \code{nu} in the \code{ST} case,
       \deqn{\alpha_*^2 = \alpha^\top \bar\Omega \alpha}{%?
             [\alpha*]² = \alpha' cor(\Omega) \alpha}
   and \eqn{\bar\Omega}{cor(\Omega)} denotes the correlation matrix 
@@ -231,7 +231,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   \item \code{nu}: degrees of freedom, only relevant if \code{family="ST"}.
   \item \code{der}: a numeric value which indicates the required order of
      derivation; if \code{der=0} (default value), only the penalty \code{Q}
-      need to be retuned by the function; 
+      needs to be retuned by the function; 
       if \code{der=1}, \code{attr(Q, "der1")} must represent the
      first order derivative of \code{Q} with respect to \code{alpha}; if
      \code{der=2}, also \code{attr(Q, "der2")} must be assigned, containing
@@ -302,12 +302,13 @@ final portion of the examples below.
 \seealso{\itemize{
 
 \item
-  \code{\linkS4class{selm}} for classes \code{"selm"} and  \code{"mselm"},
-  \code{\link{summary.selm}} for summaries, \code{\link{plot.selm}} for plots 
+  \code{\linkS4class{selm}-class} for classes \code{"selm"} and \code{"mselm"},
+  \code{\link{summary.selm}} for summaries, \code{\link{plot.selm}} for plots,
+   \code{\link{residuals.selm}} for residuals and fitted values
 
 \item
-  the generic functions \code{\link{coef}}, \code{\link{logLik}},
-  \code{\link{residuals}}, \code{\link{fitted}}, \code{\link{vcov}}.
+  the generic functions \code{\link{coef}}, \code{\link{logLik}}, 
+  \code{\link{vcov}}.
 
 \item
   the underlying function \code{\link{selm.fit}} and those further down
@@ -363,6 +364,7 @@ m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
 print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # testing for symmetry
 #
 \donttest{
+# illustrate final passage of 'Warning' section above
 m31 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais)
 # Warning message...
 slot(m31, "opt.method")$convergence

@@ -45,8 +45,9 @@ rmsc(n=1, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
    \code{Inf} values in \code{alpha} are not allowed.}
 
  \item{nu}{a positive value representing the degrees of freedom of
-  \acronym{ST} distribution; default value is \code{nu=Inf} which corresponds
-  to the multivariate skew-normal distribution.}
+  \acronym{ST} distribution; does not need to be integer. 
+  Default value is \code{nu=Inf} which corresponds to the multivariate
+  skew-normal distribution.}
 
  \item{dp}{a list with three elements named \code{xi}, \code{Omega},
   \code{alpha} and \code{nu}, containing quantities as described above. If

@@ -1787,7 +1787,7 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
     if (ret.y) input$y <- y
     input$weights <- as.vector(model.weights(mf))
     input$offset <- as.vector(model.offset(mf))
-    cl.obj <- if(is.matrix(y)) "mselm" else "selm"
+    # cl.obj <- if(is.matrix(y)) "mselm" else "selm"
     obj <- new(class(z), call=cl, family=toupper(family), logL=z$logL, 
                method=c(method, contr$penalty),  param=z$param,
                param.var=z$param.var, size=z$size,  
@@ -1826,6 +1826,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
     if (NROW(y) != n)  stop("incompatible dimensions")
     if (missing(w) || is.null(w)) w <- rep(1, n)
     nw <- sum(w)
+    n.obs <- NROW(y)
     contr <- list(method="MLE", penalty=NULL, trace=FALSE,  
                  info.type="observed", opt.method="nlminb", opt.control=list())
     control <- selm.control
@@ -1855,7 +1856,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
     storage.mode(x) <- "double"
     storage.mode(y) <- "double"
     info.type <- contr$info.type # so far, only "observed"
-    y0 <- if(contr$info.type == "observed") y else NULL
+    yInfo <- if(contr$info.type == "observed") y else NULL
     penalty <- if(is.null(contr$penalty)) NULL else 
       get(contr$penalty, inherits=TRUE)
     trace <- contr$trace
@@ -1889,7 +1890,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         boundary <- fit$boundary
         mu0 <- fit$cp[1] - fit$dp[1]
         info <- if(boundary) NULL else 
-          sn.infoUv(dp=fit$dp, x=x, y=y0, w=w, penalty=penalty)
+          sn.infoUv(dp=fit$dp, x=x, y=yInfo, w=w, penalty=penalty)
         }}
       if(family == "ST") {
         fixed.nu <- fixed.param$nu  
@@ -1909,7 +1910,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         mu0 <- if(nu <= 1) NA else 
           st.dp2cp(dp, fixed.nu=fixed.nu, upto=1)[1] - dp[1] 
         info <- if(boundary)  NULL  else 
-          st.infoUv(dp=fit$dp, NULL, x, y0, w, fixed.nu, symmetr, penalty) 
+          st.infoUv(dp=fit$dp, NULL, x, yInfo, w, fixed.nu, symmetr, penalty) 
         }
       if(family == "SC") {
         npar <- p + 2  - as.numeric(symmetr)
@@ -1924,7 +1925,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         boundary <- fit$boundary
         mu0 <- NA
         info <- if(boundary) NULL  else
-          st.infoUv(dp=fit$dp, x=x, y=y0, w=w, fixed.nu=1, symmetr=symmetr) 
+          st.infoUv(dp=fit$dp, x=x, y=yInfo, w=w, fixed.nu=1, symmetr=symmetr) 
         }
       if(!boundary && family %in% c("ST","SC"))  info$asyvar.p_cp <- 
           Dpseudocp.dp %*% info$asyvar.dp %*% t(Dpseudocp.dp)
@@ -1976,7 +1977,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
           fit$opt.method$called.by <- "msn.mle"
           boundary <- ((1 - fit$aux$delta.star) < .Machine$double.eps^(1/4))
           if(!boundary) info <- 
-             sn.infoMv(fit$dp, x=x, y=y0, w=w)
+             sn.infoMv(fit$dp, x=x, y=yInfo, w=w)
           } else { # MPLE
           fit <- msn.mple(x, y, start, w, penalty, trace=trace, 
                   opt.method=contr$opt.method, control=contr$opt.control)
@@ -2002,7 +2003,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         fit$cp <- mst.dp2cp(dp, cp.type="proper", fixed.nu, symmetr)
         fit$p_cp <- mst.dp2cp(dp, cp.type="pseudo", fixed.nu, symmetr)
         if(!boundary) info <- 
-           st.infoMv(dp, x=x, y=y0, w, fixed.nu, symmetr, penalty)
+           st.infoMv(dp, x=x, y=yInfo, w, fixed.nu, symmetr, penalty)
         }
       if(family == "SC") {
         npar <- npar0 + d*as.numeric(!symmetr)
@@ -2020,7 +2021,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         fit$cp <- NULL
         fit$p_cp <- mst.dp2cp(fit$dp, "pseudo", fixed.nu=1)   
         if(!boundary)  info <-
-          st.infoMv(fit$dp, x=x, y=y0, w, fixed.nu=1, symmetr, penalty)
+          st.infoMv(fit$dp, x=x, y=yInfo, w, fixed.nu=1, symmetr, penalty)
         }
       beta.dp <- fit$dp[[1]]
       }
@@ -2037,36 +2038,36 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
     dn <- colnames(x)  
     fv <- drop(x %*% beta.dp)
     if(is.matrix(fv)) colnames(fv) <- colnames(y)
-    size <- c(d=d, p=p, n.param=npar, n.obs=NROW(y), nw.obs=sum(w)) 
+    size <- c(d=d, p=p, n.param=npar, n.obs=n.obs, nw.obs=sum(w)) 
     z <- list(call=match.call(), logL=fit$logL, param=param, 
             param.var=param.var, fitted.dp=fv, resid.dp=y-fv, size=size,
             selm.control=contr, opt.method=fit$opt.method)
     r1 <- y - z$resid.dp 
     z$weights <- w
     if (zero.weights) {
-        coef[is.na(coef)] <- 0
-        f0 <- x0 %*% coef
+        # coef[is.na(coef)] <- 0
+        f0 <- x0 %*% beta.dp
         if (d > 1) {
-            save.r[ok, ] <- z$residuals
+            save.r[ok, ] <- z$resid.dp
             save.r[nok, ] <- y0 - f0
-            save.f[ok, ] <- z$fitted.values
+            save.f[ok, ] <- z$fitted.dp
             save.f[nok, ] <- f0
         }
         else {
-            save.r[ok] <- z$residuals
+            save.r[ok] <- z$resid.dp
             save.r[nok] <- y0 - f0
-            save.f[ok] <- z$fitted.values
+            save.f[ok] <- z$fitted.dp
             save.f[nok] <- f0
         }
-        z$residuals <- save.r
-        z$fitted.values <- save.f
+        z$resid.dp <- save.r
+        z$fitted.dp <- save.f
         z$weights <- save.w
     }
     if(!is.null(offset)) {
-      z$fitted.values <- z$fitted.values + offset
+      z$fitted.dp <- z$fitted.dp + offset
       r1 <- r1 + offset
       }
-    z$fitted.dp <- r1
+    # z$fitted.dp <- r1
     if(length(fixed.param) > 0)  {
         z$param$fixed <- fixed.param 
         z$param$dp.complete <- fit$dp.complete } 
@@ -2126,7 +2127,7 @@ summary.selm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
 }
 
 
-residuals.selm <- function(object, param.type="CP"){
+residuals.selm <- function(object, param.type="CP", ...){
   param.type <- tolower(param.type) 
   if(!(param.type %in% c("cp", "dp", "pseudo-cp"))) 
      stop("param.type must be either 'CP' or 'DP' or 'pseudo-CP'")
@@ -2147,7 +2148,7 @@ residuals.selm <- function(object, param.type="CP"){
   }
 
 
-fitted.selm <- function(object, param.type="CP") {
+fitted.selm <- function(object, param.type="CP", ...) {
   param.type <- tolower(param.type) 
   if(!(param.type %in% c("cp", "dp", "pseudo-cp")))
    stop("param.type must be either 'CP' or 'DP' or 'pseudo-CP'")
@@ -2165,7 +2166,7 @@ fitted.selm <- function(object, param.type="CP") {
   return(fitted)
   }
   
-weights.selm <- function(object) slot(object, "input")$weights
+weights.selm <- function(object, ...) slot(object, "input")$weights
 
 summary.mselm <- function(object, param.type="CP", cov=FALSE, cor=FALSE) 
 {
@@ -2240,7 +2241,7 @@ summary.mselm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
    out        
 }
 
-residuals.mselm <- function(object, param.type="CP"){
+residuals.mselm <- function(object, param.type="CP", ...){
   param.type <- tolower(param.type) 
   if(!(param.type %in% c("cp", "dp", "pseudo-cp"))) 
      stop("param.type must be either 'CP' or 'DP' or 'pseudo-CP'")
@@ -2259,7 +2260,7 @@ residuals.mselm <- function(object, param.type="CP"){
   return(resid)
   }
 
-fitted.mselm <- function(object, param.type="CP") {
+fitted.mselm <- function(object, param.type="CP", ...) {
   param.type <- tolower(param.type) 
   if(!(param.type %in% c("cp", "dp", "pseudo-cp"))) 
      stop("param.type must be either 'CP' or 'DP' or 'pseudo-CP'")
@@ -2276,7 +2277,7 @@ fitted.mselm <- function(object, param.type="CP") {
   return(fitted)
   }
 
-weights.mselm <- function(object) slot(object, "input")$weights
+weights.mselm <- function(object, ...) slot(object, "input")$weights
 
 #------------------------------------------------------------
 # 
@@ -3112,9 +3113,13 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
   dp.comp <- (1:2)
   if(symmetr) vp <- c(vp, rep(0,d)) else {
     vp <- c(vp, par[npar0 + (1:d)]); dp.comp <- (1:3)}
-  if(is.null(fixed.nu)) {vp <- c(vp, par[length(par)]); dp.comp <- c(dp.comp,4)}
+  if(is.null(fixed.nu)) {
+    vp <- c(vp, par[length(par)])
+    dp.comp <- c(dp.comp,4)}
   dp.list <- optpar2dplist(vp, d, p, x.names, y.names)
   dp <- dp.complete <- dp.list$dp
+  if(symmetr) dp.complete$alpha <- rep(0, d)
+  if(!is.null(fixed.nu)) dp.complete$nu <- fixed.nu
   alpha2 <- sum(dp$alpha * as.vector(cov2cor(dp$Omega) %*% dp$alpha))
   delta.star <- sqrt(alpha2/(1+alpha2))
   dp <- dp[dp.comp]
@@ -4063,15 +4068,20 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     } 
   oo <- options()
   options(warn=-1)
-  contour(x1, x2, pdf, levels=exp(log.levels), 
-    labels=paste("p=", as.character(probs), sep=""),
-    main=main, xlab=compLabs[1], ylab=compLabs[2], ...)
+  # contour(x1, x2, pdf, levels=exp(log.levels), 
+  #  labels=paste("p=", as.character(probs), sep=""),
+  #   main=main, xlab=compLabs[1], ylab=compLabs[2], ...)
+  plot(x1, x2, type="n", main=main, xlab=compLabs[1], ylab=compLabs[2], ...)
   if(!is.null(data)) {
     col <- if(!is.null(data.par$col)) data.par$col else par()$col
     pch <- if(!is.null(data.par$pch)) data.par$pch else par()$pch
     cex <- if(!is.null(data.par$cex)) data.par$cex else par()$cex
     points(data, col=col, pch=pch, cex=cex)
+    if(!is.null(id.i <- data.par$id.i)) 
+      text(data[id.i,1], data[id.i,2], id.i, cex=cex/1.5, pos=1)
     }
+  contour(x1, x2, pdf, levels=exp(log.levels), 
+    labels=paste("p=", as.character(probs), sep=""), add=TRUE, ...)
   if(landmarks != "") {
     if(landmarks == "auto") { 
       mean.type <-  "proper"  
@@ -4126,11 +4136,14 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
         message("CP makes no sense for SC family")
       if(param.type == "cp" & x@family== "ST")
         message("CP of ST family requires nu>4")  
-      stop("Consider another choice of param.type")
+      stop("Consider another choice of param.type (DP or pseudo-CP)")
       }
     r <- residuals(x, param.type)
     r.lab <- paste(toupper(param.type), "residuals")
     dp <- if(length(all.par$fixed) > 0) all.par$dp.complete else all.par$dp
+    nu. <- switch(x@family, ST = dp[p+3], SN = Inf, SC=1)  
+    rs <- slot(x,"residuals.dp")/dp[p+1]
+    rs2 <- rs^2
     n <- slot(x, "size")["n.obs"]
     yh <- fitted(x, param.type)    
     w <- weights(x)
@@ -4154,14 +4167,9 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
         if (is.null(labels.id)) 
             labels.id <- paste(1:n)
         iid <- 1:id.n
-        show.r <- sort.list(abs(r), decreasing = TRUE)[iid]
-        if (any(show[3:4])) {
-            rs <- sort(abs(slot(x,"residuals.dp")/slot(x,"param")$dp[p+1]))
-            rs2 <- rs^2
-            show.rs <- sort.list(rs, decreasing = TRUE)[iid]
-            rs.lab <- paste("(scaled DP residuals)^2")
-            nu. <- switch(x@family, ST = dp[p+3], SN = Inf, SC=1)  
-            }
+        # show.r <- sort.list(abs(r), decreasing = TRUE)[iid]        
+        show.rs <- sort.list(rs2, decreasing = TRUE)[iid]
+        # rs2.lab <- paste("(scaled DP residuals)^2")
         text.id <- function(x, y, ind, adj.x = TRUE) {
             labpos <- if (adj.x) 
                 label.pos[1 + as.numeric(x > mean(range(x)))]
@@ -4191,15 +4199,14 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
             ylim = ylim, type = "n")
         panel(yh, r, cex=sqrt(rw), ...)
         # if (one.fig) title(sub = sub.caption, ...)
-        
         if (id.n > 0) {
-          y.id <- r[show.r]
+          y.id <- r[show.rs]
           y.id[y.id < 0] <- y.id[y.id < 0] - strheight(" ")/3
-          text.id(yh[show.r], y.id, show.r)
-        }
+          text.id(yh[show.rs], y.id, show.rs)
+          }
         abline(h = 0, lty = 2, col = "gray")
         } }
-     mtext(caption[1], 3, 0.5, cex = cex.caption) }
+    mtext(caption[1], 3, 0.5, cex = cex.caption) }
     if (show[2]) {
       if(all(is.na(r)) & p>1) message(
         "CP residuals not available; consider param.type='DP' or 'pseudo-CP'")
@@ -4215,7 +4222,7 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
         }
         h <- hist(rep(y, w), plot=FALSE)
         extr <- extendrange(x=h$breaks)
-        x.pts <- seq(max(extr), min(extr), length=201) 
+        x.pts <- seq(max(extr), min(extr), length=501) 
         d.fn <- get(paste("d", tolower(x@family), sep=""), inherits = TRUE)
         pdf <- d.fn(x.pts, dp=dp0)
         plot(c(h$mids, x.pts), c(h$density, pdf), type="n", main=main, 
@@ -4223,28 +4230,32 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
         hist(rep(y, w), col="gray95", border="gray60", probability=TRUE, 
           freq=FALSE, add=TRUE)
         lines(x.pts, pdf, ...)
+        rug(y, ticksize=0.02, ...)
+        # if (id.n > 0) {     rug(y, ticksize=0.015, ...)
+        #   text(y[show.rs], 0, labels.id[show.rs], srt=90, cex=0.5, pos=1, 
+        #   offset=0.2) } 
         mtext(caption[2], 3, 0.25, cex = cex.caption)
       }}
     if (show[3]) {
       ylim <- c(0, max(pretty(rs2)))
       q <- qf((1:n)/(n+1), 1, nu.)
-      plot(q, rs2, xlab="Theoretical values", ylab="Empirical values", 
+      plot(q, sort(rs2), xlab="Theoretical values", ylab="Empirical values", 
         ylim=ylim, type="p", main=main, cex=sqrt(rw), ...)  
       if(identline) abline(0, 1, lty = 2, col = "gray50")
       # if (one.fig) title(sub = sub.caption, ...)
       mtext(caption[3], 3, 0.25, cex = cex.caption)
-      if (id.n > 0) text.id(q[show.rs], rs2[show.rs], show.rs)
+      if (id.n > 0) text.id(q[n+1-iid], rs2[show.rs], show.rs) 
     }
     if (show[4]) {
       p <- (1:n)/(n+1)
-      pr <- pf(rs2, 1, nu.)
+      pr <- pf(sort(rs2), 1, nu.)
       plot(p, pr, xlab="Theoretical values", ylab="Empirical values",
          xlim=c(0,1), ylim=c(0,1), main=main, cex=sqrt(rw), ...)
       if(identline) abline(0, 1, lty = 2, col = "gray50")
       # if (one.fig)  title(sub = sub.caption, ...)
       mtext(caption[4], 3, 0.25, cex = cex.caption)
       if(identline) abline(0, 1, lty = 2, col = "gray50")
-      if (id.n > 0)  text.id(p[show.rs], pr[show.rs], show.rs)
+      if (id.n > 0)  text.id(p[n+1-iid], pr[n+1-iid], show.rs)
     } 
     # if (!one.fig && par("oma")[3] >= 1) 
     #     mtext(sub.caption, outer = TRUE, cex = 1.25)
@@ -4309,7 +4320,7 @@ print.summary.selm <- function(object)
   }
 
 
-plot.mselm <-  function (x, param.type="CP",  which, caption, 
+plot.mselm <- function (x, param.type="CP", which, caption, 
     panel = if (add.smooth) panel.smooth else points, main = "", 
     # sub.caption = NULL, 
     ask = prod(par("mfcol")) < length(which) && dev.interactive(), ..., 
@@ -4317,7 +4328,6 @@ plot.mselm <-  function (x, param.type="CP",  which, caption,
     cex.id = 0.75, identline = TRUE, add.smooth = getOption("add.smooth"), 
     label.pos = c(4, 2), cex.caption = 1) 
   { 
-    # cat("this plot method should possibly be expanded\n")
     p <- slot(x,"size")["p"]
     if(missing(which)) which <- if(p == 1) c(1,3,4) else 2:4
     show <- rep(FALSE, 4)
@@ -4367,23 +4377,21 @@ plot.mselm <-  function (x, param.type="CP",  which, caption,
             stop(gettextf("'id.n' must be in {1,..,%d}", n), domain = NA)
     }
     if (id.n > 0) {
-        if (is.null(labels.id)) labels.id <- paste(1:n)
-        iid <- 1:id.n
-        show.r <- sort.list(abs(r), decreasing = TRUE)[iid]
-        if (any(show[3:4])) {
-            Omega.inv <- pd.solve(dp$Omega, silent=TRUE)
-            r.dp <- t(slot(x, "residuals.dp"))
-            rs2 <- colSums((Omega.inv %*% r.dp) * r.dp)
-            show.rs <- sort.list(rs2, decreasing = TRUE)[iid]
-            nu. <- switch(x@family, ST = dp$nu, SN = Inf, SC=1)     
-            }
-        text.id <- function(x, y, ind, adj.x = TRUE) {
-            labpos <- if (adj.x) 
-                label.pos[1 + as.numeric(x > mean(range(x)))]
-            else 3
-            text(x, y, labels.id[ind], cex = cex.id, xpd = TRUE, 
-                pos = labpos, offset = 0.25)
-        }
+		if (is.null(labels.id)) labels.id <- paste(1:n)
+		iid <- 1:id.n
+		show.r <- sort.list(abs(r), decreasing = TRUE)[iid]
+		Omega.inv <- pd.solve(dp$Omega, silent=TRUE)
+		r.dp <- t(slot(x, "residuals.dp"))
+		rs2 <- colSums((Omega.inv %*% r.dp) * r.dp)
+		show.rs <- sort.list(rs2, decreasing = TRUE)[iid]
+		nu. <- switch(x@family, ST = dp$nu, SN = Inf, SC=1)     
+		text.id <- function(x, y, ind, adj.x = TRUE) {
+			labpos <- if (adj.x) 
+				label.pos[1 + as.numeric(x > mean(range(x)))]
+			else 3
+			text(x, y, labels.id[ind], cex = cex.id, xpd = TRUE, 
+				pos = labpos, offset = 0.25)
+		}
     }
     one.fig <- prod(par("mfcol")) == 1
     if (ask) {
@@ -4395,7 +4403,11 @@ plot.mselm <-  function (x, param.type="CP",  which, caption,
         y <- (x@residuals.dp + x@fitted.values.dp)  
         fitted.distr <- makeSECdistr(dp, family=x@family, 
           name="fitted distribution", compNames=colnames(x@param$dp[[1]]))
-        plot(fitted.distr, landmarks="", data=y, cex=sqrt(rw), main=main, ...) 
+        data.par <- list(col=list(...)$col, pch=list(...)$pch, cex=sqrt(rw),
+          id.i=show.rs)
+        plot(fitted.distr, landmarks="", data=y, cex=sqrt(rw), main=main, 
+          data.par=data.par, ...) 
+        # text.id(..) se d=1, ma se d>1 si deve fare per ogni pannello (?!)
         mtext(caption[1], 3, 1.5, cex = cex.caption)
         } else  
       message(paste("plot of (observed data, fitted distribution)",
@@ -4404,9 +4416,9 @@ plot.mselm <-  function (x, param.type="CP",  which, caption,
       }
     if (show[2]) { # scatter matrix of residuals and fitted curves
       dp0 <- dp
-      # dp0[[1]] <- rep(0,d)
       dp0[[1]] <-  as.numeric((dp[[1]]-param[[1]])[1,])
-      data.par <- list(col=list(...)$col, pch=list(...)$pch, cex=sqrt(rw))
+      data.par <- list(col=list(...)$col, pch=list(...)$pch, cex=sqrt(rw),
+        id.i=show.rs)
       resid.distr <- makeSECdistr(dp0, family=x@family, 
          name="Residual distribution", compNames=colnames(x@residuals.dp))
       plot(resid.distr, landmarks="", data=residuals(x, param.type), 
@@ -4419,7 +4431,7 @@ plot.mselm <-  function (x, param.type="CP",  which, caption,
       q <- qf((1:n)/(n+1), d, nu.) * d
       plot(q, sort(rs2), xlab="theoretical values", ylab="empirical values",
            main=main, cex=sqrt(rw), ...)
-      if(identline) abline(0, 1, lty = 2, col = "gray50")
+      if(identline) abline(0, 1, lty = 2, col = "gray70")
       # if (one.fig) title(sub = sub.caption, ...)
       mtext(caption[3], 3, 0.25, cex = cex.caption)
       if (id.n > 0)  text.id(q[n+1-iid], rs2[show.rs], show.rs)
@@ -4429,10 +4441,10 @@ plot.mselm <-  function (x, param.type="CP",  which, caption,
       p0 <- (1:n)/(n+1) 
       plot(p0, sort(p),  xlab="theoretical values", ylab="empirical values",
          xlim=c(0,1), ylim=c(0,1), main=main, cex=sqrt(rw), ...)
-      if(identline) abline(0, 1, lty = 2, col = "gray50")
+      if(identline) abline(0, 1, lty = 2, col = "gray70")
       # if (one.fig) title(sub = sub.caption, ...)
       mtext(caption[4], 3, 0.25, cex = cex.caption)
-      # if (id.n > 0) text.id(p[show.rs], p0[n+1-iid], show.rs)
+      if (id.n > 0) text.id(p[show.rs], p0[n+1-iid], show.rs)
       } 
     # if (!one.fig && par("oma")[3] >= 1) 
     #    mtext(sub.caption, outer = TRUE, cex = 1.25)
@@ -4565,3 +4577,19 @@ op2dp <- function(op, family)
   dp
 }
  
+coef.selm <- function(object, param.type="CP", ...) {
+    param <- slot(object,"param")[[tolower(param.type)]]
+    if(is.null(param) & tolower(param.type)=="cp") {
+        message("CP not defined, consider param.type='DP' or 'pseudo-CP'")
+        return(NULL)}
+    param} 
+ 
+coef.mselm <- function(object, param.type="CP", vector=TRUE, ...) 
+{
+    list <- slot(object,"param")[[tolower(param.type)]]
+    if(is.null(list) & tolower(param.type)=="cp") {
+        message("CP not defined, consider param.type='DP' or 'pseudo-CP'")
+        return(NULL)}
+    if(!vector) return(list)
+    as.vector(c(list[[1]], vech(list[[2]]), unlist(list[3:length(list)])))
+}

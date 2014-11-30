@@ -1,11 +1,16 @@
 R package 'sn' changelog file
 -----------------------------
+Version 1.1-2 (2014-11-30)
+Fixed a bug affecting plotting of mselm-class objects under certain 
+circumstances. Fixed a bug affecting function selm when the weights argument 
+contained some 0's. Improved coding in some functions. More functions are
+exported and their documentation added.
 
 Version 1.1-1 (2014-10-30)
 Function qsn has an additional argument 'solver'. Function pmsn can now be 
 called with argument 'xi' of matrix type. More functions are now 'exported' 
-in NAMESPACE. Fixed a bug about selm.control argument of selm.fit.
-Improved documentation of various functions.
+in NAMESPACE. Fixed a bug about selm.control argument of selm.fit. Improved
+documentation of various functions.
 
 Version 1.1-0 (2014-08-06)
 Main few feature is the possibility to set the constraint alpha=0 in function 
@@ -18,9 +23,9 @@ This is a major upgrade of the package, with much of the code completely new
 or largely re-written, leading to changes in the syntax and the user interface.
 The key new functions are selm and makeSECdistr, with various related functions
 and methods; S4 methods are adopted. Many existing functions are updated, 
-a few are dropped; see help(SN) for specifications.
+a few are dropped; see help(SN) for more information.
 
-Version 1 is started (beginning in June 2007)
+Development of "version 1" is started in June 2007.
 ------------------------------------------------------------------------------
 
 Version 0.4-1 to 0.4-18 (2007-2013)
