@@ -1,7 +1,7 @@
 Package: sn
-Version: 1.1-2
-Date: 2014-11-30
-Title: The skew-normal and skew-t distributions
+Version: 1.2-0
+Date: 2015-03-24
+Title: The Skew-Normal and Skew-t Distributions
 Author: Adelchi Azzalini <adelchi.azzalini@unipd.it>
 Maintainer: Adelchi Azzalini <adelchi.azzalini@unipd.it>
 Depends: R (>= 2.15.3), methods, stats4
@@ -12,7 +12,7 @@ Description: Define and manipulate probability distributions of the skew-normal
   the multivariate case.
 License: GPL-2 | GPL-3
 URL: http://azzalini.stat.unipd.it/SN
-Packaged: 2014-11-30 18:15:17 UTC; aa
 NeedsCompilation: no
+Packaged: 2015-03-25 10:34:41 UTC; aa
 Repository: CRAN
-Date/Publication: 2014-12-01 09:07:19
+Date/Publication: 2015-03-25 12:43:08

@@ -45,7 +45,7 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
    response.  In the \acronym{SN} case ( \code{sn.infoUv} and
    \code{sn.infoMv}), \code{y} can be missing, and in this case the expected
    information matrix is computed; otherwise the observed information is
-   computed. In the \acronym{ST} case (\code{st.infoUv} and \code{st.infoMv},
+   computed. In the \acronym{ST} case (\code{st.infoUv} and \code{st.infoMv}),
    \code{y} is a required argument, since only the observed information matrix
    for \acronym{ST} distributions is implemented. See \sQuote{Details} for
    additional information.}
@@ -90,10 +90,10 @@ function and the type of computation.}
 
 \section{Details}{
 
-In the univariate case, when \code{x} is not set, then a simple random sample
-is assumed and a matrix \code{x} with a single column of all 1's is
-constructed; in this case, the supplied vector \code{dp} or \code{cp} must
-have length 3.  If \code{x} is set, then the supplied vector of parameters,
+In the univariate \acronym{SN} case, when \code{x} is not set, then a simple
+random sample is assumed and a matrix \code{x} with a single column of all 
+1's is constructed; in this case, the supplied vector \code{dp} or \code{cp}
+must have length 3.  If \code{x} is set, then the supplied vector of parameters,
 \code{dp} or \code{cp}, must have length \code{ncol(x)+2}.
 In the multivariate case, a direct extension of this scheme applies.
 
@@ -102,9 +102,9 @@ represent the maximum likelihood estimates (MLE) for the given \code{y},
 otherwise the information matrix may fail to be positive-definite. Therefore,
 the squared Mahalobis norm of the score vector is evaluated and compared with
 \code{norm2.tol}. If it exceeds this threshold, it is taken as an indication
-that the parameter is not at the MLE and a warning message is issued. The
-returned list still includes \code{info.dp} and \code{info.cp}, but in this
-case these represent merely the matrices of second derivatives;
+that the parameter is not at the \acronym{MLE} and a warning message is issued.
+The returned list still includes \code{info.dp} and \code{info.cp}, but in 
+this case these represent merely the matrices of second derivatives;
 \code{asyvar.dp} and \code{asyvar.cp} are set to \code{NULL}.
 
 }

@@ -9,10 +9,10 @@
 \concept{skew-elliptical distribution}
 \title{Fitting linear models with skew-elliptical error term}
 
-\description{Function \emph{selm} fits a \strong{l}inear \strong{m}odel
-  with \strong{s}kew-\strong{e}lliptical error term. The term skew-elliptical 
-  distribution is an abbreviated equivalent of skew-elliptically 
-  contoured (\acronym{SEC}) distribution.
+\description{Function \code{selm} fits a \code{l}inear \code{m}odel
+  with \code{s}kew-\code{e}lliptical error term. 
+  The term \sQuote{skew-elliptical distribution} is an abbreviated equivalent 
+  of skew-elliptically contoured (\acronym{SEC}) distribution.
   The function works for univariate and multivariate response variables.}
 
 \usage{
@@ -315,7 +315,11 @@ final portion of the examples below.
 
 \item
   the selection of a penalty function of the log-likelihood, 
-  such as \code{\link{Qpenalty}}.
+  such as \code{\link{Qpenalty}}
+  
+\item
+  the function \code{\link{extractSECdistr}} to extract the \acronym{SEC}
+  error distribution from an object returned by \code{selm} 
 }}
 
 \examples{
@@ -331,8 +335,8 @@ coef(m1)
 coef(m1, "DP")
 var <- vcov(m1)
 #
-m1a <- selm(log(Fe) ~ BMI + LBM, family="SN", method="MPLE", data=ais)  
-m1b <- selm(log(Fe) ~ BMI + LBM, family="ST", fixed.param=list(nu=8), data=ais)  
+m1a <- selm(log(Fe) ~ BMI + LBM, family="SN", method="MPLE", data=ais)
+m1b <- selm(log(Fe) ~ BMI + LBM, family="ST", fixed.param=list(nu=8), data=ais)
 #
 data(barolo)
 attach(barolo)
@@ -357,11 +361,11 @@ m28 <- selm(cbind(chloride, glycerol, magnesium) ~ 1, family="ST",
             subset=(wine=="Grignolino"), data=wines)            
 dp28 <- coef(m28, "DP", vector=FALSE) 
 pcp28 <- coef(m28, "pseudo-CP", vector=FALSE) 
-plot(m28)
+\donttest{plot(m28)}
 #
 m4 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines)
 m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
-print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # testing for symmetry
+print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # test for symmetry
 #
 \donttest{
 # illustrate final passage of 'Warning' section above

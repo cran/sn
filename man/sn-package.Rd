@@ -20,7 +20,7 @@
   diagnostics, in the univariate and the multivariate case.
 }
  
-\section{Development}{%
+\section{Development and basic facts}{%
 The first version of the package was written in 1997 (on CRAN since 1998);
 subsequent versions have evolved  gradually up to version 0.4-18 in May 2013.  
 In January 2014, version 1.0-0 has been uploaded to CRAN; this represented
@@ -40,19 +40,20 @@ existed also in \sQuote{version 0} and their working is still very much
 the same (not necessarily so their code).
 
 The first version of \sQuote{version 1}  series (that is, 1.0-0) has appeared
-about at the time when the companion book by Azzalini and Capitanio
+at the same time when the companion book by Azzalini and Capitanio
 (2014) was published. 
 Although the two projects are formally separate, they adopt the same notation, 
 terminology and logical frame. This matching and the numerous references 
 in the software documentation to specific sections of the book for background 
 information should facilitate familiarizing with these tools.
 
-Since version 1.1-0, the error distribution of a linear model can be 
-constrained to be symmetric in the fitting process of \code{\link{selm}}.
-}
+Information on additional and on more recent change to the package is 
+provided in \code{NEWS} file, accessible from the package documentation
+index page.}
 
-\section{Backward Compatibility}{%
-There is a partial backward compatibility of \sQuote{version 1.x} versus
+
+\section{Backward Compatibility of \sQuote{version 1.x-y}}{%
+There is a partial backward compatibility of \sQuote{version 1.x-y} versus
 \sQuote{version 0-4.18}. 
 Some functions of the older version would work as before
 with virtually no change; a wider set arguments is now allowed. Functions
@@ -89,7 +90,7 @@ The command \code{citation("sn")} indicates, among other information,
 the running version of the package.
 The most recent version of the package can be obtained from
 the web page: \url{http://azzalini.stat.unipd.it/SN}
-which also contains other related material.
+which also provides additional related material.
 
 From the above-indicated web page, one can also obtain the package 
 \sQuote{sn0} which is essentially the last \sQuote{version 0} 

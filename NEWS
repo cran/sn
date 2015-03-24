@@ -1,5 +1,14 @@
-R package 'sn' changelog file
------------------------------
+R package 'sn' NEWS (ChangeLog) file
+------------------------------------
+
+Version 1.2-0 (2015-03-24)
+Created new functions extractSECdistr and modeSECdistr; new methods mean, sd 
+and vcov for classes SECdistrUv and SECdistrMv.
+Computation of qst switches to qsn if nu>1e4, instead of nu=Inf as before.
+Fixed a bug in st.pdev.hessian (correct args sequence). Improved detection of
+singular distributions in selm output.  Improved handling of component names 
+of SECdistr.
+	
 Version 1.1-2 (2014-11-30)
 Fixed a bug affecting plotting of mselm-class objects under certain 
 circumstances. Fixed a bug affecting function selm when the weights argument 
@@ -14,8 +23,8 @@ documentation of various functions.
 
 Version 1.1-0 (2014-08-06)
 Main few feature is the possibility to set the constraint alpha=0 in function 
-selm; also, introduce OP parameterization; more detailed documentation of 
-pst and other places, fix a bug in qst; improved coding of dmsn and dmst; 
+selm. In addition, introduce OP parameterization; more detailed documentation  
+of pst and other places, fix a bug in qst; improved coding of dmsn and dmst; 
 pmsn can now be called with argument 'x' of matrix type.
 
 Version 1.0-0 (2014-01-06)

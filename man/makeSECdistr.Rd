@@ -36,14 +36,14 @@
     If missing, the components are named \code{"V1"}, \code{"V2"}, \dots}
 }
 
-\details{If \code{dp} is a vector, a univariate distribution is built. 
+\details{If \code{dp} is a numeric vector, a univariate distribution is built. 
   Alternatively, if \code{dp} is a list, a multivariate distribution is 
-  built. In both cases, the expected number of components of \code{dp} 
+  built. In both cases, the required number of components of \code{dp} 
   depends on \code{family}: it must be is \code{3} for \kbd{"SN"} and 
   \kbd{"SC"}; it must be \code{4} for \kbd{"ESN"} and \kbd{"ST"}.
 
   In the univariate case, the first three components of \code{dp} represent 
-  what in their specific distributions are denoted \code{xi} (location), 
+  what for the specific distributions are denoted \code{xi} (location), 
   \code{omega} (scale, positive) and \code{alpha} (slant); see functions 
   \code{\link{dsn}}, \code{\link{dst}}, \code{\link{dsc}} for their
   description. 
@@ -109,8 +109,14 @@
  Related functions \code{\link{dsn}}, \code{\link{dst}}, \code{\link{dsc}}, 
  \code{\link{dmsn}}, \code{\link{dmst}},  \code{\link{dp2cp}}
  
- Objects of class  \code{\link{SECdistrMv-class}} can be manipulated with
- \code{\link{affineTransSECdistr}} and \code{\link{conditionalSECdistr}}
+ Functions \code{\link{affineTransSECdistr}} and
+  \code{\link{conditionalSECdistr}} to manipulate objects of class    
+  \code{\link{SECdistrMv-class}} 
+ 
+ Function \code{\link{extractSECdistr}} to extract objects of class 
+ \code{\link{SECdistrMv-class}} and \code{\link{SECdistrUv-class}} 
+ representing the \acronym{SEC} distribution of a \code{\link{selm}} fit
+ 
 }
 
 \examples{    

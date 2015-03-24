@@ -7,6 +7,8 @@
 \docType{class}
 \alias{SECdistrMv-class}
 \alias{show,SECdistrMv-method}
+\alias{mean,SECdistrMv-method}
+\alias{vcov,SECdistrMv-method}
 
 \title{Class \code{"SECdistrMv"}}
 
@@ -15,7 +17,8 @@
 \section{Objects from the Class}{
   Objects can be created by a call to function \code{\link{makeSECdistr}},
   when its argument \code{dp} is a list, or by a suitable transformation of 
-  some object of this class.}
+  some object of this class. They can also obtained from an object generated
+  by  \code{selm} using the function \code{extractSEDdistr}.}
 
 \section{Slots}{
   \describe{
@@ -36,23 +39,30 @@
     \item{show}{\code{signature(object = "SECdistrMv-class")}: \dots }
     \item{plot}{\code{signature(x = "SECdistrMv-class")}: \dots }
     \item{summary}{\code{signature(object = "SECdistrMv-class")}: \dots }
+    \item{mean}{\code{signature(x = "SECdistrUv")}: \dots}
+    \item{vcov}{\code{signature(object = "SECdistrUv")}: \dots}
     }
 }
 
 \author{Adelchi Azzalini}
 
 \note{See \code{\link{makeSECdistr}} for a detailed description of 
-  \code{family} and \code{dp}. If an object of this class is manipulated by
-  \code{affineTransSECdistr} or \code{marginalSECdistr}, the returned object 
-  is of the same class, unless the transformation leads to a univariate 
-  distribution.}
+  \code{family} and \code{dp}.
+  
+  Note that  here methods \code{mean} and \code{vcov}  are not applied
+  to data or to a fitted model, but to a \emph{probability
+  distribution} instead,  of which they provide the mean (vector) value
+  and the variance-covariance matrix.  If methods \code{mean} and \code{vcov} 
+  are applied to a distribution for which the mean or the variance do
+  not exist, a \code{NULL} value is returned and a warning message
+  is issued.}
 
 \seealso{
   \code{\linkS4class{SECdistrUv}},  
   \code{\link{plot,SECdistrMv-method}}, 
   \code{\link{summary,SECdistrMv-method}},
-  
-  \code{\link{affineTransSECdistr}},  \code{\link{marginalSECdistr}}
+  \code{\link{affineTransSECdistr}},  \code{\link{marginalSECdistr}},
+  \code{\link{extractSECdistr}}
 }
 \examples{
   dp0 <- list(xi=1:2, Omega=diag(3:4), alpha=c(3, -5))
@@ -60,5 +70,7 @@
   show(f10)
   plot(f10)
   summary(f10)
+  mean(f10)  # the mean value of the probability distribution
+  vcov(f10)  # the variance-covariance matrix of the probability distribution
 }
 \keyword{classes}

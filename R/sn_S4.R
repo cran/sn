@@ -352,7 +352,6 @@ setMethod("show", "mselm",
   }
 )
 
- 
 #----------------------------------
 setClass("summary.mselm",
    representation(call="call", family="character", logL="numeric",
@@ -366,6 +365,10 @@ setClass("summary.mselm",
    }
 )
 
+setMethod("mean", signature(x="SECdistrUv"), mean.SECdistrUv)
+setMethod("mean", signature(x="SECdistrMv"), mean.SECdistrMv)
+setMethod("sd", signature(x="SECdistrUv"), sd.SECdistrUv)
+setMethod("vcov", signature(object="SECdistrMv"), vcov.SECdistrMv)
 
 setMethod("plot", signature(x="SECdistrUv", y="missing"), plot.SECdistrUv)
 setMethod("plot", signature(x="SECdistrMv", y="missing"), plot.SECdistrMv)

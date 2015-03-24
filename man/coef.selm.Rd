@@ -9,7 +9,6 @@
 \alias{coef,mselm-method}
 
  
-
 \title{Coefficients of objects created by \code{selm}}
 
 \description{

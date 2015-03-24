@@ -10,7 +10,7 @@
 \description{
   Compute the distribution of a (multivariate) marginal or the distribution
   of an affine  transformation \eqn{a + A^{\top}Y}{a + A'Y} of a multivariate 
-  variable \eqn{Y} with  skew-elliptical distribution.}
+  variable \eqn{Y} with  skew-elliptical (\acronym{SEC}) distribution.}
 
 \usage{
   affineTransSECdistr(object, a, A, name, compNames, drop=TRUE)

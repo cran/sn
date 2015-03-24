@@ -13,19 +13,19 @@
 \usage{data(barolo)}
 \format{A data frame with 307 observations on five variables, as follows:
 \tabular{ll}{%
- \code{reseller}\tab reseller code, a factor with levels \code{A, B, C, D} \cr
- \code{vintage} \tab vintage year, numeric \cr
- \code{volume}  \tab content volume in centilitres, numeric \cr
- \code{price}   \tab price in Euro, numeric \cr
- \code{age}     \tab age in 2010, numeric
+ \code{reseller}\tab reseller code (factor with levels \code{A, B, C, D}) \cr
+ \code{vintage} \tab vintage year (numeric) \cr
+ \code{volume}  \tab content volume in centilitres (numeric) \cr
+ \code{price}   \tab price in Euro (numeric) \cr
+ \code{age}     \tab age in 2010 (numeric)
 }
 For six items, \code{vintage} is \code{NA}'s and so also \code{age}.
 Three of these items have a non-standard volume of 50 cl.
 }
 \details{The data have been obtained in July 2010 from the websites  
 of four Italian wine resellers, selecting only quotations of Barolo, 
-a wine produced in the Piedmont region of Italy. The price quotations 
-do not include the cost of delivery.
+a wine produced in the Piedmont region of Italy. The price  
+do not include the delivery charge.
 
 The data have been presented in Section 4.3.2 of the reference below,
 where a subset of them has been used for illustrative purposes.

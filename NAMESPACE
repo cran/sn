@@ -11,26 +11,38 @@ importFrom("numDeriv", grad, hessian)
 
 S3method(weights, selm)
 S3method(weights, mselm)
+S3method(coef, selm)
+S3method(coef, mselm)
+S3method(plot, selm)
+S3method(plot, mselm)
+S3method(fitted, selm)
+S3method(fitted, mselm)
+S3method(residuals, selm)
+S3method(residuals, mselm)
+S3method(sd, default)
 
-export(T.Owen, zeta, sn.cumulants, st.cumulants,
+export(
+  T.Owen, zeta, sn.cumulants, st.cumulants,
   dsn, psn, qsn, rsn,
   dst, pst, qst, rst,
   dsc, psc, qsc, rsc,
   dmsn, pmsn, rmsn, 
   dmst, pmst, rmst,
   dmsc, pmsc, rmsc,
-  makeSECdistr, marginalSECdistr, affineTransSECdistr, conditionalSECdistr, 
-  cp2dp, dp2cp, dp2op, op2dp,
+  makeSECdistr, modeSECdistr, 
+  marginalSECdistr, affineTransSECdistr,  conditionalSECdistr, 
+  dp2cp, cp2dp, dp2op, op2dp, 
   sn.infoUv, sn.infoMv, st.infoUv, st.infoMv,
-  selm, MPpenalty, Qpenalty,
+  selm, MPpenalty, Qpenalty, extractSECdistr,
   selm.fit, sn.mple,  st.mple, msn.mle, msn.mple, mst.mple,
   vech, vech2mat, duplicationMatrix,
   coef.selm, plot.selm, residuals.selm, fitted.selm,
-  coef.mselm, plot.mselm, residuals.mselm, fitted.mselm
+  coef.mselm, plot.mselm, residuals.mselm, fitted.mselm,
+  sd.default, sd
   )
  
-exportMethods("show", "plot", "summary", "coef",  "logLik",  "vcov",
-  "residuals", "fitted")
+exportMethods("show", "plot", "summary", "coef",  "logLik", "residuals",
+   "fitted", "mean", "vcov", "sd")
 
 exportClasses("SECdistrUv", "SECdistrMv", "summary.SECdistrUv", 
   "summary.SECdistrMv", "selm", "mselm", "summary.selm", "summary.mselm")

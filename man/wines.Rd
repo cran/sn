@@ -12,41 +12,41 @@
   of wine produced in the Piedmont region of Italy. }
    
 \usage{data(wines)}
-
+ 
 \format{
   A data frame with 178 observations on the following 28 variables.
   \tabular{ll}{%
-    \code{wine}\tab wine name, a factor with levels 
-          \code{Barbera}, \code{Barolo}, \code{Grignolino}\cr
-    \code{alcohol}\tab alcohol percentage, numeric\cr
-    \code{sugar}\tab sugar-free extract, numeric\cr
-    \code{acidity}\tab fixed acidity, numeric\cr
-    \code{tartaric}\tab tartaric acid, numeric\cr
-    \code{malic}\tab malic acid, numeric\cr
-    \code{uronic}\tab uronic acids, numeric\cr
-    \code{pH}\tab pH, numeric\cr
-    \code{ash}\tab ash, numeric\cr
-    \code{alcal_ash}\tab alcalinity of ash, numeric\cr
-    \code{potassium}\tab potassium, numeric\cr
-    \code{calcium}\tab calcium, numeric\cr
-    \code{magnesium}\tab magnesium, numeric\cr
-    \code{phosphate}\tab phosphate, numeric\cr
-    \code{cloride}\tab chloride, numeric\cr
-    \code{phenols}\tab total phenols, numeric\cr
-    \code{flavanoids}\tab flavanoids, numeric\cr
-    \code{nonflavanoids}\tab nonflavanoid phenols, numeric\cr
-    \code{proanthocyanins}\tab proanthocyanins, numeric\cr
-    \code{colour}\tab colour intensity, numeric\cr
-    \code{hue}\tab hue, numeric\cr
-    \code{OD_dw}\tab \eqn{OD_{280}/OD_{315}}{OD₂₈₀/OD₃₁₅} of diluted 
-         wines, numeric\cr
-    \code{OD_fl}\tab \eqn{OD_{280}/OD_{315}}{OD₂₈₀/OD₃₁₅} of flavanoids, 
-          numeric\cr
-    \code{glycerol}\tab glycerol, numeric\cr
-    \code{butanediol}\tab 2,3-butanediol, numeric\cr
-    \code{nitrogen}\tab total nitrogen, numeric\cr
-    \code{proline}\tab proline, numeric\cr
-    \code{methanol}\tab methanol, numeric\cr
+    \code{wine}\tab wine name (categorical variable, i.e. factor, 
+         with levels \code{Barbera}, \code{Barolo}, \code{Grignolino})\cr
+    \code{alcohol}\tab alcohol percentage (numeric)\cr
+    \code{sugar}\tab sugar-free extract (numeric)\cr
+    \code{acidity}\tab fixed acidity (numeric)\cr
+    \code{tartaric}\tab tartaric acid (numeric)\cr 
+    \code{malic}\tab malic acid (numeric)\cr
+    \code{uronic}\tab uronic acids (numeric)\cr
+    \code{pH}\tab pH (numeric)\cr
+    \code{ash}\tab ash (numeric)\cr
+    \code{alcal_ash}\tab alcalinity of ash (numeric)\cr
+    \code{potassium}\tab potassium (numeric)\cr
+    \code{calcium}\tab calcium (numeric)\cr
+    \code{magnesium}\tab magnesium (numeric)\cr
+    \code{phosphate}\tab phosphate (numeric)\cr
+    \code{cloride}\tab chloride (numeric)\cr
+    \code{phenols}\tab total phenols (numeric)\cr
+    \code{flavanoids}\tab flavanoids (numeric)\cr
+    \code{nonflavanoids}\tab nonflavanoid phenols (numeric)\cr
+    \code{proanthocyanins}\tab proanthocyanins (numeric)\cr
+    \code{colour}\tab colour intensity (numeric)\cr
+    \code{hue}\tab hue (numeric)\cr
+    \code{OD_dw}\tab \eqn{OD_{280}/OD_{315}}{OD₂₈₀/OD₃₁₅} of diluted wines
+          (numeric)\cr
+    \code{OD_fl}\tab \eqn{OD_{280}/OD_{315}}{OD₂₈₀/OD₃₁₅} of flavanoids 
+          (numeric)\cr          
+    \code{glycerol}\tab glycerol (numeric)\cr
+    \code{butanediol}\tab 2,3-butanediol (numeric)\cr
+    \code{nitrogen}\tab total nitrogen (numeric)\cr
+    \code{proline}\tab proline (numeric)\cr
+    \code{methanol}\tab methanol (numeric)\cr
   }
 }
 
@@ -61,14 +61,15 @@ all variables available on the \acronym{PARVUS} repository, which are
 the variables listed by Forina \emph{et al.} (1986) with the exception 
 of \sQuote{Sulphate}. Moreover, it reveals the undocumented fact that
 the original dataset appears to include also the vintage year;
-see the final portion of the \sQuote{Examples}.  }
+see the final portion of the \sQuote{Examples} below.}
 
 \source{
 Forina, M., Lanteri, S. Armanino, C., Casolino, C., Casale, M. and Oliveri, P. 
 \acronym{V-PARVUS 2008}: an extendible package of programs for esplorative 
 data analysis, classification and regression analysis. 
 Dip. Chimica e Tecnologie Farmaceutiche ed Alimentari, 
-Università di Genova, Italia. Web-site: \url{http://www.parvus.unige.it}
+Università di Genova, Italia. Web-site (not accessible as of 2014): 
+\samp{http://www.parvus.unige.it}
 }
 
 \references{ 

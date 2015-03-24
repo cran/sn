@@ -410,7 +410,7 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
   if(length(alpha) > 1) stop("'alpha' must be a single value")  
   if(length(nu) > 1) stop("'nu' must be a single value")  
   if (nu <= 0) stop("nu must be non-negative")  
-  if (nu == Inf) return(qsn(p, xi, omega, alpha))
+  if (nu > 1e4) return(qsn(p, xi, omega, alpha))
   if (nu == 1) return(qsc(p, xi, omega, alpha))
   if (alpha == Inf) 
       return(xi + omega * sqrt(qf(p, 1, nu)))
@@ -591,7 +591,7 @@ dsc <- function(x, xi=0, omega=1, alpha=0, dp=NULL, log = FALSE) {
   if(!is.null(dp)){
      if(!missing(alpha)) 
        stop("You cannot set both 'dp' and component parameters")
-    xi<- dp[1]
+    xi <- dp[1]
     omega <- dp[2]
     alpha <- dp[3]
     }
@@ -606,7 +606,7 @@ psc <- function(x, xi=0, omega=1, alpha=0, dp=NULL)
   if(!is.null(dp)){
     if(!missing(alpha)) 
       stop("You cannot set both 'dp' and component parameters")    
-    xi<- dp[1]
+    xi <- dp[1]
     omega <- dp[2]
     alpha <- dp[3]
     }
@@ -616,7 +616,7 @@ psc <- function(x, xi=0, omega=1, alpha=0, dp=NULL)
   }
    
 qsc <- function(p, xi=0, omega=1, alpha=0, dp=NULL) 
-{# Behboodian et al. / Stat. & Prob. Letters 76 (2006) 1488–1493, formula (4)
+{# Behboodian et al. / Stat. & Prob. Letters 76 (2006) p.1490, formula (4)
   if(!is.null(dp)){
     if(!missing(alpha)) 
       stop("You cannot set both 'dp' and component parameters")
@@ -628,13 +628,15 @@ qsc <- function(p, xi=0, omega=1, alpha=0, dp=NULL)
   zero <- (p == 0)
   one <- (p == 1)
   p <- replace(p, (na | zero | one), 0.5)
-  u <- (p-0.5)*pi
-  delta <- if(abs(alpha)==Inf) sign(alpha) else alpha/sqrt(1+alpha^2)
+  u <- (p - 0.5) * pi
+  delta <- if(abs(alpha) == Inf) sign(alpha) else alpha/sqrt(1+alpha^2)
   z <- delta/cos(u) + tan(u)
   z <- replace(z, na, NA)
   z <- replace(z, zero, -Inf)
   z <- replace(z, one, Inf)
-  as.numeric(xi + omega*z)
+  q <- (xi + omega*z)
+  names(q) <- names(p)
+  return(q)
   }
   
 rsc <- function(n=1, xi=0, omega=1, alpha=0, dp=NULL) {
@@ -862,6 +864,8 @@ makeSECdistr <- function(dp, family, name, compNames)
       if(length(compNames) != d) stop("Wrong length of 'compNames'")
       compNames <- as.character(as.vector(compNames))
       }
+    names(dp0$alpha) <- names(dp0$xi) <- compNames
+    dimnames(dp0$Omega) <- list(compNames, compNames)  
     obj <- new("SECdistrMv", dp=dp0, family=family, name=name, 
                compNames=compNames) } 
      else stop("'dp' must be either a numeric vector or a list")}
@@ -904,8 +908,24 @@ summary.SECdistrUv <- function(object, cp.type="auto", probs)
       cp=cp, cp.type=cp.type, aux=aux)
 }
 
-modeSECdistr <- function(dp, family) 
+modeSECdistr <- function(dp, family, object=NULL) 
+{
+  if(!is.null(object)) {
+     if(!missing(dp)) stop("you cannot set both arguments dp and obj")
+    obj.class <- class(object)
+    if(!(obj.class %in% c("SECdistrUv", "SECdistrMv"))) 
+      stop(gettextf("wrong object class: '%s'", obj.class), domain = NA)
+    family <- slot(object, "family")
+    dp <- slot(object, "dp")
+    }  
+  else {
+    if(missing(family)) stop("family required")
+    family <- toupper(family)
+    if(!(family %in% c("SN", "ESN", "ST","SC")))
+      stop(gettextf("family '%s' is not supported", family), domain = NA)
+    } 
   if(is.list(dp)) modeSECdistrMv(dp, family) else modeSECdistrUv(dp, family)
+}
 
 modeSECdistrUv <- function(dp, family)
 {
@@ -967,15 +987,15 @@ summary.SECdistrMv <- function(object, cp.type="auto")
       compNames=object@compNames,  cp=cp, cp.type=cp.type, aux=aux0)
 }
 
-dp2cp <- function(dp, family, obj=NULL, cp.type="proper", upto=NULL)
+dp2cp <- function(dp, family, object=NULL, cp.type="proper", upto=NULL)
 {
-  if(!is.null(obj)){
-    if(!missing(dp)) stop("you cannot set both arguments dp and obj")
-    obj.class <- class(obj)
+  if(!is.null(object)){
+    if(!missing(dp)) stop("you cannot set both arguments dp and object")
+    obj.class <- class(object)
     if(!(obj.class %in% c("SECdistrUv", "SECdistrMv"))) 
-       stop("wrong type of object")
-    family <- slot(obj,"family")
-    dp <- slot(obj,"dp")
+      stop(gettextf("wrong object class: '%s'", obj.class), domain = NA)     
+    family <- slot(object, "family")
+    dp <- slot(object,"dp")
     multiv <- (obj.class == "SECdistrMv")
     }
   else{
@@ -985,6 +1005,9 @@ dp2cp <- function(dp, family, obj=NULL, cp.type="proper", upto=NULL)
       stop(gettextf("family '%s' is not supported", family), domain = NA)
     multiv <- is.list(dp)
     }
+  if(!is.null(upto)) if(upto<0 | upto>4 | upto != round(upto)) { 
+      warning("unsuitable value of argument 'upto', reset to NULL")
+      upto <- NULL} 
   if(multiv)
     dp2cpMv(dp, family, cp.type, upto=upto)
   else
@@ -1015,13 +1038,14 @@ dp2cpUv <- function(dp, family, cp.type="proper", upto=NULL)
     beta1 <- if(p>1) mu[2:p] else NULL
     cp    <- c(mu, sigma, gamma1, if(family=="ESN") tau else NULL)
     names(cp) <- param.names("CP", family, p, x.names=names(beta1))
+    if(!is.null(upto)) cp <- cp[1:(upto+p-1)]
     }
   if(family=="ST" || family=="SC") { if(cp.type=="auto") 
     cp.type <- if(family == "SC" || dp[4] <= 4) "pseudo" else "proper" }
   if(family %in%  c("SC", "ST")) {
     fixed.nu <- if(family=="SC") 1 else NULL
     cp <- st.dp2cp(dp, cp.type, fixed.nu, jacobian=FALSE, upto=upto)
-    if(is.null(cp)) {cat("no CP could be found\n"); return(invisible())}
+    if(is.null(cp)) {warning("no CP could be found"); return(invisible())}
     # param.type <- switch(cp.type, proper="CP", pseudo="pseudo-CP")
     # names(cp) <- param.names(param.type, family)
     } 
@@ -1039,13 +1063,14 @@ function(dp, family, cp.type="proper", fixed.nu=NULL, aux=FALSE, upto=NULL)
     if(cp.type == "pseudo") 
       warning("'cp.type=pseudo' makes no sense for SN and ESN families")
     cp <- msn.dp2cp(dp, aux=aux)
+    if(!is.null(upto)) cp <- cp[1:upto]
     }
   if(family %in% c("SC","ST")){
     if(cp.type=="auto") cp.type <- 
       if(family == "SC" || dp$nu <= 4) "pseudo" else "proper"
     if(family == "SC") fixed.nu <- 1
     cp <- mst.dp2cp(dp, cp.type=cp.type, fixed.nu=fixed.nu, aux=aux, upto=upto)
-    if(is.null(cp)) {message("no CP could be found"); return(invisible())}
+    if(is.null(cp)) {warning("no CP could be found"); return(invisible())}
     }
   return(cp)
 }
@@ -1365,9 +1390,10 @@ function(dp, cp.type="proper", fixed.nu=NULL, jacobian=FALSE, upto=NULL)
 
 b <- function(nu){ 
    out <- rep(NA, length(nu))
-   big <- 1e3
-   ok  <- (nu>1 & (nu < big)) & (!is.na(nu))  
-   out[nu >= big] <- sqrt(2/pi) * (1 + 0.75/nu + 25/(32*nu^2))
+   big.nu <- 1e4
+   big <- (nu > big.nu)
+   ok  <- ((nu > 1) & (!big) & (!is.na(nu)))  
+   out[big] <- sqrt(2/pi) * (1 + 0.75/nu[big] + 0.78125/nu[big]^2)
    out[ok] <-  sqrt(nu[ok]/pi) * exp(lgamma((nu[ok]-1)/2) - lgamma(nu[ok]/2))
    out}
 #
@@ -1525,7 +1551,7 @@ mst.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
 affineTransSECdistr <- function(object, a, A, name, compNames, drop=TRUE)
 {# object is of class SECdistrMv
  # computes distribution of affine transformation of SEC variable T=a+t(A)Y
-  if(class(object) != "SECdistrMv") stop("wrong class of object")
+  if(class(object) != "SECdistrMv") stop("wrong object class")
   dp <- slot(object, "dp")
   alpha <- dp$alpha
   d <- length(alpha)
@@ -1983,7 +2009,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
                   opt.method=contr$opt.method, control=contr$opt.control)
           fit$opt.method$called.by <- "msn.mple"
           boundary <- FALSE
-          info <- sn.infoMv(fit$dp, x=x, w=w)
+          info <- sn.infoMv(fit$dp, x=x, y=y, w=w)
           }
         fit$cp <- msn.dp2cp(fit$dp)
         mu0 <- as.vector(fit$cp[[1]][1,] - fit$dp[[1]][1,])
@@ -2295,21 +2321,13 @@ weights.mselm <- function(object, ...) slot(object, "input")$weights
 # return(info)
 # } 
  
-sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL, 
-              norm2.tol=1e-6)
+sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,   
+                      norm2.tol=1e-6)
 {# computes observed/expected Fisher information for univariate SN variates
   if(missing(y)) {y <- NULL; type <- "expected"} else type <- "observed"
   if(type == "observed") {if(!is.numeric(y)) stop("y is non-numeric")} 
   if(is.null(dp) & is.null(cp)) stop("either dp or cp must be set")
   if(!is.null(dp) & !is.null(cp)) stop("cannot set both dp and cp")
-  if(is.null(cp)) {
-    cp <- dp2cpUv(dp, "SN")
-    x0.names <- names(dp)
-    }
-  if(is.null(dp)) {
-    dp <- cp2dpUv(cp, "SN")
-    x0.names <-  names(cp)
-    }
   if(missing(w)) w <- rep(1, max(NROW(cbind(x,y)),1)) 
   if(any(w != round(w)) | any(w<0))
     stop("weights must be non-negative integers")
@@ -2320,7 +2338,6 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
     wx <- w
     xx <- sum.x <- nw
     x <- matrix(1, nrow=n, ncol=1)
-    x.names <- x0.names
     }
   else { 
     p <- NCOL(x)
@@ -2328,13 +2345,19 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
     wx <- w*x
     xx <- t(x) %*% (wx)
     sum.x <- matrix(colSums(wx))
-    if(is.null(x0.names)) x0.names <- colnames(x)
-    if(length(x0.names) < (p+2)) x0.names<- paste("x", 0L:(p-1), sep=".")
-    x.names <- x0.names[2:p]
     }
-
-  if(length(cp) != (p+2)| length(dp) != (p+2))
-        stop("length(dp|cp) must be equal to ncol(x)+2")
+  x.names <- if(length(colnames(x)) == p) colnames(x)[2:p]  else
+               { if(p==1) NULL else paste("x", 1L:(p-1), sep=".")}
+  if(is.null(cp)) {
+    if(length(dp) != (p+2)) stop("length(dp) must be equal to ncol(x)+2")
+    if(is.null(names(dp))) names(dp) <- param.names("DP", "SN", p, x.names)
+    cp <- dp2cpUv(dp, "SN")
+    }
+  if(is.null(dp)) {
+    if(length(cp) != (p+2)) stop("length(cp) must be equal to ncol(x)+2")
+    if(is.null(names(cp))) names(cp) <- param.names("CP", "SN", p, x.names)
+    dp <- cp2dpUv(cp, "SN")
+    }       
   omega <- dp[p+1]
   alpha <- dp[p+2]
   mu.z   <- sqrt(2/pi)*alpha/sqrt(1+alpha^2)
@@ -2426,13 +2449,11 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
     asyvar.dp <- pd.solve(I.dp, silent=TRUE)
     asyvar.cp <- pd.solve(I.cp, silent=TRUE)
     }
-  if(is.null(names(dp))) names(dp) <- param.names("DP", "SN", p, x.names)
-  if(is.null(names(cp))) names(cp) <- param.names("DP", "SN", p, x.names)
   dimnames(I.dp) <- list(names(dp), names(dp))
   if(!is.null(I.cp)) dimnames(I.cp) <- list(names(cp), names(cp))
   aux <- list(Ddp.cp=Ddp.cp, a.coef=a.coef, score.cp=score)
   list(dp=dp, cp=cp, type=type, info.dp=I.dp, info.cp=I.cp, 
-       asyvar.dp=asyvar.dp, asyvar.cp=asyvar.cp, aux=aux, I2=I2)
+       asyvar.dp=asyvar.dp, asyvar.cp=asyvar.cp, aux=aux)
 }
 
 sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
@@ -2539,8 +2560,13 @@ sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
                   cbind(t(j12),  j22,   j23),
                   cbind(t(j13), t(j23), j33))
   I.theta <- force.symmetry(I.theta, tol=1e3)
+  inv_I.theta <- pd.solve(I.theta, silent=TRUE)
+  if(is.null(inv_I.theta)) {
+     warning("numerically unstable information matrix")
+     return(NULL)
+     }
   if(type == "observed") {
-    score.norm2 <- sum(score * as.vector(pd.solve(I.theta) %*% score))
+    score.norm2 <- sum(score * as.vector(inv_I.theta %*% score))
     if(score.norm2/d > norm2.tol) stop("'dp' does not seem to be at MLE")
     }
   D32 <- matrix(0,d, d2)
@@ -2590,7 +2616,6 @@ sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
   jacob <- Dtheta.psi %*% Dpsi.cp
   I.cp <- t(jacob) %*% I.theta %*% jacob                          # cfr (17)
   I.cp <- if(any(is.na(I.cp))) NULL else force.symmetry(I.cp)  
-
   asyvar.dp <- pd.solve(I.dp, silent=TRUE)
   if(is.null(asyvar.dp))  se.dp <- list(NULL) else {
     diags.dp <- sqrt(diag(asyvar.dp))
@@ -2940,9 +2965,9 @@ st.pdev.gh <- function(dp, x, y, w, fixed.nu=NULL, symmetr=FALSE,
   return(gradient)
 }
 
-st.pdev.hessian <- function(dp, x, y, fixed.nu=NULL, symmetr=FALSE, w, 
+st.pdev.hessian <- function(dp, x, y, w, fixed.nu=NULL, symmetr=FALSE,  
      penalty = NULL, trace=FALSE)
-  attr(st.pdev.gh(dp, x, y, fixed.nu, symmetr, w, penalty, trace, 
+  attr(st.pdev.gh(dp, x, y, w, fixed.nu, symmetr, penalty, trace, 
      hessian=TRUE), "hessian")
 
 
@@ -3014,7 +3039,7 @@ st.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, fixed.nu=NULL,
 
 
 param.names <- function(param.type, family="SN", p=1, x.names=NULL, rv.comp)
-{# NB: x.names= names of covariates except intercept; 
+{# NB: x.names= names of covariates except intercept, having length (p-1); 
  # rv.comp=random variable components (those not part of  the regression model)
   if(!(param.type %in% c("DP","CP","pseudo-CP"))) stop("invalid param.type")
   if(!(family %in% c("SN", "ESN", "ST", "SC")))  stop("unknown family")
@@ -3878,9 +3903,9 @@ vech2mat <- function(v)
 plot.SECdistrUv <- function(x, range, probs, main, npt=251, data=NULL, ...)
 {# plot density of object "SECdistrUv"
   obj <- x
-  lc.family <- tolower(obj@family)
+  lc.family <- tolower(slot(obj, "family"))
   if(lc.family == "esn") lc.family <- "sn"
-  dp <- obj@dp
+  dp <- slot(obj, "dp")
   d.fn <- get(paste("d", lc.family, sep=""), inherits = TRUE)
   q.fn <- get(paste("q", lc.family, sep=""), inherits = TRUE)
   if(missing(probs)) probs <- c(0.05, 0.25, 0.5, 0.75, 0.95)
@@ -3914,7 +3939,10 @@ plot.SECdistrUv <- function(x, range, probs, main, npt=251, data=NULL, ...)
   par(mar=mar)    
   x <- seq(min(range), max(range), length=npt)
   pdf <- d.fn(x, dp=dp)
-  plot(x, pdf, type="n", ylab="probability density", ylim=c(0,max(pdf)))
+  xLab <- if("xlab" %in% nmdots) dots$xlab else slot(obj, "name")
+  yLab <- if("ylab" %in% nmdots) dots$ylab else "probability density"
+  yLim <- if("ylim" %in% nmdots) dots$ylim else c(0, max(pdf))
+  plot(x, pdf, type="n", xlab=xLab, ylab=yLab, ylim=yLim)
   lines(x, pdf, ...)
   abline(h=0, lty=2, col="gray50")
   if(!is.null(q)) {
@@ -4356,6 +4384,7 @@ plot.mselm <- function (x, param.type="CP", which, caption,
     # family <- x@family 
     dp <- if(length(all.par$fixed) > 0) all.par$dp.complete else all.par$dp
     cp <- dp2cpMv(dp, family=x@family, cp.type="auto") 
+    nu. <- switch(x@family, ST = dp$nu, SN = Inf, SC=1)     
     n <- slot(x,"size")["n.obs"]
     d  <- x@size["d"]
     yh <- fitted(x, param.type)    
@@ -4376,23 +4405,22 @@ plot.mselm <- function (x, param.type="CP", which, caption,
         if (id.n < 0 || id.n > n) 
             stop(gettextf("'id.n' must be in {1,..,%d}", n), domain = NA)
     }
+    Omega.inv <- pd.solve(dp$Omega, silent=TRUE)
+    r.dp <- t(slot(x, "residuals.dp"))
+    rs2 <- colSums((Omega.inv %*% r.dp) * r.dp)
     if (id.n > 0) {
 		if (is.null(labels.id)) labels.id <- paste(1:n)
 		iid <- 1:id.n
-		show.r <- sort.list(abs(r), decreasing = TRUE)[iid]
-		Omega.inv <- pd.solve(dp$Omega, silent=TRUE)
-		r.dp <- t(slot(x, "residuals.dp"))
-		rs2 <- colSums((Omega.inv %*% r.dp) * r.dp)
+		show.r <- sort.list(abs(r), decreasing = TRUE)[iid]		
 		show.rs <- sort.list(rs2, decreasing = TRUE)[iid]
-		nu. <- switch(x@family, ST = dp$nu, SN = Inf, SC=1)     
 		text.id <- function(x, y, ind, adj.x = TRUE) {
 			labpos <- if (adj.x) 
 				label.pos[1 + as.numeric(x > mean(range(x)))]
 			else 3
 			text(x, y, labels.id[ind], cex = cex.id, xpd = TRUE, 
 				pos = labpos, offset = 0.25)
-		}
-    }
+		} 
+      } else show.rs <- NULL
     one.fig <- prod(par("mfcol")) == 1
     if (ask) {
         oask <- devAskNewPage(TRUE)
@@ -4593,3 +4621,43 @@ coef.mselm <- function(object, param.type="CP", vector=TRUE, ...)
     if(!vector) return(list)
     as.vector(c(list[[1]], vech(list[[2]]), unlist(list[3:length(list)])))
 }
+
+extractSECdistr <- function(object, name, compNames) 
+{
+  obj.class <- class(object)
+  if(!(obj.class %in% c("selm", "mselm")))
+    stop(gettextf("wrong object class: '%s'", obj.class), domain = NA)
+  param <- slot(object, "param")   
+  dp <- if(length(param$dp.complete) > 0) param$dp.complete else param$dp
+  p <- slot(object, "size")[2]
+  if(obj.class == "selm")  {
+    lead <- if(p > 1) 0 else dp[1]
+    dp0 <- c(lead, dp[-(1:p)])  
+    names(dp0)[1] <- "xi"
+    }
+  else { # class = "mselm"
+    dp0 <- dp
+    names(dp0[1]) <- "xi"
+    if(p > 1)  dp0[[1]] <- rep(0, slot(object, "size")[1])
+    }
+  if((obj.class == "mselm") & missing(compNames)) compNames <- names(dp$alpha)  
+  if(missing(name)) {
+    name <- paste("SEC distribution of", deparse(substitute(object))) 
+    name <- if(p > 1) paste("Residual", name) else paste("Fitted", name)
+    }   
+  if(obj.class == "selm")  
+    new("SECdistrUv", dp=dp0, family=slot(object, "family"), name=name) else 
+    new("SECdistrMv", dp=dp0, family=slot(object, "family"), name=name,
+        compNames=compNames)   
+}
+
+
+# introduce sd generic function, in the same fashion of package circular
+#
+sd <- function(x, ...) UseMethod("sd")
+sd.default <- function(x, na.rm = FALSE, ...) stats::sd(x=x, na.rm=na.rm)
+
+mean.SECdistrUv <- function(x) dp2cp(object=x, upto=1)
+mean.SECdistrMv <- function(x) dp2cp(object=x, upto=1)[[1]]
+sd.SECdistrUv <- function(x) dp2cp(object=x, upto=2)[2]
+vcov.SECdistrMv <- function(object) dp2cp(object=object, upto=2)[[2]]

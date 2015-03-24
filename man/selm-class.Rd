@@ -27,7 +27,7 @@
 \alias{vcov,mselm-method}
 \alias{weights,mselm-method}
 
-\title{Classes \code{"selm"} and \code{"mselm"} of objects created by 
+\title{Classes \code{selm} and \code{mselm} of objects created by 
 function \code{selm}}
 
 \description{A successful call to function \code{selm} creates an object of
@@ -51,8 +51,7 @@ An object can be created by a successful call to function \code{selm}.}
          estimates, for various parameterizations.}
     \item{\code{size}:}{a numeric vector with size of various components.}
     \item{\code{fixed.param}:}{a vector of parameters which have been kept
-        fixed in the fitting process, if any. Currently only \code{nu} of the
-        \code{"ST"} family can be fixed.}
+        fixed in the fitting process, if any.}
     \item{\code{residuals.dp}:}{residual values, for DP-type parameters.}
     \item{\code{fitted.values.dp}:}{fitted values, for DP-type parameters.}
     \item{\code{control}:}{a list with control parameters.}

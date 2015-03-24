@@ -14,7 +14,7 @@
  (\acronym{CP}) of a skew-elliptical distribution and \emph{vice versa}.}
   
 \usage{
-dp2cp(dp, family, obj = NULL, cp.type = "proper", upto = NULL) 
+dp2cp(dp, family, object = NULL, cp.type = "proper", upto = NULL) 
 cp2dp(cp, family)
 dp2op(dp, family)
 op2dp(op, family)
@@ -34,7 +34,7 @@ op2dp(op, family)
   
 \item{family}{a characther string, as described in \code{\link{makeSECdistr}}.}
 
-\item{obj}{optionally, an S4 object of class \code{SECdistrUv} or
+\item{object}{optionally, an S4 object of class \code{SECdistrUv} or
   \code{SECdistrMv}, as produced by \code{\link{makeSECdistr}} 
   (default value: \code{NULL}). 
   If this argument is not \code{NULL}, then \code{family} and \code{dp} 

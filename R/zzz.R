@@ -9,7 +9,8 @@
     meta <- packageDescription("sn")
     packageStartupMessage(
          "Package 'sn', ", meta$Version, " (", meta$Date, "). ",
-         "Type 'help(SN)' for summary information.")
+         "Type 'help(SN)' for summary information.\n",
+         "The package redefines function 'sd' but it works the same.")
   }
   invisible()
 }
