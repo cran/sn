@@ -129,8 +129,12 @@ The multivariate skew-normal distribution.
 
 \seealso{
   \code{\link{makeSECdistr}}, \code{\link{summary.SECdistr}}, 
-  \code{\link{sn.cumulants}}, the \sQuote{Note} at \code{\link{summary.selm}},
-  the \sQuote{Examples} at \code{\link{rmsn}}
+  \code{\link{sn.cumulants}}, 
+  
+  the \sQuote{Note} at \code{\link{summary.selm}} for the reason why
+  \acronym{cp} is the default parameterization inthis and related functions,
+  
+  the \sQuote{Examples} at \code{\link{rmsn} for use of the CP parameterization}
 }
 
 \examples{

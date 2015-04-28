@@ -20,7 +20,7 @@
 \usage{
 sn.infoUv(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,  norm2.tol=1e-06) 
     
-sn.infoMv(dp, x=NULL, y, w,  norm2.tol=1e-06)
+sn.infoMv(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-06)
 
 st.infoUv(dp = NULL, cp = NULL, x = NULL, y, w, fixed.nu = NULL, 
     symmetr = FALSE, penalty = NULL, norm2.tol = 1e-06) 
@@ -60,8 +60,8 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
 \item{symmetr}{a logical flag which indicates whether a symmetry condition of 
    the distribution is being imposed; default is \code{symmetr=FALSE}.}   
 
-\item{penalty}{a optional string?? with the same  penalty function used in 
-   the call to \code{\link{selm}}; see this function for its description;}
+\item{penalty}{a optional character string with the name of the penalty function 
+   used in the call to \code{\link{selm}}; see this function for its description;}
 
 \item{norm2.tol}{for the observed information case, the Mahalanobis squared
    distance of the score 0 is evaluated; if it exceeds \code{norm2.tol}, a

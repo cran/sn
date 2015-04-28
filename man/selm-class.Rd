@@ -89,7 +89,10 @@ An object can be created by a successful call to function \code{selm}.}
 
 \author{Adelchi Azzalini}
 
-\note{See \code{\link{dp2cp}} for a description of possible parameter sets.}
+\note{See \code{\link{dp2cp}} for a description of possible parameter sets.
+When \code{logLik} is used on an object obtained using the MPLE estimation
+method, the value reported is actually the \emph{penalized} log-likelihood.
+}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

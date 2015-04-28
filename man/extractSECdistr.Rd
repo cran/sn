@@ -32,7 +32,7 @@
       
 }
 \value{An object is of class \code{SECdistrMv} or \code{SECdistrUv}, 
-  depending of the class of of \code{object}.}
+  depending of the class of \code{object}.}
  
 \section{Details}{
 When the formula of the fitted model includes only the constant \code{1},

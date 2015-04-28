@@ -1905,13 +1905,13 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
           fit <- list(cp=param, dp=param, dp.complete=c(param,0), 
                       opt.method=list(ls$qr), logL=logL)  
           boundary <- FALSE
-          fit$opt.method$called.by <- "lm.wfit"
+          fit$opt.method <- list(method="least_squares", called.by= "lm.wfit")
           mu0 <- 0
           }
         else { # proper SN case 
         cp <- if(is.null(start)) NULL else dp2cpUv(start, "SN")
-        fit <- sn.mple(x, y, cp, w, penalty, trace)
-        fit$opt.method$called.by <- "sn.mple"
+        fit <- sn.mple(x, y, cp, w, penalty, trace, contr$opt.method, 
+                 contr$control)
         fit$dp <- cp2dpUv(cp=fit$cp, family="SN")
         boundary <- fit$boundary
         mu0 <- fit$cp[1] - fit$dp[1]
@@ -1921,8 +1921,8 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
       if(family == "ST") {
         fixed.nu <- fixed.param$nu  
         npar <- p + 2 + as.numeric(is.null(fixed.nu)) - as.numeric(symmetr)
-        fit <- st.mple(x, y, dp=start, w, fixed.nu, symmetr, penalty, trace)
-        fit$opt.method$called.by <- "st.mple"
+        fit <- st.mple(x, y, dp=start, w, fixed.nu, symmetr, penalty, trace,
+           contr$opt.method, contr$control)
         dp <- fit$dp
         cp <- st.dp2cp(dp, cp.type="proper", fixed.nu=fixed.nu, 
                  upto=4-as.numeric(!is.null(fixed.nu)))
@@ -1940,9 +1940,8 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         }
       if(family == "SC") {
         npar <- p + 2  - as.numeric(symmetr)
-        fit <- st.mple(x, y, dp=start, w, fixed.nu=1, symmetr, penalty, trace)
-        fit$opt.method <- fit$opt.method
-        fit$opt.method$called.by <- "st.mple"
+        fit <- st.mple(x, y, dp=start, w, fixed.nu=1, symmetr, penalty, trace,
+                       contr$opt.method, contr$control)
         fit$cp <- NULL
         p_cp0 <- st.dp2cp(fit$dp, cp.type="pseudo", fixed.nu=1, jacobian=TRUE) 
         fit$p_cp <- p_cp0[1:npar]
@@ -1989,10 +1988,9 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
                    aux=NULL)
           logL <- (-0.5*nw)*(determinant(2*pi*s2, logarithm=TRUE)$modulus + d)
           # see (6.2.7) of Mardia, Kent & Bibby (1979)
-          fit <- list(dp=dp, cp=dp, dp.complete=dp., opt.method=list(ls$qr),  
-                      logL=logL)  
+          fit <- list(dp=dp, cp=dp, dp.complete=dp., logL=logL)  
+          fit$opt.method <- list(method="lm.wfit")
           boundary <- FALSE
-          fit$opt.method$called.by <- "lm.wfit"
           mu0 <- rep(0, d)
           }
         else { # proper SN case 
@@ -2000,16 +1998,14 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
         if(is.null(penalty)) { # MLE
           fit <- msn.mle(x, y, start, w, trace=trace, 
                  opt.method=contr$opt.method, control=contr$opt.control)
-          fit$opt.method$called.by <- "msn.mle"
           boundary <- ((1 - fit$aux$delta.star) < .Machine$double.eps^(1/4))
           if(!boundary) info <- 
              sn.infoMv(fit$dp, x=x, y=yInfo, w=w)
           } else { # MPLE
           fit <- msn.mple(x, y, start, w, penalty, trace=trace, 
-                  opt.method=contr$opt.method, control=contr$opt.control)
-          fit$opt.method$called.by <- "msn.mple"
+                   opt.method=contr$opt.method, control=contr$opt.control)
           boundary <- FALSE
-          info <- sn.infoMv(fit$dp, x=x, y=y, w=w)
+          info <- sn.infoMv(fit$dp, x=x, y=y, w=w, penalty=penalty)
           }
         fit$cp <- msn.dp2cp(fit$dp)
         mu0 <- as.vector(fit$cp[[1]][1,] - fit$dp[[1]][1,])
@@ -2456,7 +2452,7 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
        asyvar.dp=asyvar.dp, asyvar.cp=asyvar.cp, aux=aux)
 }
 
-sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
+sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
 {# computes observed/expected Fisher information matrix for multiv.SN variates
  # using results in Arellano-Valle & Azzalini (JMVA, 2008+erratum)
   type <- if(missing(y)) "expected" else "observed"
@@ -2498,9 +2494,9 @@ sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
   c2 <- 1/(pi*sqrt(1+2*alpha.star^2))
   # theta <- c(beta,vOmega,eta)
   D <- duplicationMatrix(d)
-  # i1 <- 1:prod(dim(beta))
-  # i2 <- max(i1) + 1:(d*(d+1)/2)
-  # i3 <- max(i2) + 1:d
+  i1 <- 1:prod(dim(beta))
+  i2 <- max(i1) + 1:(d*(d+1)/2)
+  i3 <- max(i2) + 1:d
   # ind <- list(i1=i1, i2=i2, i3=i3)
   O.inv <- pd.solve(Omega, silent=TRUE)
   if(type == "observed"){ 
@@ -2559,13 +2555,29 @@ sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
   I.theta <-rbind(cbind( j11,    j12,   j13),
                   cbind(t(j12),  j22,   j23),
                   cbind(t(j13), t(j23), j33))
+  if(!is.null(penalty)) { 
+    # penalization depends on blocks (2,3) of the parameter set only
+    penalty.theta <- function(theta23, penalty, d) {
+      vOmega <- theta23[1:(d*(d+1)/2)]
+      eta <- theta23[(d*(d+1)/2) + (1:d)]
+      Omega <- vech2mat(vOmega)
+      alpha <- eta *sqrt(diag(Omega))
+      penalty(list(alpha=alpha, Omega=Omega))
+      } 
+    i23 <- c(i2,i3)
+    theta23 <- c(Omega[lower.tri(Omega,TRUE)], eta) # beta does not enter here
+    score[i23] <- (score[i23] - 
+      numDeriv::grad(penalty.theta, theta23, penalty=penalty, d=d))
+    jQ <- numDeriv::hessian(penalty.theta, theta23, penalty=penalty, d=d)
+    I.theta[i23, i23] <- I.theta[i23, i23] + jQ
+    }                 
   I.theta <- force.symmetry(I.theta, tol=1e3)
   inv_I.theta <- pd.solve(I.theta, silent=TRUE)
   if(is.null(inv_I.theta)) {
      warning("numerically unstable information matrix")
      return(NULL)
      }
-  if(type == "observed") {
+  if(type == "observed" ) {
     score.norm2 <- sum(score * as.vector(inv_I.theta %*% score))
     if(score.norm2/d > norm2.tol) stop("'dp' does not seem to be at MLE")
     }
@@ -2580,7 +2592,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, norm2.tol=1e-6)
   # here we use the expression given in the notes, not in the paper
   Dlow <- cbind(matrix(0,d,d*p), D32, diag(1/omega,d,d))
   Dtheta.dp <- rbind(cbind(diag(d*p+d2), matrix(0,d*p+d2,d)), Dlow)
-  I.dp <- t(Dtheta.dp) %*% I.theta %*% Dtheta.dp                   # cfr (14)
+  I.dp <- t(Dtheta.dp) %*% I.theta %*% Dtheta.dp                     # cfr (14)
   I.dp <- force.symmetry(I.dp, tol=1e3)
   #
   # psi<- c(mu, vSigma, mu0)
@@ -2690,8 +2702,10 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
     }
   else opt <- optim(param, fn=msn.dev, gr=msn.dev.grad, method=opt.method,
                   control=control, x=x, y=y, w=w, trace=trace)    
-   
-  if(trace) cat(paste("Message from optimization routine:", opt$message,"\n"))
+  if(trace) {
+    cat("Message from function", opt.method, ":", opt$message,"\n")
+    cat("Output parameters " , format(opt$par), "\n")
+    }
   logL <- opt$value/(-2) 
   beta <- matrix(opt$par[1:(p*d)],p,d)
   dimnames(beta)[2] <- list(y.names)
@@ -2708,7 +2722,8 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
   delta.star <- sqrt(alpha2/(1+alpha2))
   # dimnames(param)[1] <- list(y.names)
   dp  <- list(beta=beta, Omega=Omega, alpha=alpha)
-  opt$opt.method <- opt.method
+  opt$method <- opt.method
+  opt$called.by <- "msn.mle"
   aux <- list(alpha.star=sqrt(alpha2), delta.star=delta.star)
   list(call=match.call(), dp=dp, logL=logL, aux=aux, opt.method=opt)
 }
@@ -2784,7 +2799,8 @@ msn.moment.fit <- function(y)
 
   
 st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE, 
-  penalty=NULL, trace=FALSE)
+  penalty=NULL, trace=FALSE, 
+  opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), control=list())
 { # MLE of DP for univariate ST distribution, allowing case symmetr[ic]=TRUE
   if(missing(y)) stop("required argument y is missing")
   if(!is.vector(y) | !is.numeric(y)) stop("argument y must be a numeric vector")
@@ -2816,27 +2832,40 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
     if(length(dp) != (p+2-as.numeric(symmetr)+as.numeric(is.null(fixed.nu))))
        stop("arg 'dp' has wrong length")}
   if(trace) cat("dp (starting values) =", format(dp), "\n")
-  tiny <- sqrt(.Machine$double.eps) 
-  opt <- nlminb(dp, objective=st.pdev, gradient=st.pdev.gh, 
+  tiny <- (.Machine$double.eps)^(0.25) 
+  low.dp <- c(rep(-Inf, p), tiny, if(symmetr) NULL else -Inf,   
+              if(is.null(fixed.nu)) tiny)
+  high.dp <- c(rep(Inf, length(dp)))
+  if(opt.method == "nlminb") {
+    opt <- nlminb(dp, objective=st.pdev, gradient=st.pdev.gh, 
            # do NOT set: hessian=st.dev.hessian, 
-           lower=c(rep(-Inf, p), tiny, if(symmetr) NULL else -Inf, 
-             if(is.null(fixed.nu)) tiny), 
-           upper=c(rep(Inf, length(dp))), 
+           lower=low.dp, upper=high.dp, control=control,
            x=x, y=y, w=w, fixed.nu=fixed.nu, symmetr=symmetr, 
            penalty=penalty, trace=trace)
+    opt$value <-  opt$objective
+    }
+  else {
+    opt <- optim(dp, fn=st.pdev, gr=st.pdev.gh,  method = opt.method,
+             # arguments lower & upper not used to allow all opt.method
+             control = control,
+             x=x, y=y, w=w, fixed.nu=fixed.nu, symmetr=symmetr, 
+             penalty=penalty, trace=trace)   
+    }               
   dp <- opt$par
+  opt$method <- opt.method
+  opt$called.by <- "st.mple"
   dp. <- if(is.null(fixed.nu)) dp else c(dp, fixed.nu)  
   if(symmetr) dp. <- c(dp.[1:(p+1)], 0, dp.[length(dp.)])
   rv.comp <- c(TRUE, !symmetr, is.null(fixed.nu))
   names(dp) <- param.names("DP", "ST", p=p, x.names=colnames(x)[-1], rv.comp)
   names(dp.) <- param.names("DP", "ST", p=p, x.names=colnames(x)[-1])
-  logL <- (-opt$objective)/2
+  logL <- (-opt$value)/2
   boundary <- FALSE
   if(!symmetr) boundary <- as.logical(abs(dp[p+2]) > 1000) 
   if(is.null(fixed.nu)) boundary <- (boundary | dp[length(dp)] > 1e3)
   # AA, must improve this rule
   if(trace) {
-     cat("Message from optimization routine (nlminb):", opt$message, "\n")
+     cat("Message from function", opt.method, ": ", opt$message, "\n")
      cat("estimates (dp):", dp, "\n")
      cat("log-likelihood:", logL, "\n")
      }
@@ -2852,6 +2881,7 @@ st.pdev <- function(dp, x, y, w, fixed.nu=NULL, symmetr=FALSE, penalty=NULL,
   xi <- as.vector(x %*% matrix(dp[1:p],p,1))
   alpha <- if(symmetr) 0 else dp[p+2]
   nu <- if(is.null(fixed.nu)) dp[p+3-as.numeric(symmetr)] else fixed.nu
+  if(dp[p+1] <= 0 | nu <= 0) return(NA)
   logL <- sum(w * dst(y, xi, dp[p+1], alpha, nu, log=TRUE))
   Q <- if(is.null(penalty)) 0 else penalty(dp[p+2], nu, der=0)
   if(trace) cat("st.pdev: (dp,pdev) =", format(c(dp, -2*(logL-Q))),"\n")
@@ -3127,7 +3157,8 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
       }
   dev   <- opt$value
   param <- opt$par
-  opt$opt.method <- opt.method
+  opt$method <- opt.method
+  opt$called.by <- "mst.mple"
   if (trace) {
       cat("Message from optimization routine:", opt$message, "\n")
       cat("(penalized) deviance:", dev, "\n")
@@ -3540,7 +3571,8 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
 }
 
 
-sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE) 
+sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE, 
+  opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), control=list()) 
 {# MPLE for CP of univariate SN (not intendend for ESN)
   y <- drop(y)
   n <- length(y)
@@ -3564,20 +3596,31 @@ sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE)
     }
   else{ 
     if(length(cp)!= (p+2)) stop("ncol(x)+2 != length(cp)")}
-  opt <- nlminb(cp, objective=sn.pdev, 
+  if(opt.method == "nlminb") {  
+    opt <- nlminb(cp, objective=sn.pdev, 
            gradient=sn.pdev.gh, hessian=sn.pdev.hessian, 
            lower=c(-rep(Inf,p), sqrt(.Machine$double.eps), -max.gamma1), 
-           upper=c(rep(Inf,p), Inf, max.gamma1), 
+           upper=c(rep(Inf,p), Inf, max.gamma1), control=control,
            x=x, y=y, w=w, penalty=penalty, trace=trace)
+    opt$value <- opt$objective
+    }
+  else {
+    opt <- optim(cp, fn=sn.pdev, gr=sn.pdev.gh,  
+             method = opt.method, control = control,
+             # lower & upper not used to allow all opt.method             
+             x=x, y=y, w=w, penalty=penalty, trace=trace)   
+    } 
   cp <- opt$par
   names(cp) <- param.names("CP", "SN", p, colnames(x)[-1])
-  logL <- (-opt$objective)/2
+  logL <- (-opt$value)/2
   boundary <- as.logical(abs(cp[p+2]) >= max.gamma1)
   if(trace) {
-    cat("Message from optimization routine (nlminb):", opt$message, "\n")
+    cat("Message from function", opt.method, ": ", opt$message, "\n")
     cat("estimates (cp):", cp, "\n")
     cat("(penalized) log-likelihood:", logL, "\n")
     }
+  opt$method <- opt.method
+  opt$called.by <- "sn.mple"  
   list(call=match.call(), cp=cp, logL=logL, boundary=boundary, opt.method=opt)
 }
 
@@ -3590,6 +3633,7 @@ sn.pdev <- function(cp, x, y, w, penalty=NULL, trace=FALSE)
   if(any(w < 0)) stop("weights must be non-negative")
   dp <- cp2dpUv(cp, "SN") 
   xi <- as.vector(x %*% as.matrix(dp[1:p]))
+  if(dp[p+1] <= 0) return(NA)
   logL <- sum(w * dsn(y, xi, dp[p+1], dp[p+2], log=TRUE))
   Q <- if(is.null(penalty)) 0 else penalty(dp[p+2], der=0)
   if(trace) cat("sn.pdev: (cp,pdev) =", format(c(cp, -2*(logL-Q))),"\n")
@@ -3790,7 +3834,8 @@ msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
   alpha2 <- sum(alpha * as.vector(cov2cor(Omega) %*% alpha))
   delta.star <- sqrt(alpha2/(1+alpha2))
   dp  <- list(beta=beta, Omega=Omega, alpha=alpha)
-  opt$opt.method <- opt.method
+  opt$method <- opt.method
+  opt$called.by <- "msn.mple"
   aux <- list(penalty=penalty, alpha.star=sqrt(alpha2), delta.star=delta.star)
   list(call=match.call(), dp=dp, logL=logL, aux=aux, opt.method=opt)
 }
@@ -3805,7 +3850,7 @@ msn.pdev <- function(param, x, y, w, penalty=NULL, trace=FALSE)
   logL <- sum(w * dmsn(y, x %*% dp.$beta, dp.$Omega, dp.$alpha, log=TRUE))
   Q <- if(is.null(penalty)) 0 else penalty(list(dp.$alpha,dp.$Omega), der=0)
   pdev <- (-2)*(logL-Q)
-  if(trace) cat("msn.pdev:", pdev, "\n", "opt param:", format(param),"\n")
+  if(trace) cat("opt param:", format(param), "\nmsn.pdev:", format(pdev),"\n")
   return(pdev)
 }
  
@@ -3963,7 +4008,7 @@ plot.SECdistrUv <- function(x, range, probs, main, npt=251, data=NULL, ...)
       
 
 plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
-       main, comp, compLabs, data = NULL,  data.par=NULL, gap = 0.5, ...) 
+       main, comp, compLabs, data = NULL, data.par=NULL, gap = 0.5, ...) 
 {# plot density of object of class "SECdistrMv"  
   obj <- x
   if(slot(obj, "class") != "SECdistrMv") stop("object of wrong class")
@@ -4143,6 +4188,8 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
     if(class(x) != "selm") stop("object not of class 'selm'")
     show <- rep(FALSE, 4)
     show[which] <- TRUE
+    dots <- list(...)
+    nmdots <- names(dots)  
     p <- slot(x, "size")["p"]
     if(missing(caption))  { caption <-  if(p> 1) 
       c("Residuals vs Fitted Values", 
@@ -4184,6 +4231,7 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
     }
     else w <- rep(1,n)
     rw <- n*w/slot(x,"size")["nw.obs"]
+    cex.pts <- rw * if("cex" %in% nmdots) dots$cex else par("cex")
     if (is.null(id.n)) 
         id.n <- 0
     else {
@@ -4225,7 +4273,7 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
         ylim <- range(r, na.rm = TRUE)
         plot(yh, r, xlab = "Fitted values", ylab = r.lab, main = main, 
             ylim = ylim, type = "n")
-        panel(yh, r, cex=sqrt(rw), ...)
+        panel(yh, r, ...)  # previously it included 'cex=cex.pts'
         # if (one.fig) title(sub = sub.caption, ...)
         if (id.n > 0) {
           y.id <- r[show.rs]
@@ -4268,7 +4316,7 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
       ylim <- c(0, max(pretty(rs2)))
       q <- qf((1:n)/(n+1), 1, nu.)
       plot(q, sort(rs2), xlab="Theoretical values", ylab="Empirical values", 
-        ylim=ylim, type="p", main=main, cex=sqrt(rw), ...)  
+        ylim=ylim, type="p", main=main, ...)   # cex=cex.pts
       if(identline) abline(0, 1, lty = 2, col = "gray50")
       # if (one.fig) title(sub = sub.caption, ...)
       mtext(caption[3], 3, 0.25, cex = cex.caption)
@@ -4278,7 +4326,7 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
       p <- (1:n)/(n+1)
       pr <- pf(sort(rs2), 1, nu.)
       plot(p, pr, xlab="Theoretical values", ylab="Empirical values",
-         xlim=c(0,1), ylim=c(0,1), main=main, cex=sqrt(rw), ...)
+         xlim=c(0,1), ylim=c(0,1), main=main, ...) # cex=cex.pts,
       if(identline) abline(0, 1, lty = 2, col = "gray50")
       # if (one.fig)  title(sub = sub.caption, ...)
       mtext(caption[4], 3, 0.25, cex = cex.caption)
@@ -4369,6 +4417,7 @@ plot.mselm <- function (x, param.type="CP", which, caption,
     param.type <- tolower(param.type)  
     all.par <- slot(x, "param")
     param <- all.par[[param.type]]
+    dots <- list(...)
     if(is.null(param)) { message(paste(
         "Requested param.type='", param.type, "' evaluates to NULL.", sep=""))
       if(param.type == "pseudo-cp" & x@family== "SN") 
@@ -4431,10 +4480,10 @@ plot.mselm <- function (x, param.type="CP", which, caption,
         y <- (x@residuals.dp + x@fitted.values.dp)  
         fitted.distr <- makeSECdistr(dp, family=x@family, 
           name="fitted distribution", compNames=colnames(x@param$dp[[1]]))
-        data.par <- list(col=list(...)$col, pch=list(...)$pch, cex=sqrt(rw),
+        data.par <- list(col=dots$col, pch=dots$pch, cex=dots$cex,
           id.i=show.rs)
-        plot(fitted.distr, landmarks="", data=y, cex=sqrt(rw), main=main, 
-          data.par=data.par, ...) 
+        plot(fitted.distr, landmarks="", data=y, main=main, data.par=data.par,
+             ...)   # previously it included cex=sqrt(rw)
         # text.id(..) se d=1, ma se d>1 si deve fare per ogni pannello (?!)
         mtext(caption[1], 3, 1.5, cex = cex.caption)
         } else  
@@ -4445,8 +4494,8 @@ plot.mselm <- function (x, param.type="CP", which, caption,
     if (show[2]) { # scatter matrix of residuals and fitted curves
       dp0 <- dp
       dp0[[1]] <-  as.numeric((dp[[1]]-param[[1]])[1,])
-      data.par <- list(col=list(...)$col, pch=list(...)$pch, cex=sqrt(rw),
-        id.i=show.rs)
+      data.par <- list(col=dots$col, pch=dots$pch, cex=dots$cex,
+            id.i=show.rs)
       resid.distr <- makeSECdistr(dp0, family=x@family, 
          name="Residual distribution", compNames=colnames(x@residuals.dp))
       plot(resid.distr, landmarks="", data=residuals(x, param.type), 
@@ -4458,7 +4507,7 @@ plot.mselm <- function (x, param.type="CP", which, caption,
       # ylim <- c(0, max(pretty(rs2)))
       q <- qf((1:n)/(n+1), d, nu.) * d
       plot(q, sort(rs2), xlab="theoretical values", ylab="empirical values",
-           main=main, cex=sqrt(rw), ...)
+           main=main, ...)  # cex=sqrt(rw) now dropped
       if(identline) abline(0, 1, lty = 2, col = "gray70")
       # if (one.fig) title(sub = sub.caption, ...)
       mtext(caption[3], 3, 0.25, cex = cex.caption)
@@ -4468,7 +4517,7 @@ plot.mselm <- function (x, param.type="CP", which, caption,
       p <- pf(rs2/d, d, nu.)
       p0 <- (1:n)/(n+1) 
       plot(p0, sort(p),  xlab="theoretical values", ylab="empirical values",
-         xlim=c(0,1), ylim=c(0,1), main=main, cex=sqrt(rw), ...)
+         xlim=c(0,1), ylim=c(0,1), main=main, ...)  # cex=sqrt(rw) now dropped
       if(identline) abline(0, 1, lty = 2, col = "gray70")
       # if (one.fig) title(sub = sub.caption, ...)
       mtext(caption[4], 3, 0.25, cex = cex.caption)

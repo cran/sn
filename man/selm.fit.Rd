@@ -20,24 +20,26 @@
 
 \usage{ 
 selm.fit(x, y, family = "SN", start = NULL, w, fixed.param = list(), 
-    offset = NULL, selm.control)
+   offset = NULL, selm.control)
 
-sn.mple(x, y, cp = NULL, w, penalty = NULL, trace = FALSE) 
+sn.mple(x, y, cp = NULL, w, penalty = NULL, trace = FALSE, opt.method =
+   c("nlminb",  "Nelder-Mead", "BFGS", "CG", "SANN"), control = list()) 
 
 st.mple(x, y, dp = NULL, w, fixed.nu = NULL, symmetr = FALSE, penalty = NULL, 
-    trace = FALSE) 
+   trace = FALSE, opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
+   control = list()) 
 
 msn.mle(x, y, start = NULL, w, trace = FALSE, opt.method = c("nlminb", 
-    "Nelder-Mead", "BFGS", "CG", "SANN"), control = list())
+   "Nelder-Mead", "BFGS", "CG", "SANN"), control = list())
 
 msn.mple(x, y, start = NULL, w, trace = FALSE, penalty = NULL, 
-    opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
-    control = list()) 
+   opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
+   control = list()) 
 
 mst.mple(x, y, start = NULL, w, fixed.nu = NULL, symmetr=FALSE, 
-    penalty = NULL, trace = FALSE, 
-    opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
-    control = list()) 
+   penalty = NULL, trace = FALSE, 
+   opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), 
+   control = list()) 
 }
 
 \arguments{

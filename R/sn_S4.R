@@ -255,7 +255,7 @@ setMethod("show", "selm",
     cat("Number of observations:", object@size["n.obs"], "\n")
     if(!is.null(slot(object,"input")$weights))
       cat("Weighted number of observations:", object@size["nw.obs"], "\n")
-    cat("Number of covariates:", object@size["p"], "(including constant)\n")
+    cat("Number of covariates:", object@size["p"], "(includes constant term)\n")
     cat("Number of parameters:", object@size["n.param"], "\n")
     cat("Family:", slot(object,"family"),"\n")
     fixed <- slot(object, "param")$fixed
@@ -334,7 +334,7 @@ setMethod("show", "mselm",
     if(!is.null(slot(object,"input")$weights))
       cat("Weighted number of observations:", object@size["nw.obs"], "\n")
     cat("Dimension of the response:", object@size["d"], "\n")
-    cat("Number of covariates:", object@size["p"], "(including constant)\n")
+    cat("Number of covariates:", object@size["p"], "(includes constant term)\n")
     cat("Number of parameters:", object@size["n.param"], "\n")
     cat("Family:", slot(object, "family"),"\n")
     fixed <- slot(object,"param")$fixed
@@ -345,7 +345,9 @@ setMethod("show", "mselm",
     u <- if(length(method) == 1) NULL else 
             paste(", penalty function:", method[2])   
     cat("Estimation method: ", method[1], u, "\n", sep="")
-    cat("Log-likelihood:", format(object@logL, nsmall=2),"\n")
+    logL.name <- paste(if(method[1]=="MLE") "Log" else "Penalized log",
+        "likelihood:", sep="-")
+    cat(logL.name, format(object@logL, nsmall=2),"\n")
     if(object@param$boundary) 
       cat("Estimates on/near the boundary of the parameter space\n")
     invisible(object)
@@ -388,3 +390,4 @@ setMethod("fitted", signature(object="mselm"), fitted.mselm)
 
 setMethod("residuals", signature(object="selm"), residuals.selm)
 setMethod("residuals", signature(object="mselm"), residuals.mselm)
+ 
