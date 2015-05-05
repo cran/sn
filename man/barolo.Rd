@@ -20,12 +20,12 @@
  \code{age}     \tab age in 2010 (numeric)
 }
 For six items, \code{vintage} is \code{NA}'s and so also \code{age}.
-Three of these items have a non-standard volume of 50 cl.
+Three items have a non-standard volume of 50 cl.
 }
 \details{The data have been obtained in July 2010 from the websites  
-of four Italian wine resellers, selecting only quotations of Barolo, 
-a wine produced in the Piedmont region of Italy. The price  
-do not include the delivery charge.
+of four Italian wine resellers, selecting only quotations of Barolo 
+wine, which is produced in the Piedmont region of Italy. 
+The price does not include the delivery charge.
 
 The data have been presented in Section 4.3.2 of the reference below,
 where a subset of them has been used for illustrative purposes.
@@ -37,8 +37,6 @@ This subset refers to reseller \code{"A"} and bottles of 75cl.
  \emph{The Skew-Normal and Related Families}. 
  Cambridge University Press, IMS Monographs series.
 }
-
-%\references{ %%  ~~ possibly secondary sources and usages ~~}
 
 \examples{
 data(barolo)

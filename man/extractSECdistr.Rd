@@ -31,7 +31,7 @@
     ingredients.}
       
 }
-\value{An object is of class \code{SECdistrMv} or \code{SECdistrUv}, 
+\value{An object of class \code{SECdistrMv} or \code{SECdistrUv}, 
   depending of the class of \code{object}.}
  
 \section{Details}{

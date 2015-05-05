@@ -161,8 +161,8 @@ selm(formula, family = "SN", data, weights, subset, na.action,
 
   The optional argument \code{fixed.param=list(alpha=0)} imposes the
   constraint \eqn{\alpha=0} in the estimation process; in the multivariate 
-  case, the expression is interpreted in the sense that all components  
-  of the vector \eqn{alpha} are zero, which implies symmetry of the
+  case, the expression is interpreted in the sense that all the components  
+  of vector \eqn{\alpha} are zero, which implies symmetry of the
   error distribution, irrespectively of the parameterization 
   subsequently adopted for summaries and diagnostics.
   When this restriction is selected, the estimation method cannot be
@@ -170,7 +170,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   if \code{family="SN"}, the model is  fitted similarly to \code{lm}, except
   that here \acronym{MLE} is used for estimation of the covariance matrix. 
   If \code{family="ST"} or \code{family="SC"}, a symmetric Student's \eqn{t} 
-  of Cauchy distribution is adopted. 
+  or Cauchy distribution is adopted. 
   
   Under the constraint  \eqn{\alpha=0}, the location parameter \eqn{\xi}{xi}
   coincides with the mode and the mean of the distribution, when the latter 
@@ -294,7 +294,7 @@ of \eqn{\nu} values. Details on the numerical optimization which has produced
 object \code{obj} can be estracted with \code{slot(obj, "opt.method")}.
 Be aware that  occasionally \code{optim} and \code{nlminb} declare successful
 completion of a regular minimization problem at a point where the Hessian 
-matrix is not positive-definite. A case of this sort is presented in the 
+matrix is not positive-definite. Two cases of this sort are presented in the 
 final portion of the examples below.  
 }
 
@@ -384,12 +384,14 @@ m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
 print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # test for symmetry
 #
 \donttest{
-# illustrate final passage of 'Warning' section above
-# its execution is skipped to avoid the expected warning messages
+# illustrate final passage of 'Warning' section above:
+# the execution of the next selm command is known to produce warning messages
+# although the optimized declare successful convergence
 m31 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais)
 # Warning message...
-slot(m31, "opt.method")$convergence
-m32 <- selm(cbind(BMI, LBM) ~ Ht + Wt, family="ST", data=ais, opt.method="BFGS")
+slot(m31, "opt.method")$convergence   # a 0 value indicates success
+# the next case is similar
+m32 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais, opt.method="BFGS")
 # Warning message...
 slot(m32, "opt.method")$convergence
 }

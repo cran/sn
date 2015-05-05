@@ -78,8 +78,8 @@ Cabras, S., Racugno, W., Castellanos, M. E., and Ventura, L. (2012).
 
 \examples{
 data(frontier)
-m2 <- selm(frontier ~ 1)
-m2a <- selm(frontier ~ 1, method="MPLE")
+m2 <- selm(frontier ~ 1)  # no penalty
+m2a <- selm(frontier ~ 1, method="MPLE") # penalty="Qpenalty" is implied here
 m2b <- selm(frontier ~ 1, method="MPLE", penalty="MPpenalty")    
 }
  

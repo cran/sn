@@ -1833,7 +1833,7 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
 
 
 #------------------------------------------------------
-selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(), 
+selm.fit <- function (x, y, family="SN", start=NULL, w, fixed.param=list(), 
                  offset = NULL, selm.control) 
 {
     if (!(toupper(family) %in% c("SN", "ST", "SC")))
@@ -1841,6 +1841,7 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
     family <- toupper(family)    
     if (is.null(n <- nrow(x))) stop("'x' must be a matrix")
     if (n == 0L) stop("0 (non-NA) cases")
+    if(NROW(y) != n) stop("'x' and 'y' have non-compatible dimensions")
     p <- ncol(x)
     if ((p == 0L) || !(all(data.matrix(x)[,1] == 1))) 
       stop("first column of model matrix is not all 1's")
@@ -1883,8 +1884,8 @@ selm.fit <- function (x, y,  family="SN", start=NULL, w, fixed.param=list(),
     storage.mode(y) <- "double"
     info.type <- contr$info.type # so far, only "observed"
     yInfo <- if(contr$info.type == "observed") y else NULL
-    penalty <- if(is.null(contr$penalty)) NULL else 
-      get(contr$penalty, inherits=TRUE)
+    penalty <- contr$penalty  # either NULL or a char string 
+    penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
     trace <- contr$trace
     if(d == 1) {
       y <- as.vector(y) 
@@ -2354,6 +2355,7 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
     if(is.null(names(cp))) names(cp) <- param.names("CP", "SN", p, x.names)
     dp <- cp2dpUv(cp, "SN")
     }       
+  penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE)
   omega <- dp[p+1]
   alpha <- dp[p+2]
   mu.z   <- sqrt(2/pi)*alpha/sqrt(1+alpha^2)
@@ -2373,7 +2375,7 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
   Ddp.cp[p+2,p+2] <- Da.Dg
   I.dp <- I.cp  <- matrix(NA,p+2,p+2)
   if(type == "observed"){
-    score <- sn.pdev.gh(cp, x, y, w, penalty, trace=FALSE, hessian=TRUE)/(-2)
+    score <- sn.pdev.gh(cp, x, y, w, penalty.fn, trace=FALSE, hessian=TRUE)/(-2)
     I.cp <- attr(score, "hessian")/2
     attr(score,"hessian") <- NULL
     Dcp.dp <- solve(Ddp.cp)
@@ -2557,6 +2559,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
                   cbind(t(j13), t(j23), j33))
   if(!is.null(penalty)) { 
     # penalization depends on blocks (2,3) of the parameter set only
+    penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
     penalty.theta <- function(theta23, penalty, d) {
       vOmega <- theta23[1:(d*(d+1)/2)]
       eta <- theta23[(d*(d+1)/2) + (1:d)]
@@ -2567,8 +2570,8 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
     i23 <- c(i2,i3)
     theta23 <- c(Omega[lower.tri(Omega,TRUE)], eta) # beta does not enter here
     score[i23] <- (score[i23] - 
-      numDeriv::grad(penalty.theta, theta23, penalty=penalty, d=d))
-    jQ <- numDeriv::hessian(penalty.theta, theta23, penalty=penalty, d=d)
+      numDeriv::grad(penalty.theta, theta23, penalty=penalty.fn, d=d))
+    jQ <- numDeriv::hessian(penalty.theta, theta23, penalty=penalty.fn, d=d)
     I.theta[i23, i23] <- I.theta[i23, i23] + jQ
     }                 
   I.theta <- force.symmetry(I.theta, tol=1e3)
@@ -2836,12 +2839,14 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   low.dp <- c(rep(-Inf, p), tiny, if(symmetr) NULL else -Inf,   
               if(is.null(fixed.nu)) tiny)
   high.dp <- c(rep(Inf, length(dp)))
+  opt.method <- match.arg(opt.method)
+  penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
   if(opt.method == "nlminb") {
     opt <- nlminb(dp, objective=st.pdev, gradient=st.pdev.gh, 
            # do NOT set: hessian=st.dev.hessian, 
            lower=low.dp, upper=high.dp, control=control,
            x=x, y=y, w=w, fixed.nu=fixed.nu, symmetr=symmetr, 
-           penalty=penalty, trace=trace)
+           penalty=penalty.fn, trace=trace)
     opt$value <-  opt$objective
     }
   else {
@@ -2849,7 +2854,7 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
              # arguments lower & upper not used to allow all opt.method
              control = control,
              x=x, y=y, w=w, fixed.nu=fixed.nu, symmetr=symmetr, 
-             penalty=penalty, trace=trace)   
+             penalty=penalty.fn, trace=trace)   
     }               
   dp <- opt$par
   opt$method <- opt.method
@@ -3030,7 +3035,8 @@ st.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, fixed.nu=NULL,
     xx <- t(x) %*% (w * x)
     sum.x <- matrix(colSums(x))
     }
-  score <- st.pdev.gh(dp, x, y, w, fixed.nu, symmetr, penalty, trace=FALSE, 
+  penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE)   
+  score <- st.pdev.gh(dp, x, y, w, fixed.nu, symmetr, penalty.fn, trace=FALSE, 
               hessian=TRUE)
   I.dp <- attr(score, "hessian")/2
   if((d2 <- sum(score * as.vector(solve(I.dp) %*% score))) > norm2.tol*npar) {
@@ -3140,6 +3146,8 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
   param <- dplist2optpar(list(beta=beta, Omega=Omega, alpha=alpha))
   if(symmetr) param <- param[-(p*d + d*(d+1)/2 + (1:d))]
   if(is.null(fixed.nu)) param <- c(param, log(nu))
+  if(!is.null(penalty)) penalty <- get(penalty, inherits=TRUE)
+  opt.method <- match.arg(opt.method)
   if(opt.method == "nlminb") {
     opt <- nlminb(param, objective = mst.pdev, gradient = mst.pdev.grad, 
              control = control,  x = x, y = y, w = w, fixed.nu = fixed.nu, 
@@ -3509,7 +3517,8 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
   alpha.star <- sqrt(sum(alpha * Obar.alpha)) # =\sqrt{\eta\T\Omega\eta}
   theta <- as.numeric(c(beta, vech(Omega), eta, nu))
   vdp <- as.numeric(c(beta, vech(Omega), alpha, nu))
-  H <- numDeriv::hessian(mst.logL, vdp, X=x, y=y, dp=TRUE, penalty=penalty)
+  penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
+  H <- numDeriv::hessian(mst.logL, vdp, X=x, y=y, dp=TRUE, penalty=penalty.fn)
   J <- mst.theta.jacobian(theta, p=NCOL(x), d=NCOL(y))
   s <- 1:(length(theta) - as.numeric(!is.null(fixed.nu)))
   I.dp <- force.symmetry(-H[s,s])
@@ -3596,19 +3605,21 @@ sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE,
     }
   else{ 
     if(length(cp)!= (p+2)) stop("ncol(x)+2 != length(cp)")}
+  penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE)  
+  opt.method <- match.arg(opt.method)  
   if(opt.method == "nlminb") {  
     opt <- nlminb(cp, objective=sn.pdev, 
            gradient=sn.pdev.gh, hessian=sn.pdev.hessian, 
            lower=c(-rep(Inf,p), sqrt(.Machine$double.eps), -max.gamma1), 
            upper=c(rep(Inf,p), Inf, max.gamma1), control=control,
-           x=x, y=y, w=w, penalty=penalty, trace=trace)
+           x=x, y=y, w=w, penalty=penalty.fn, trace=trace)
     opt$value <- opt$objective
     }
   else {
     opt <- optim(cp, fn=sn.pdev, gr=sn.pdev.gh,  
              method = opt.method, control = control,
              # lower & upper not used to allow all opt.method             
-             x=x, y=y, w=w, penalty=penalty, trace=trace)   
+             x=x, y=y, w=w, penalty=penalty.fn, trace=trace)   
     } 
   cp <- opt$par
   names(cp) <- param.names("CP", "SN", p, colnames(x)[-1])
@@ -3789,7 +3800,6 @@ MPpenalty <- function(alpha, der=0)
 }
 
 
-
 msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
                 opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG",  "SANN"),
                 control=list() )
@@ -3811,6 +3821,8 @@ msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
     print(cbind(t(start[[1]]), start$Omega, start$alpha))
     }
   param <- dplist2optpar(start) 
+  if(!is.null(penalty)) penalty <- get(penalty, inherits=TRUE)
+  opt.method <- match.arg(opt.method)
   if(opt.method == "nlminb"){
     opt <- nlminb(param, msn.pdev, # msn.pdev.grad, 
                 control=control, x=x, y=y, w=w, penalty=penalty, trace=trace)
@@ -4686,8 +4698,9 @@ extractSECdistr <- function(object, name, compNames)
     }
   else { # class = "mselm"
     dp0 <- dp
-    names(dp0[1]) <- "xi"
-    if(p > 1)  dp0[[1]] <- rep(0, slot(object, "size")[1])
+    names(dp0)[1] <- "xi"
+    dp0[[1]] <- if(p == 1) as.vector(dp0[[1]]) else 
+                rep(0, slot(object, "size")[1])
     }
   if((obj.class == "mselm") & missing(compNames)) compNames <- names(dp$alpha)  
   if(missing(name)) {

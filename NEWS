@@ -1,15 +1,19 @@
 R package 'sn' NEWS (ChangeLog) file
 ------------------------------------
+Version 1.2-2 (2015-06-05)
+Fixed a bug in extractSECdistr from mselm-class objects. Fixed a bug that 
+prevented calling low level fitting functions with non-null 'penalty' argument.
+Improved documentation of selm.fit and related functions.
 
 Version 1.2-1 (2015-04-28)
 Optimization parameters are now passed from selm to sn.mple and st.mple as
 indicated in the documentation. Plotting of selm-class and mselm-class objects
 avoids clash of par('cex') parameters. Computation of sn.infoMv now takes into
-account whether method MPLE was used at the estimation stage.
+account whether method="MPLE" was used at the estimation stage. 
 
 Version 1.2-0 (2015-03-24)
 Created new functions extractSECdistr and modeSECdistr; new methods mean and 
-sd for class SECdistrUv and methods mean and vcov for class SECdistrMv.
+sd for class SECdistrUv and new methods mean and vcov for class SECdistrMv.
 Computation of qst switches to qsn if nu>1e4, instead of nu=Inf as before.
 Fixed a bug in st.pdev.hessian (correct args sequence). Improved detection of
 singular distributions in selm output.  Improved handling of component names 
@@ -29,9 +33,10 @@ documentation of various functions.
 
 Version 1.1-0 (2014-08-06)
 Main few feature is the possibility to set the constraint alpha=0 in function 
-selm. In addition, introduce OP parameterization; more detailed documentation  
-of pst and other places, fix a bug in qst; improved coding of dmsn and dmst; 
-pmsn can now be called with argument 'x' of matrix type.
+selm and in lower level fitting functions. Other additions or changes are:
+introduction of OP parameterization; fix a bug in qst; more efficient coding 
+of dmsn and dmst; pmsn can now be called with argument 'x' of matrix type; 
+more detailed documentation of pst and other places.
 
 Version 1.0-0 (2014-01-06)
 This is a major upgrade of the package, with much of the code completely new 

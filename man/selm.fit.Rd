@@ -15,8 +15,8 @@
 \description{A call to \code{selm} activates a call to \code{selm.fit} and
   from here to some other function which actually performs the parameter
   search, among those listed below. These lower-level functions can be 
-  called directly for increased efficiency, at the expense of a little more 
-  programming effort.}
+  called directly for increased efficiency, at the expense of some more 
+  programming effort and lack of methods for the returned object.}
 
 \usage{ 
 selm.fit(x, y, family = "SN", start = NULL, w, fixed.param = list(), 
@@ -72,8 +72,9 @@ mst.mple(x, y, start = NULL, w, fixed.nu = NULL, symmetr=FALSE,
    \code{list(nu=3)}. Setting \code{fixed.param=list(nu=1)} is equivalent to
    select \code{family="SC"}.}
    
-  \item{penalty}{the penalty function of the log-likelihood; default value 
-   \code{NULL} corresponds to no penalty.}
+  \item{penalty}{an optional character string with the name of the penalty
+   function of the log-likelihood; 
+   default value \code{NULL} corresponds to no penalty.}
 
   \item{offset}{this can be used to specify an \emph{a priori} known
    component to be included in the linear predictor during fitting.  This
@@ -202,12 +203,16 @@ version of the paper.
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{\code{\link{selm}} function}
+\seealso{\code{\link{selm}} for a comprehensive higher level fitting function, 
+  
+  \code{\link{Qpenalty}} for specification of a penalty function 
+  }
 
 \examples{ 
 data(wines, package="sn")
 X <- model.matrix(~ phenols + wine, data=wines)
 fit <- msn.mle(x=X, y=cbind(wines$acidity, wines$alcohol), opt.method="BFGS")
+fit <- st.mple(x=X, y = wines$acidity, fixed.nu=4, penalty="Qpenalty")
 }
 \keyword{regression}
 \keyword{multivariate}
