@@ -208,7 +208,7 @@ dmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha,
     if (is.null(invOmega))  stop("Omega matrix is not positive definite")
     logDet <- attr(invOmega, "log.det")
     x <- if(is.vector(x)) matrix(x, 1, d) else data.matrix(x) 
-    if(is.vector(xi)) xi <- outer(rep(1,nrow(x)), xi)
+    if (is.vector(xi)) xi <- outer(rep(1, nrow(x)), as.vector(matrix(xi,1,d)))
     if(tau == 0){
       log.const <- logb(2)
       alpha0 <- 0
@@ -248,7 +248,7 @@ pmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, tau=0,
   Ocor <- delta_etc$Omega.cor
   Obig <- matrix(rbind(c(1,-delta), cbind(-delta,Ocor)), d+1, d+1)
   x <- if (is.vector(x)) matrix(x, 1, d) else data.matrix(x)
-  if (is.vector(xi))  xi <- outer(rep(1, nrow(x)), xi)
+  if (is.vector(xi)) xi <- outer(rep(1, nrow(x)), as.vector(matrix(xi,1,d)))
   z0 <- cbind(tau, t(t(x - xi))/omega) 
   mnormt::pmnorm(z0, mean=rep(0,d+1), varcov=Obig, ...)/pnorm(tau) 
 }
@@ -476,7 +476,7 @@ dmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL,
       # stop("Omega matrix is not positive definite")
     logDet <- attr(invOmega, "log.det")
     x <- if(is.vector(x)) matrix(x, 1, d) else data.matrix(x)
-    if(is.vector(xi)) xi <- outer(rep(1,nrow(x)), xi)
+    if (is.vector(xi)) xi <- outer(rep(1, nrow(x)), as.vector(matrix(xi,1,d)))
     X <- t(x - xi)
     # Q <- apply((invOmega %*% X) * X, 2, sum)
     Q <- colSums((invOmega %*% X) * X)
@@ -534,8 +534,8 @@ pmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL, ...)
   omega<- sqrt(diag(Omega))
   Ocor <- cov2cor(Omega)
   O.alpha <- as.vector(Ocor %*% alpha)
-  delta <- O.alpha/sqrt(1+sum(alpha*O.alpha))
-  Obig <- matrix(rbind(c(1,-delta), cbind(-delta,Ocor)), d+1, d+1)
+  delta <- O.alpha/sqrt(1 + sum(alpha*O.alpha))
+  Obig <- matrix(rbind(c(1, -delta), cbind(-delta, Ocor)), d+1, d+1)
   if(nu == as.integer(nu)) {
     z0 <- c(0,(x-xi)/omega)
     if(nu < .Machine$integer.max)  
@@ -543,12 +543,13 @@ pmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL, ...)
     else 
       p <- 2 * mnormt::pmnorm(z0, mean=rep(0,d+1), varcov=Obig, ...)    
     }
-  else { # for fractional nu, use formula in the "extended SE paper"
+  else {# for fractional nu, use formula in Azzalini & Capitanio (2003),
+        # full-length paper, last paragraph of Section 4.2[Distr.function]) 
     z <- (x-xi)/omega
     fp <- function(v, Ocor, alpha, nu, t.value) {
             pv <-  numeric(length(v))
             for(k in seq_len(length(v))) pv[k] <- (dchisq(v[k] * nu, nu) * nu *
-                 pmsn(sqrt(v[k]) * t.value, 0, Ocor, alpha) )
+                 pmsn(sqrt(v[k]) * t.value, rep(0,d), Ocor, alpha) )
             pv}
     p <- integrate(fp, 0, Inf, Ocor, alpha, nu, z, ...)$value
     }
@@ -1221,7 +1222,7 @@ cp2dpUv <- function(cp, family, silent=FALSE, tol=1e-8)
     beta1 <- if (p>1) cp[2:p] else NULL
     b <- sqrt(2/pi) 
     sigma  <- cp[p+1]
-    if(sigma <= 0) stop("s.d. must be positive")
+    if(sigma <= 0) stop("0 must be positive")
     gamma1 <- cp[p+2]
     tau <- if(family=="ESN") as.numeric(cp[p+3]) else 0
     max.gamma1 <- 0.5*(4-pi)*(2/(pi-2))^1.5
@@ -1442,10 +1443,10 @@ st.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
   abs.g1 <- abs(gamma1)
   gamma2 <- cp[p+3]
   if(abs.g1 <=  0.5*(4-pi)*(2/(pi-2))^1.5)
-    feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^4/3)
+    feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3)) # book (2.29)+(3.20)
   else {
     if(abs.g1 >= 4) feasible <- FALSE else {
-      r0 <- uniroot(fn0, interval=c(log(4),1000), tol=tol, g1=abs.g1)
+      r0 <- uniroot(fn0, interval=c(log(4), 1000), tol=tol, g1=abs.g1)
       nu0 <- exp(r0$root) 
       feasible <- (gamma2 >= st.gamma2(1,nu0))
       }
@@ -3076,7 +3077,7 @@ st.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, fixed.nu=NULL,
 
 param.names <- function(param.type, family="SN", p=1, x.names=NULL, rv.comp)
 {# NB: x.names= names of covariates except intercept, having length (p-1); 
- # rv.comp=random variable components (those not part of  the regression model)
+ # rv.comp=random variable components (those not part of the linear predictor)
   if(!(param.type %in% c("DP","CP","pseudo-CP"))) stop("invalid param.type")
   if(!(family %in% c("SN", "ESN", "ST", "SC")))  stop("unknown family")
   if(p > 1  && (length(x.names) < (p-1)))

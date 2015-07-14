@@ -27,27 +27,29 @@ rmsc(n=1, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
 \arguments{
 
  \item{x}{for \code{dmst} and \code{dmsc}, this is either a vector of length
-  \code{d}, where \code{d=length(alpha)}, or a matrix with \code{d} columns,
-  representing the coordinates of the point(s) where the density must be
-  avaluated; for \code{pmst} and \code{pmsc}, only a vector of length
-  \code{d} is allowed.}
-
- \item{xi}{a numeric vector of lenght \code{d}, or a matrix with \code{d}
-  columns, representing the location parameter of the distribution; see
-  \sQuote{Background}.  If \code{xi} is a matrix, its dimensions must agree
-  with those of \code{x}.}
+   \code{d}, where \code{d=length(alpha)}, or a matrix with \code{d} columns,
+   representing the coordinates of the point(s) where the density must be
+   avaluated; for \code{pmst} and \code{pmsc}, only a vector of length
+   \code{d} is allowed.}
+   
+ \item{xi}{a numeric vector of length \code{d} representing the 
+   location parameter of the distribution; see \sQuote{Background}.
+   In a call to \code{dmst} or \code{dmsc}, \code{xi} can be a matrix,
+   whose rows represent a set of location parameters; 
+   in this case, its dimensions must match those of \code{x}.}
+  
 
  \item{Omega}{a symmetric positive-definite matrix of dimension \code{(d,d)}; 
-  see Section \sQuote{Background}.}
+   see Section \sQuote{Background}.}
 
  \item{alpha}{a numeric vector of length \code{d} which regulates the slant
    of the density; see Section \sQuote{Background}.
    \code{Inf} values in \code{alpha} are not allowed.}
 
  \item{nu}{a positive value representing the degrees of freedom of
-  \acronym{ST} distribution; does not need to be integer. 
-  Default value is \code{nu=Inf} which corresponds to the multivariate
-  skew-normal distribution.}
+   \acronym{ST} distribution; does not need to be integer. 
+   Default value is \code{nu=Inf} which corresponds to the multivariate
+   skew-normal distribution.}
 
  \item{dp}{a list with three elements named \code{xi}, \code{Omega},
   \code{alpha} and \code{nu}, containing quantities as described above. If

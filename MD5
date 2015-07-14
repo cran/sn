@@ -1,9 +1,9 @@
-7956f446ca1bcbed333f591bf53152d0 *DESCRIPTION
-ea8fe3fe63b145873738f178bc8a2188 *NAMESPACE
-783b7bafec1cf321d43da625c62590c4 *NEWS
-5880c047247712b447fe52e361613daf *R/sn-funct.R
+cf9b37ab5a24f0d219969353deb849fd *DESCRIPTION
+d9c4cb0ff77cbbfb54043240e2249c98 *NAMESPACE
+342020b24a59849976707c8b863a13e4 *NEWS
+59d8973a135a15e2e7299e53cd2e1bef *R/sn-funct.R
 612adb06be3abfe80d37f172bc45bf43 *R/sn_S4.R
-6957aa505635c723dfd38472e178cf9f *R/zzz.R
+111ff3ae97375c9b57aa355627798561 *R/zzz.R
 e0ba565be67c7199a7e8d123a9c3cdb8 *data/ais.rda
 0e9143af623146f181ba0276fd90aec2 *data/barolo.rda
 f8600591494e83a4cd70181dc5bf5583 *data/frontier.rda
@@ -18,8 +18,8 @@ c1be5ed5b919da51ff40a4c7a733c118 *man/SECdistrUv-class.Rd
 d46cce4c875557a11d80ca8ac8c4b23b *man/barolo.Rd
 d0f80bb7fcd38aa51f6612aadcfe09f4 *man/coef.selm.Rd
 f9361d9091a1e5b06fa9583154ddfbe6 *man/conditionalSECdistr.Rd
-7f8f3d7fcf002d5b389c56403e0a1af2 *man/dmsn.Rd
-b2230ff3eaa045a9cf9c3de8d6fa2ee2 *man/dmst.Rd
+f252bbbcecc0453e6baab71232d6bf4b *man/dmsn.Rd
+1b8c96e6c8de8122ebedbacc2bb9dff9 *man/dmst.Rd
 7f65b9e93cd154b30507943bec690730 *man/dp2cp.Rd
 383f5b2e2f8c8bc78646c26cd047f42b *man/dsc.Rd
 bae16a8a11d799d9d3dd2a64eff172aa *man/dsn.Rd
@@ -34,7 +34,7 @@ b0a05c86bc19aa420c76205d8bd98f97 *man/modeSECdistr.Rd
 445e343d2dac5d87a89711e57758953f *man/residuals.selm.Rd
 cc3dc14383601c9fa0bf8d1196ed8049 *man/sd.Rd
 c0480f9c26d4d8d18f5f345f10672d1a *man/selm-class.Rd
-c5e6ef47d9308532a022e2a3620416d8 *man/selm.Rd
+049747b884c9ddb937b30671ddd84e28 *man/selm.Rd
 334d2caf68caeeb720abd9c2f2222143 *man/selm.fit.Rd
 840a37d52cbaae89737ba93e41648524 *man/sn-package.Rd
 f1577d22428d3a2cc3845ee39ccfe9dc *man/sn-st.cumulants.Rd

@@ -23,39 +23,40 @@ rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha,  tau=0, dp=NULL)
 
 \arguments{
 
-\item{x}{either a vector of length \code{d}, 
-  where \code{d=length(alpha)}, or a matrix with \code{d} columns, 
-  giving the coordinates of the point(s) where the density or the
-  distribution function must be evaluated.}
+ \item{x}{either a vector of length \code{d}, 
+   where \code{d=length(alpha)}, or a matrix with \code{d} columns, 
+   giving the coordinates of the point(s) where the density or the
+   distribution function must be evaluated.}
 
  \item{xi}{a numeric vector of length \code{d} representing the 
    location parameter of the distribution; see \sQuote{Background}.
-   In a call to \code{dmsn}, \code{xi} can be a matrix; 
-   in this case, its dimensions must agree with those of \code{x}.}
+   In a call to \code{dmsn} and \code{pmsn}, \code{xi} can be a matrix,
+   whose rows represent a set of location parameters;
+   in this case, its dimensions must match those of \code{x}.}
 
  \item{Omega}{a symmetric positive-definite matrix of dimension \code{(d,d)};
-  see \sQuote{Background}.}
+   see \sQuote{Background}.}
 
  \item{alpha}{a numeric vector which regulates the slant of the density; 
-  see \sQuote{Background}. \code{Inf} values in \code{alpha} are not allowed.}
+   see \sQuote{Background}. \code{Inf} values in \code{alpha} are not allowed.}
 
  \item{tau}{a single value representing the `hidden mean' parameter 
    of the \acronym{ESN} distribution; \code{tau=0} (default) corresponds to 
    a \acronym{SN} distribution.}
 
-\item{dp}{
-a list with three elements, corresponding to \code{xi}, \code{Omega} and 
-\code{alpha} described above; default value \code{FALSE}. 
-If \code{dp} is assigned, individual parameters must not be specified. }
+ \item{dp}{
+   a list with three elements, corresponding to \code{xi}, \code{Omega} and 
+   \code{alpha} described above; default value \code{FALSE}. 
+   If \code{dp} is assigned, individual parameters must not be specified. }
 
-\item{n}{a numeric value which represents the number of random vectors
-to be drawn.}
+ \item{n}{a numeric value which represents the number of random vectors
+   to be drawn.}
 
 \item{log}{logical (default value: \code{FALSE}); 
-if \code{TRUE}, log-densities are returned.}
+  if \code{TRUE}, log-densities are returned.}
 
 \item{...}{
-additional parameters passed to \code{pmnorm}
+  additional parameters passed to \code{pmnorm}
 }}
 
 \value{

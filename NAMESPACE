@@ -9,6 +9,17 @@ import("stats4")
 importFrom("mnormt", pmnorm, dmt, pmt, pd.solve)
 importFrom("numDeriv", grad, hessian)
 
+importFrom("grDevices", "dev.interactive", "devAskNewPage", "extendrange")
+importFrom("graphics", "Axis", "abline", "axis", "box", "boxplot", "contour",
+  "hist", "lines", "mtext", "panel.smooth", "par", "points", "rug", 
+  "strheight", "text", "title")
+importFrom("stats", ".getXlevels", "as.formula", "contrasts", "cov2cor", 
+  "dcauchy", "dchisq", "dnorm", "dt", "integrate", "is.empty.model", 
+  "lm.wfit", "model.matrix", "model.offset", "model.response", "model.weights",
+  "optimize", "pf", "pnorm", "printCoefmat", "pt", "qchisq", "qf", "qnorm", 
+  "qt", "quantile", "rchisq", "resid", "rnorm", "runif", "uniroot", "var")
+importFrom("utils", "packageDescription")
+
 S3method(weights, selm)
 S3method(weights, mselm)
 S3method(coef, selm)

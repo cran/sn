@@ -363,8 +363,9 @@ pcp28 <- coef(m28, "pseudo-CP", vector=FALSE)
 \donttest{# the next statement takes a little more time than others
 plot(m28)
 }
+\donttest{
 # example of computation and plot of a (relative twice) profile log-likelihood;
-# to save time, set a coarse grid of nu values
+# since it takes some time, set a coarse grid of nu values
 nu.vector <- seq(3, 8, by=0.5) 
 logL <- numeric(length(nu.vector))
 for(k in 1:length(nu.vector)) { 
@@ -377,7 +378,7 @@ plot(nu.vector, 2*(logL-max(logL)), type="b")
 ok <- which.max(logL)
 abline(v=nu.vector[ok], lty=2)
 # compare maximum of this curve with MLE of nu in summary(m28, 'dp')
-# 
+}
 #
 m4 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines)
 m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
@@ -386,7 +387,7 @@ print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # test for symmetry
 \donttest{
 # illustrate final passage of 'Warning' section above:
 # the execution of the next selm command is known to produce warning messages
-# although the optimized declare successful convergence
+# although the optimizer declares successful convergence
 m31 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais)
 # Warning message...
 slot(m31, "opt.method")$convergence   # a 0 value indicates success

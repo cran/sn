@@ -1,5 +1,11 @@
 R package 'sn' NEWS (ChangeLog) file
 ------------------------------------
+Version 1.2-3 (2015-07-14)
+Fixed a bug in evaluation of the feasible CP parameter space of ST distribution.
+Fixed a bug which crashed evaluation of pmst with fractional degrees of freedom.
+Functions dmsn, pmsn and dmst now expand a single value supplied as 'xi' into
+a vector or matrix of suitable dimension.
+
 Version 1.2-2 (2015-06-05)
 Fixed a bug in extractSECdistr from mselm-class objects. Fixed a bug that 
 prevented calling low level fitting functions with non-null 'penalty' argument.
@@ -26,10 +32,10 @@ contained some 0's. Improved coding in some functions. More functions are
 exported and their documentation added.
 
 Version 1.1-1 (2014-10-30)
-Function qsn has an additional argument 'solver'. Function pmsn can now be 
-called with argument 'xi' of matrix type. More functions are now 'exported' 
-in NAMESPACE. Fixed a bug about selm.control argument of selm.fit. Improved
-documentation of various functions.
+Function qsn has an additional argument 'solver'. Functions pmsn and pmst can 
+now be called with argument 'xi' of matrix type. More functions are now 
+exported in NAMESPACE. Fixed a bug about selm.control argument of selm.fit. 
+Improved documentation of various functions.
 
 Version 1.1-0 (2014-08-06)
 Main few feature is the possibility to set the constraint alpha=0 in function 
