@@ -1,8 +1,14 @@
 R package 'sn' NEWS (ChangeLog) file
 ------------------------------------
+
+Version 1.2-4 (2015-08-25)
+Output of plot.SECdistr is better structured and documented. In pmst, handling
+of case nu=Inf required a fix. Corrected a bug of internal function msn.dp2dp 
+when called with aux=TRUE and d=1; this affected rmsn and rmst with d=1.
+
 Version 1.2-3 (2015-07-14)
-Fixed a bug in evaluation of the feasible CP parameter space of ST distribution.
-Fixed a bug which crashed evaluation of pmst with fractional degrees of freedom.
+Fixed a bug in evaluation of the feasible CP parameter space of univariate ST.
+Fixed a bug which crashed pmst when called with fractional degrees of freedom.
 Functions dmsn, pmsn and dmst now expand a single value supplied as 'xi' into
 a vector or matrix of suitable dimension.
 
@@ -21,9 +27,9 @@ Version 1.2-0 (2015-03-24)
 Created new functions extractSECdistr and modeSECdistr; new methods mean and 
 sd for class SECdistrUv and new methods mean and vcov for class SECdistrMv.
 Computation of qst switches to qsn if nu>1e4, instead of nu=Inf as before.
-Fixed a bug in st.pdev.hessian (correct args sequence). Improved detection of
-singular distributions in selm output.  Improved handling of component names 
-of SECdistr.
+Fixed a bug in st.pdev.hessian (correction in args sequence). Improved 
+detection of singular distributions in selm output.  Improved handling of 
+component names of SECdistr.
 	
 Version 1.1-2 (2014-11-30)
 Fixed a bug affecting plotting of mselm-class objects under certain 
@@ -42,7 +48,8 @@ Main few feature is the possibility to set the constraint alpha=0 in function
 selm and in lower level fitting functions. Other additions or changes are:
 introduction of OP parameterization; fix a bug in qst; more efficient coding 
 of dmsn and dmst; pmsn can now be called with argument 'x' of matrix type; 
-more detailed documentation of pst and other places.
+in pst and qst, new argument method allows to select the algorithm employed.
+More detailed documentation of pst and other functions and methods.
 
 Version 1.0-0 (2014-01-06)
 This is a major upgrade of the package, with much of the code completely new 

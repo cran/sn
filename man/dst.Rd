@@ -65,9 +65,9 @@ Typical usages are
 \preformatted{%
 dst(x, xi=0, omega=1, alpha=0, nu=Inf, log=FALSE)
 dst(x, dp=, log=FALSE)
-pst(x, xi=0, omega=1, alpha=0, nu=Inf, ...)
+pst(x, xi=0, omega=1, alpha=0, nu=Inf, method=0, ...)
 pst(x, dp=, log=FALSE)
-qst(p, xi=0, omega=1, alpha=0, nu=Inf, tol=1e-8, ...)
+qst(p, xi=0, omega=1, alpha=0, nu=Inf, tol=1e-8,  method=0, ...)
 qst(x, dp=, log=FALSE)
 rst(n=1, xi=0, omega=1, alpha=0, nu=Inf)
 rst(x, dp=, log=FALSE)
@@ -101,10 +101,13 @@ Method 4 becomes progressively less efficient as \code{nu} increases,
 because its value corresponds to the number of nested calls, but the
 decay of efficiency is slower for larger values of \code{length(x)}.
 If the default argument value \code{method=0} is retained, an automatic choice
-among these four methods is made, which depends on the values of \code{nu,
-alpha, length(x)}. The numerical accuracy of methods 1, 2 and 3 can be 
-regulated via the \code{...} argument, while method 4 is conceptually exact, 
+among the above four methods is made, which depends on the values of 
+\code{nu, alpha, length(x)}. The numerical accuracy of methods 1, 2 and 3 can 
+be regulated via the \code{...} argument, while method 4 is conceptually exact, 
 up to machine precision.
+
+If \code{qst} is called with \code{nu>1e4}, computation is transferred to
+\code{qsn}. 
 }
 
 \references{

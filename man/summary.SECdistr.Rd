@@ -1,6 +1,6 @@
 %  file sn/man/summary.SECdistr.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2013 Adelchi Azzalini
+%  copyright (C) 2013-2015 Adelchi Azzalini
 %---------------------
 \name{summary.SECdistr}
 \alias{summary.SECdistr}
@@ -14,7 +14,7 @@
 \description{Produce a summary of an object of class either
 \code{"SECdistrUv"} or \code{"SECdistrMv"}, which refer to a univariate or a
 multivariate \acronym{SEC} distribution, respectively. Both types of
-objects are produced by \code{makeSECditr}. }
+objects can be produced by \code{makeSECditr}. }
 
 \usage{
 \S4method{summary}{SECdistrUv}(object, cp.type = "auto", probs)
@@ -31,7 +31,8 @@ objects are produced by \code{makeSECditr}. }
     codes, see \code{\link{dp2cp}}.}
   
  \item{probs}{in the univariate case, a vector of probabilities for which 
-    the corresponding quantiles are required.}
+    the corresponding quantiles are required. If missing, the vector
+     \code{c(0.05, 0.25, 0.50, 0.75, 0.95)} is used.}
 }
 
 %\details{%%  ~~ If necessary, more details than the description above ~~}
@@ -40,7 +41,8 @@ objects are produced by \code{makeSECditr}. }
   \item{family}{name of the family within the \acronym{SEC} class, character}
   \item{dp}{\acronym{DP} parameters, a list or a vector}
   \item{name}{the name of the distribution, character string}
-  \item{compNames}{in the multivariate case, the names of the components}
+  \item{compNames}{in the multivariate case the names of the components,
+     a character vector}
   \item{cp}{\acronym{CP} parameters, a list or a vector}
   \item{cp.type}{the name of the selected variant of the \acronym{CP} set}
   \item{aux}{a list with auxiliary ingredients (mode, coefficients of 

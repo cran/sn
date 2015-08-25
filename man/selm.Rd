@@ -255,8 +255,8 @@ selm(formula, family = "SN", data, weights, subset, na.action,
 }
 
 \value{an S4 object of class \code{selm} or \code{mselm}, depending on whether
-  the response variable of the fitted model is univariate or multivariate. 
-  These objects are described in the \code{\linkS4class{selm} class}.
+  the response variable of the fitted model is univariate or multivariate;
+  these objects are described in the \code{\linkS4class{selm} class}.
 }
 
 \references{

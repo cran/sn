@@ -28,7 +28,7 @@
 }
 
 \arguments{
-  \item{x}{an object of the pertaining class.}
+  \item{x}{an object of class \code{SECdistrUv} or \code{SECdistrMv}.}
    
   % \item{y}{not used, required by the generic \code{plot(x, y, ...)} function.}
    
@@ -107,6 +107,18 @@
   Azzalini and Capitanio (2014), specifically Complement 5.2 and p.179, 
   and references therein.
 }
+
+\value{an invisible list. In the univariate case the list has three components:
+the input object representing the distribution and two numeric vectors with 
+the coordinates of the plotted density values. 
+In the multivariate case, the first element of the list is the input object 
+representing the distribution and all subsequent list elements are lists with 
+components of the panels comprising the matrix plot; 
+the elements of these sub-lists are: 
+the vectors of \code{x} and \code{y} coordinates, the names of the variables, 
+the density values at the \code{(x,y)} points, a vector of the density levels 
+of the curves appearing in each panel plot, with the corresponding approximate
+probability content as a vector attribute.}
 
 \author{Adelchi Azzalini} 
  

@@ -9,6 +9,7 @@
 \alias{SN}
 \concept{skew-elliptical distribution}
 \concept{skew-normal distribution}
+\concept{skew-t distribution}
 \concept{symmetric distribution}
 
 \title{Package \pkg{sn}: overview}

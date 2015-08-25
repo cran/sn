@@ -33,13 +33,15 @@
   \item{compNames}{in the multivariate case, an optional vector of character
     strings with the names of the component variables; its length must be 
     equal to the dimensionality of the distribution being generated. 
-    If missing, the components are named \code{"V1"}, \code{"V2"}, \dots}
+    If missing and the first component of \code{dp} is a named vector,
+    its names used as \code{compNames}; otherwise
+    the components are named \code{"V1"}, \code{"V2"}, \dots}
 }
 
 \details{If \code{dp} is a numeric vector, a univariate distribution is built. 
   Alternatively, if \code{dp} is a list, a multivariate distribution is 
   built. In both cases, the required number of components of \code{dp} 
-  depends on \code{family}: it must be is \code{3} for \kbd{"SN"} and 
+  depends on \code{family}: it must be  \code{3} for \kbd{"SN"} and 
   \kbd{"SC"}; it must be \code{4} for \kbd{"ESN"} and \kbd{"ST"}.
 
   In the univariate case, the first three components of \code{dp} represent 

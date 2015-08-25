@@ -185,7 +185,8 @@ rsn <- function(n=1, xi=0, omega=1, alpha=0, tau=0, dp=NULL)
     z <- delta * truncN + sqrt(1-delta^2) * rnorm(n)
     }
   y <- xi+omega*z
-  attr(y,"parameters") <- c(xi,omega,alpha,tau)
+  attr(y, "family") <- "SN"
+  attr(y, "parameters") <- c(xi,omega,alpha,tau)
   return(y)
   }
 
@@ -259,6 +260,7 @@ rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
   #     stop("You cannot set both component parameters and dp")
   if(!is.null(dp)) {  
      dp0 <- dp  
+     dp0$nu <- NULL
      if(is.null(dp0$tau)) dp0$tau <- 0 
      }
   else dp0 <- list(xi=xi, Omega=Omega, alpha=alpha, tau=tau)
@@ -274,7 +276,8 @@ rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
   delta  <- lot$aux$delta
   z <- delta * t(truncN) + sqrt(1-delta^2) * t(y)
   y <- t(dp0$xi + lot$aux$omega * z)
-  attr(y,"parameters") <- dp
+  attr(y, "family") <- "SN"
+  attr(y, "parameters") <- dp0
   return(y)
 }
 
@@ -318,7 +321,8 @@ rst <- function (n=1, xi = 0, omega = 1, alpha = 0, nu=Inf, dp=NULL)
     y <- z/sqrt(v) + xi
     }
     else y <- z+xi
-  attr(y,"parameters") <- c(xi,omega,alpha,nu)
+  attr(y, "family") <- "ST"
+  attr(y, "parameters") <- c(xi,omega,alpha,nu)
   return(y)
 }
 
@@ -512,7 +516,8 @@ rmst <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL)
   x <- if(nu==Inf) 1 else rchisq(n,nu)/nu
   z <- rmsn(n, rep(0,d), Omega, alpha)
   y <- t(xi+ t(z/sqrt(x)))
-  attr(y,"parameters") <- list(xi=xi, Omega=Omega, alpha=alpha, nu=nu)
+  attr(y, "family") <- "ST"
+  attr(y, "parameters") <- list(xi=xi, Omega=Omega, alpha=alpha, nu=nu)
   return(y)
 }
 
@@ -529,6 +534,7 @@ pmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL, ...)
       }  
   if(!is.vector(x)) stop("x must be a vector")
   if(any(abs(alpha) == Inf)) stop("Inf's in alpha are not allowed")
+  if(nu == Inf) return(pmsn(x, xi, Omega, alpha))
   d <- length(alpha)
   Omega<- matrix(Omega,d,d) 
   omega<- sqrt(diag(Omega))
@@ -584,7 +590,10 @@ rmsc <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, dp=NULL)
      dp <- list(xi=xi, Omega=Omega, alpha=alpha, nu=1)
   else
      dp$nu <- 1
-  rmst(n, dp=dp) 
+  y <- rmst(n, dp=dp) 
+  attr(y, "family") <- "SC"
+  attr(y, "parameters") <- dp[-4]
+  return(y) 
 }
 
 dsc <- function(x, xi=0, omega=1, alpha=0, dp=NULL, log = FALSE) {
@@ -648,7 +657,10 @@ rsc <- function(n=1, xi=0, omega=1, alpha=0, dp=NULL) {
     omega <- dp[2]
     alpha <- dp[3]
   }
-  xi + rsn(n, 0, omega, alpha)/abs(rnorm(n))
+  y <- xi + rsn(n, 0, omega, alpha)/abs(rnorm(n))
+  attr(y, "family") <- "SC"
+  attr(y, "parameters") <- c(xi, omega, alpha)
+  return(y) 
 }
 
 sn.cumulants <- function(xi = 0, omega = 1, alpha = 0, tau=0, 
@@ -814,14 +826,14 @@ T.Owen <- function(h, a, jmax=50, cut.point=8)
 }
           
 #=========================================================================
-# new probability functions: SECdistr() etc
 
 makeSECdistr <- function(dp, family, name, compNames)
 {
-  if(!(toupper(family) %in% c("SN","ESN","SC","ST"))) stop("unknown family") 
+  ndp <- switch(tolower(family), "sn" = 3, "esn" = 4, "st" = 4, "sc" = 3, NULL)
+  if(is.null(ndp)) stop(gettextf("unknown family '%s'", family))
   family <- toupper(family)
-  ndp <- if(family %in% c("SN", "SC") ) 3 else 4
-  if(length(dp) != ndp) stop("wrong number of dp components")
+  if(length(dp) != ndp) 
+    stop(gettextf("wrong number of dp components for family '%s'", family))
   if(family == "ST") {
     nu <- as.numeric(dp[4])
     if(nu <= 0) stop("'nu' for ST family must be positive")
@@ -858,7 +870,7 @@ makeSECdistr <- function(dp, family, name, compNames)
       "\nConsider using a 'dp' vector to define a univariate distribution.",
       "\nHowever, I still build a multivariate distribution for you."))
     if(missing(compNames)) { compNames <-
-      if(length(colnames(dp[[1]])) == d) colnames(dp[[1]]) else
+      if(length(names(dp[[1]])) == d) names(dp[[1]]) else
         as.vector(outer("V",as.character(1:d),paste,sep=""))
       }
     else {
@@ -1103,7 +1115,7 @@ msn.dp2cp <- function(dp, aux=FALSE)
   if(!is.null(dp$tau)) cp$tau <- tau
   if(aux){
     lambda <- delta/sqrt(1-delta^2)
-    D <- diag(sqrt(1+lambda^2))
+    D <- diag(sqrt(1+lambda^2), d, d)
     Ocor <- lot$Omega.cor
     Psi <- D %*% (Ocor-outer(delta,delta)) %*% D
     Psi <- (Psi + t(Psi))/2
@@ -1113,7 +1125,7 @@ msn.dp2cp <- function(dp, aux=FALSE)
     R <- force.symmetry(Ocor + zeta(2,tau)*outer(delta,delta))
     ratio2 <- delta.star^2/(1+zeta(2,tau)*delta.star^2)
     mardia <- c(gamma1M=zeta(3,tau)^2*ratio2^3, gamma2M=zeta(4,tau)*ratio2^2)
-    # see book: (5.74), (5.75) on p.153
+    # book: (5.74), (5.75) on p.153
     cp$aux <- list(omega=omega, cor=R, Omega.inv=O.inv, Omega.cor=Ocor, 
       Omega.pcor=O.pcor, lambda=lambda, Psi=Psi, delta=delta, lambda=lambda,
       delta.star=delta.star, alpha.star=alpha.star, mardia=mardia)
@@ -1189,7 +1201,7 @@ mst.gamma2M <- function(delta.sq, nu, d)
 }
 
 mst.mardia <- function(delta.sq, nu, d) 
-{# Mardia's gamma1 and gamam2 for MST; book (6.31), (6.32), p.178
+{# Mardia's gamma1 and gamam2 for MST; book: (6.31), (6.32), p.178
   if(delta.sq < 0 | delta.sq > 1)  stop("delta.sq not in (0,1)")
   if(d < 1) stop("d < 1") 
   cum <- st.cumulants(0, 1, sqrt(delta.sq/(1-delta.sq)), nu)
@@ -1400,7 +1412,7 @@ b <- function(nu){
 #
 st.gamma1 <- function(delta, nu)
 {# this function is vectorized for delta, works with a single value of nu
-  if(nu > 1e10) {  
+  if(nu > 1e6) {  
     mu <- delta*sqrt(2/pi)
     return(0.5*(4-pi)*mu^3/(1-mu^2)^1.5)
     }
@@ -1417,7 +1429,7 @@ st.gamma1 <- function(delta, nu)
 st.gamma2 <- function(delta, nu) 
 {# this function is vectorized for delta, works a single value of nu
  #
-  if(nu > 1e10) {  
+  if(nu > 1e6) {  
     mu <- delta*sqrt(2/pi)
     return(2*(pi-3)*mu^4/(1-mu^2)^2)
     }
@@ -1442,8 +1454,8 @@ st.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
   gamma1 <- cp[p+2]
   abs.g1 <- abs(gamma1)
   gamma2 <- cp[p+3]
-  if(abs.g1 <=  0.5*(4-pi)*(2/(pi-2))^1.5)
-    feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3)) # book (2.29)+(3.20)
+  if(abs.g1 <=  0.5*(4-pi)*(2/(pi-2))^1.5)           # book: (2.29)+(3.20)
+    feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3)) 
   else {
     if(abs.g1 >= 4) feasible <- FALSE else {
       r0 <- uniroot(fn0, interval=c(log(4), 1000), tol=tol, g1=abs.g1)
@@ -4061,8 +4073,10 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
     objUv <- marginalSECdistr(obj, comp=1, drop=TRUE)
     out <- plot(objUv, data=data, ...)
     }
-  if(d == 2) out <- plot.SECdistrBv(x, range, probs, npt, compNames, compLabs,  
-                    landmarks, data, data.par, main, ...)
+  if(d == 2) 
+      out <- list(object=obj,
+                  plot=plot.SECdistrBv(x, range, probs, npt, compNames,  
+                           compLabs, landmarks, data, data.par, main, ...))
   if(d > 2) {
     textPanel <- function(x = 0.5, y = 0.5, txt, cex, font) 
       text(x, y, txt, cex = cex, font = font)
@@ -4080,8 +4094,8 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
     opar <- par(mfrow = c(length(comp), length(comp)), 
                 mar = rep(c(gap,gap/2), each=2), oma=oma)
     on.exit(par(opar))
-    out <- list()
-    count <- 0
+    out <- list(object=obj)
+    count <- 1
     for (i in comp) 
       for (j in comp) {
         count <- count + 1
@@ -4089,14 +4103,16 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
           plot(1, type="n", xlab="", ylab="", axes=FALSE)
           text(1, 1, text.diag.panel[i], cex=2)
           box()
-          out[[count]] <- paste("diagonal component", compNames[i])
+          out[[count]] <- list()
+          names(out)[count] <- paste("diagonal component", compNames[i])
         } else {
         ji <- c(j,i) 
         marg <- marginalSECdistr(obj, comp=ji) 
         out[[count]] <- localPlot(x=marg, range=range[,ji], probs=probs,
              npt=npt[ji], compNames= compNames[ji], compLabs=compLabs[ji], 
              landmarks=landmarks, data=data[,ji],  data.par=data.par, 
-             main="", yaxt="n", xaxt="n", ...)          
+             main="", yaxt="n", xaxt="n", ...)   
+        names(out)[count] <- paste("plot of components (", j, ",", i, ")")
         # if(i==comp[1]) {axis(3); if(j==length(comp)) axis(4)}
         # if(j==comp[1]) {axis(2); if(i==length(comp)) axis(1)}
         if(i==comp[1]) axis(3) ; if(j==length(comp)) axis(4)
@@ -4166,7 +4182,9 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     if(!is.null(id.i <- data.par$id.i)) 
       text(data[id.i,1], data[id.i,2], id.i, cex=cex/1.5, pos=1)
     }
-  contour(x1, x2, pdf, levels=exp(log.levels), 
+  pr.levels <- exp(log.levels)  
+  names(pr.levels) <- as.character(probs)
+  contour(x1, x2, pdf, levels=pr.levels, 
     labels=paste("p=", as.character(probs), sep=""), add=TRUE, ...)
   if(landmarks != "") {
     if(landmarks == "auto") { 
@@ -4187,7 +4205,7 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     lines(x.pts, y.pts, lty=2)
     }  
   options(oo) 
-  return(list(x=x1, y=x2, names=compNames, density=pdf))
+  return(list(x=x1, y=x2, names=compNames, density=pdf, prob.levels=pr.levels))
 }    
 
 plot.selm <- function(x, param.type="CP", which = c(1:4), caption, 
@@ -4617,12 +4635,13 @@ dp2op <- function(dp, family)
     if(length(dp) != nt) stop("wrong length of 'dp'")
     Omega <- dp[[2]] 
     alpha <- dp[[3]]
+    d <- length(alpha)
     tmp <- delta.etc(alpha, Omega)
     delta <- tmp$delta
     Omega.cor <- tmp$Omega.cor
     D.delta <- sqrt(1 - delta^2)    # (5.18) of SN book, but as vector
     lambda <- delta/D.delta         # (5.20)
-    omega <- sqrt(diag(Omega))
+    omega <- sqrt(diag(as.matrix(Omega)))
     Psi <- Omega - outer(omega*delta, omega*delta)  # four lines before (5.30)
     op[[2]] <- Psi
     op[[3]] <- lambda
