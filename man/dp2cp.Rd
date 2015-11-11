@@ -31,8 +31,10 @@ op2dp(op, family)
 
 \item{op}{a vector or a list, in agreement with \code{dp} as for type and
   dimension.}
-  
-\item{family}{a characther string, as described in \code{\link{makeSECdistr}}.}
+ 
+\item{family}{a characther string with the family acronym, 
+   as described in \code{\link{makeSECdistr}}, except that family 
+  \code{"ESN"} is not implemented.}
 
 \item{object}{optionally, an S4 object of class \code{SECdistrUv} or
   \code{SECdistrMv}, as produced by \code{\link{makeSECdistr}} 
@@ -52,11 +54,13 @@ op2dp(op, family)
   Default value \code{upto=NULL} is equivalent to \code{length(dp)}.}
  } 
 
-\value{for \code{dp2cp}, a matching vector (in the univariate case) or a list 
-   (in the multivariate case) of \code{cp} parameters; for  \code{cp2dp}, 
-   a similar object of \code{dp} parameters.}			
-			
-\section{Background and Details}{For a description of the \acronym{DP}
+\value{For \code{dp2cp}, a matching vector (in the univariate case) or a list 
+   (in the multivariate case) of \code{cp} parameters. 
+   For \code{cp2dp} and \code{op2dp}, a similar object of \code{dp} parameters,
+   provided the set of input parameters is in the admissible region.
+   For \code{dp2op}, a similar set of \code{op} parameters.}
+		
+\section{Background}{For a description of the \acronym{DP}
 parameters, see Section \sQuote{Details} of \code{\link{makeSECdistr}}.  The
 \acronym{CP} form of parameterization is cumulant-based. For a univariate
 distribution, the \acronym{CP} components are the mean value (first cumulant), 
@@ -82,6 +86,31 @@ extension for the \acronym{SN} distribution, Section 6.2.5 for the
 multivariate \acronym{ST} case. 
 For a more detailed discussion, see Arellano-Valle and Azzalini (2013).
 
+The \acronym{OP} parameterization is very similar to \acronym{DP}, from which 
+it differs only for the components which regulate dispersion (or scatter) 
+and slant.  Its relevance lies essentially in the multivariate case, where 
+the components of the slant parameter can be interpreted component-wise and
+remain unaffected if marginalization with respect to some other components 
+is performed. 
+In the multivariate \acronym{SN} case, the components of \acronym{OP}, denoted
+\eqn{\xi, \Psi, \lambda}, are associated to the expression of the density
+function (5.30) of Azzalini \& Capitanio (2014); see pp.128--131 for more
+information. In the univariate case, the slant component of \acronym{DP}
+and the one of \acronym{OP} coincide, that is, \eqn{\alpha=\lambda},
+Parameter \eqn{\xi} and other parameters which may exist with other families 
+remain the same of the \acronym{DP} set. The term \acronym{OP} stands for
+`original parameterization' since this is, up to a negligible difference, 
+the parameterization adopted by Azzalini & Dalla Valle (1996).
+}
+
+\section{Details}{
+While any choice of the components of \acronym{DP} or \acronym{OP} is
+admissible, this is not true for \acronym{CP}. An implication is that a
+call to \code{cp2dp} may fail with an error message \code{"non-admissible CP"}
+for certain input values. The most extreme case is represented by the
+\acronym{SC} family, for which  \acronym{CP} never exists; hence it makes
+to sense to call \code{cp2dp} with \code{family="SC"}.
+
 It is possible to call the functions with \code{dp} or \code{cp} having more
 components than those expected for a given family as described above and in
 \code{\link{makeSECdistr}}. In the univariate case, this means that \code{dp}
@@ -94,24 +123,7 @@ Azzalini and Capitanio (2014). In the multivariate case, \code{dp[[1]]} and
 \code{cp[[1]]} can be matrices instead of vectors; the rows beyond the first
 one are transferred unchanged to \code{cp[[1]]} and \code{dp[[1]]},
 respectively. 
-
-The \acronym{OP} parameterization is very similar to \acronym{DP}, from which 
-it differs only for the components which regulate dispersion (or scatter) 
-and slant.  Its relevance lies essentially in the multivariate case, where 
-the components of the slant parameter can be interpreted component-wise and
-remain unaffected if marginalization with respect to some other components 
-is performed. 
-In the multivariate \acronym{SN} case, the components of \acronym{OP}, denoted
-\eqn{\xi, \Psi, \lambda}, are associated to the expression of the density
-function (5.30) of Azzalini \& Capitanio (2014); see pp.128--131 for more
-information. In the univariate case, the slant component of \acronym{DP},
-and the one of \acronym{OP} coincide, that is, \eqn{\alpha=\lambda},
-Parameter \eqn{\xi} and other parameters which may exist with other families 
-remain the same of the \acronym{DP} set. The term \acronym{OP} stands for
-`original parameterization' since this is, up to an negligible difference, 
-the parameterization adopted by Azzalini & Dalla Valle (1996).
 }
-
 
 \references{
 Arellano-Valle, R. B. and Azzalini, A. (2013, available on-line 12 June 2011). 
@@ -132,9 +144,11 @@ The multivariate skew-normal distribution.
   \code{\link{sn.cumulants}}, 
   
   the \sQuote{Note} at \code{\link{summary.selm}} for the reason why
-  \acronym{cp} is the default parameterization inthis and related functions,
+  \acronym{CP} is the default parameterization in that function and in 
+  related ones,
   
-  the \sQuote{Examples} at \code{\link{rmsn} for use of the CP parameterization}
+  the \sQuote{Examples} at \code{\link{rmsn}} for use of the \acronym{CP}
+  parameterization
 }
 
 \examples{

@@ -1,10 +1,17 @@
 R package 'sn' NEWS (ChangeLog) file
 ------------------------------------
+Version 1.3-0 (2015-11-11)
+Method profile.selm is introduced. The object returned by plot.SECdistrMv 
+now includes the coordinates of the contour levels.  Fixes a bug affecting 
+rmsn when called using dp= and dp[[1]] is named beta instead of xi.
+
+Version 1.2-5 (2015-09-25)
+Not released
 
 Version 1.2-4 (2015-08-25)
 Output of plot.SECdistr is better structured and documented. In pmst, handling
 of case nu=Inf required a fix. Corrected a bug of internal function msn.dp2dp 
-when called with aux=TRUE and d=1; this affected rmsn and rmst with d=1.
+when called with aux=TRUE and d=1; this affected rmsn and rmst if d=1.
 
 Version 1.2-3 (2015-07-14)
 Fixed a bug in evaluation of the feasible CP parameter space of univariate ST.

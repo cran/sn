@@ -50,7 +50,21 @@ information should facilitate familiarizing with these tools.
 
 Information on additional and on more recent change to the package is 
 provided in \code{NEWS} file, accessible from the package documentation
-index page.}
+index page.
+
+A word of explanation is appropriate about the numerous references to 
+Azzalini and Capitanio (2014) in the documentation of the package. 
+The reason why the documentation often refers to the monograph rather  
+than to the original research papers is because the book provides 
+a relatively informal summary of material which has been 
+elaborated in a number of technical papers, sometimes very technical 
+or with information on the point of interest mixed with other material. 
+In other words, the motivation behind this policy is readibility, 
+not indulgence in self-citation. When one or a few original sources appeared 
+to deliver the required information in a compact and accessible form, 
+they have been cited directly.  In any case,  the quoted sections of the
+book include bibliographic notes which refer back to the original sources.
+}
 
 
 \section{Backward Compatibility of \sQuote{version 1.x-y}}{%
@@ -102,8 +116,8 @@ at the same time.
 
 \section{Author}{Adelchi Azzalini.
 % Dipart. Scienze Statistiche, Università di Padova, Italia.
-Please send comments, error reports, etc. to the author, whose web page
-is \url{http://azzalini.stat.unipd.it/}.
+Please send comments, error reports \emph{et cetera} to the author, 
+whose web page is \url{http://azzalini.stat.unipd.it/}.
 }
 
 \section{Licence}{

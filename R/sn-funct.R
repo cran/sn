@@ -1,6 +1,6 @@
 #  file sn/R/sn-funct.R  (various functions)
 #  This file is a component of the package 'sn' for R 
-#  copyright (C) 1997-2014 Adelchi Azzalini
+#  copyright (C) 1997-2015 Adelchi Azzalini
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -113,7 +113,6 @@ qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08,
     max.err <- 1
     while (max.err > tol) { # cat("qsn:", x, "\n")
       # cat('x, px:', format(c(x,px)),"\n")
-      # browser()
       x1 <- x - (px - p)/dsn(x, dp=dp0)
       # x1 <- pmin(x1,max.q)
       # x1 <- pmax(x1,min.q)
@@ -255,13 +254,17 @@ pmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, tau=0,
 }
 
 rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
-{# generates SN_d(..) variates using additive (=transformation) method
+{# generates SN_d(..) variates using the additive (=transformation) method
   # if(!(missing(alpha) & missing(Omega) & !is.null(dp)))
   #     stop("You cannot set both component parameters and dp")
   if(!is.null(dp)) {  
      dp0 <- dp  
      dp0$nu <- NULL
      if(is.null(dp0$tau)) dp0$tau <- 0 
+     if(names(dp)[1] == "beta") {
+        dp0[[1]] <- as.vector(dp[[1]])
+        names(dp0)[1] <- "xi"
+        } 
      }
   else dp0 <- list(xi=xi, Omega=Omega, alpha=alpha, tau=tau)
   if(any(abs(dp0$alpha) == Inf)) stop("Inf's in alpha are not allowed")
@@ -1220,39 +1223,44 @@ cp2dp <- function(cp, family){
   family <- toupper(family)
   if(!(family %in% c("SN", "ESN", "ST","SC")))
       stop(gettextf("family '%s' is not supported", family), domain = NA)
-  if(is.list(cp))
-    cp2dpMv(cp, family)
-  else
-    cp2dpUv(cp, family)
+  dp <- if(is.list(cp))  cp2dpMv(cp, family)  else cp2dpUv(cp, family)
+  if(anyNA(dp)) dp <- NULL
+  return(dp)
 }
  
 cp2dpUv <- function(cp, family, silent=FALSE, tol=1e-8) 
 { # internal function; works also with regression parameters included
-  if(family %in% c("SN","ESN")) {  
-    if(family=="ESN") stop("cp2dp for ESN not yet implemented")
-    p <- length(cp)-2-as.numeric(family=="ESN")
-    beta1 <- if (p>1) cp[2:p] else NULL
-    b <- sqrt(2/pi) 
-    sigma  <- cp[p+1]
-    if(sigma <= 0) stop("0 must be positive")
-    gamma1 <- cp[p+2]
-    tau <- if(family=="ESN") as.numeric(cp[p+3]) else 0
-    max.gamma1 <- 0.5*(4-pi)*(2/(pi-2))^1.5
-    if (abs(gamma1) >= max.gamma1) {
-      if (silent) return(NULL) else 
-        {message("gamma1 outside admissible range"); return(invisible())}}
-    r  <- sign(gamma1)*(2*abs(gamma1)/(4-pi))^(1/3)
-    delta <- r/(b*sqrt(1+r^2))
-    alpha <- delta/sqrt(1-delta^2)
-    mu.z <- b*delta
-    sd.z <- sqrt(1-mu.z^2)
-    beta <- cp[1:p]
-    omega <- cp[p+1]/sd.z
-    beta[1] <- cp[1] - omega*mu.z
-    dp <- as.numeric(c(beta, omega, alpha))
-    names(dp) <- param.names("DP", family, p, x.names=names(beta1))
-    return(dp)
-    }
+   family <- toupper(family)
+   if(family=="ESN") stop("cp2dp for ESN not yet implemented")
+   if(family == "SN") {     
+     p <- length(cp)-2-as.numeric(family=="ESN")
+     beta1 <- if (p>1) cp[2:p] else NULL
+     b <- sqrt(2/pi) 
+     sigma  <- cp[p+1]
+     excess <- max(0, -sigma)
+     gamma1 <- cp[p+2]
+     tau <- if(family=="ESN") as.numeric(cp[p+3]) else 0
+     max.gamma1 <- 0.5*(4-pi)*(2/(pi-2))^1.5
+     if (abs(gamma1) >= max.gamma1) {
+       if (silent) excess <- excess + (abs(gamma1) - max.gamma1) else 
+         {message("gamma1 outside admissible range"); return(invisible())}}
+     if(excess > 0) {
+       out <- NA
+       attr(out, "excess") <- excess
+       return(out)
+       }
+     r  <- sign(gamma1)*(2*abs(gamma1)/(4-pi))^(1/3)
+     delta <- r/(b*sqrt(1+r^2))
+     alpha <- delta/sqrt(1-delta^2)
+     mu.z <- b*delta
+     sd.z <- sqrt(1-mu.z^2)
+     beta <- cp[1:p]
+     omega <- cp[p+1]/sd.z
+     beta[1] <- cp[1] - omega*mu.z
+     dp <- as.numeric(c(beta, omega, alpha))
+     names(dp) <- param.names("DP", family, p, x.names=names(beta1))
+     return(dp)
+     }
   if(family == "ST") return(st.cp2dp(cp, silent=silent, tol=tol))
   if(family == "SC") stop("this makes no sense for SC family")
   warning(gettextf("family = '%s' is not supported", family), domain = NA)
@@ -1454,41 +1462,65 @@ st.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
   gamma1 <- cp[p+2]
   abs.g1 <- abs(gamma1)
   gamma2 <- cp[p+3]
-  if(abs.g1 <=  0.5*(4-pi)*(2/(pi-2))^1.5)           # book: (2.29)+(3.20)
-    feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3)) 
+  if(abs.g1 <=  0.5*(4-pi)*(2/(pi-2))^1.5) {
+    # book: (2.29)+(3.20)
+    feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3))
+    excess <- max(0, 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3) - gamma2)
+    } 
   else {
-    if(abs.g1 >= 4) feasible <- FALSE else {
+    if(abs.g1 >= 4) { feasible <- FALSE; excess <- Inf } else {
       r0 <- uniroot(fn0, interval=c(log(4), 1000), tol=tol, g1=abs.g1)
       nu0 <- exp(r0$root) 
       feasible <- (gamma2 >= st.gamma2(1,nu0))
+      excess <- max(0, st.gamma2(1,nu0) - gamma2)
       }
     }
   if(!feasible) {
-    if(silent) return(NULL) else stop("CP outside feasible region")}
-  delta <- 0.75*sign(gamma1)
-  old <- c(delta,Inf)
+    if(silent) {
+      out <- NA
+      attr(out, "excess") <- excess
+      return(out)} 
+    else stop("CP outside feasible region")}
+  delta <- 0.75 * sign(gamma1)
+  old <- c(delta, Inf)
   step <- Inf
   fn1 <- function(delta, g1, nu) st.gamma1(delta, nu) - g1
   fn2 <- function(log.nu, g2, delta) st.gamma2(delta, exp(log.nu)) - g2
+  out <- NULL
   while(step > tol){
-    fn21 <- fn2(log(4), gamma2, delta)
-    fn22 <- fn2(log(100), gamma2, delta)
-    if(any(is.na(c(fn21,fn22)))) stop("parameter inversion failed") # browser()
-    if(fn21 * fn22 > 0)  return(rep(NA, p+3))
-    r2 <- uniroot(fn2, interval=c(log(4),100), tol=tol, g2=gamma2, delta=delta)
+    fn21 <- fn2(log(4 + sqrt(.Machine$double.eps)), gamma2, delta)
+    fn22 <- fn2(log(1e4), gamma2, delta)
+    if(any(is.na(c(fn21, fn22)))) stop("parameter inversion failed")  
+    if(fn21 * fn22 > 0) {
+      out <- NA
+      attr(out, "excess") <- fn21*fn22
+      break}
+    r2 <- uniroot(fn2, interval=c(log(4 + sqrt(.Machine$double.eps)), 100), 
+           tol=tol, g2=gamma2, delta=delta)
     nu <- exp(r2$root)
-    if(fn1(-1, gamma1, nu) * fn1(1, gamma1, nu)> 0) return(rep(NA, p+3))
+    if(fn1(-1, gamma1, nu) * fn1(1, gamma1, nu)> 0) {
+      out <- NA
+      attr(out, "excess") <- fn1(-1, gamma1, nu) * fn1(1, gamma1, nu)
+      break}
     r1 <- uniroot(fn1, interval=c(-1,1), tol=tol, g1=gamma1, nu=nu)
     delta <- r1$root
     new <- c(delta, nu)
-    step <- max(abs(old-new))
-    if(trace) cat("delta, nu, log(step):", format(c(delta, nu, log(step))),"\n")
-    old<- new
+    step <- abs(old-new)[1] + abs(log(old[2])- log(new[2]))
+    if(trace) 
+      cat("delta, nu, log(step):", format(c(delta, nu, log(step))),"\n")
+    old <- new
     }
-  mu.z <- delta*b(nu)
+  if(anyNA(out)) return(out)
+  mu.z <- delta * b(nu)
   omega <- cp[p+1]/sqrt(nu/(nu-2) - mu.z^2)
+  if(omega < 0) {
+    if(silent) {
+      out <- NA
+      attr(out, "excess") <- abs(omega)
+      return(out)} 
+    else stop("CP outside feasible region")}
   alpha <- delta/sqrt(1-delta^2)
-  dp <- c(cp[1]-omega*mu.z, if(p>1) cp[2:p] else NULL, omega, alpha, nu)
+  dp <- c(cp[1] - omega*mu.z, if(p>1) cp[2:p] else NULL, omega, alpha, nu)
   names(dp) <- param.names("DP", "ST", p, x.names=x.names)
   return(dp)
 }
@@ -1508,7 +1540,8 @@ mst.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
   dp.marg <- matrix(NA, d, 4)
   for(j in 1:d) {  
      dp <- st.cp2dp(c(0,1,gamma1[j], gamma2M), silent=silent)
-     if(is.null(dp)) {if(silent) return(NULL) else stop("no CP could be found")}
+     if(is.null(dp)) 
+       {if(silent) return(NULL) else stop("no CP could be found")}
      dp.marg[j,] <- dp
   }
   if(trace) {cat("starting dp:\n"); print(dp.marg)}
@@ -1824,8 +1857,8 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
     if (model) input$model <- mf
     if (ret.x) input$x <- x
     if (ret.y) input$y <- y
-    input$weights <- as.vector(model.weights(mf))
-    input$offset <- as.vector(model.offset(mf))
+    # input$weights <- as.vector(model.weights(mf))
+    # input$offset <- as.vector(model.offset(mf))
     # cl.obj <- if(is.matrix(y)) "mselm" else "selm"
     obj <- new(class(z), call=cl, family=toupper(family), logL=z$logL, 
                method=c(method, contr$penalty),  param=z$param,
@@ -3940,7 +3973,7 @@ force.symmetry <- function(x, tol=10*sqrt(.Machine$double.eps))
 }
  
 duplicationMatrix <- duplication_matrix <- function (n=1)
-{# translated by AA from Octave code written of <Kurt.Hornik@wu-wien.ac.at>
+{# translated by AA from Octave code written by <Kurt.Hornik@wu-wien.ac.at>
   if ( (n<1) |  (round (n) != n) ) stop ("n must be a positive integer")
   d <- matrix (0, n * n, n * (n + 1) / 2)
   ## KH: It is clearly possible to make this a LOT faster!
@@ -3957,12 +3990,14 @@ duplicationMatrix <- duplication_matrix <- function (n=1)
   return(d)
 }
 
-vech <- function(A) A[lower.tri(A, diag=TRUE)]  
+vech <- function(A) if(is.matrix(A)) A[lower.tri(A, diag=TRUE)] else 
+  stop("argument 'A' must be a matrix")
 
 vech2mat <- function(v) 
 {# inverse function of vech(A)
+  if(mode(v) != "numeric" | !is.vector(v)) stop("wrong type of argument")
   n <- round((-1 + sqrt(1 + 8*length(v)))/2)
-  if(length(v) != n*(n+1)/2) stop("wrong length of v") 
+  if(length(v) != n*(n+1)/2) stop("wrong length of vector 'v'") 
   A <- matrix(0, n, n)
   A[lower.tri(A,TRUE)] <- v
   return(A + t(A) - diag(diag(A), n))
@@ -4182,9 +4217,9 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     if(!is.null(id.i <- data.par$id.i)) 
       text(data[id.i,1], data[id.i,2], id.i, cex=cex/1.5, pos=1)
     }
-  pr.levels <- exp(log.levels)  
-  names(pr.levels) <- as.character(probs)
-  contour(x1, x2, pdf, levels=pr.levels, 
+  d.levels <- exp(log.levels)  
+  names(d.levels) <- as.character(probs)
+  contour(x1, x2, pdf, levels=d.levels, 
     labels=paste("p=", as.character(probs), sep=""), add=TRUE, ...)
   if(landmarks != "") {
     if(landmarks == "auto") { 
@@ -4205,7 +4240,9 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     lines(x.pts, y.pts, lty=2)
     }  
   options(oo) 
-  return(list(x=x1, y=x2, names=compNames, density=pdf, prob.levels=pr.levels))
+  cL <- contourLines(x1, x2, pdf, levels=d.levels)
+  for(j in 1:length(probs)) cL[[j]]$prob <- probs[j]
+  return(list(x=x1, y=x2, names=compNames, density=pdf, contourLines=cL))
 }    
 
 plot.selm <- function(x, param.type="CP", which = c(1:4), caption, 
@@ -4743,3 +4780,244 @@ mean.SECdistrUv <- function(x) dp2cp(object=x, upto=1)
 mean.SECdistrMv <- function(x) dp2cp(object=x, upto=1)[[1]]
 sd.SECdistrUv <- function(x) dp2cp(object=x, upto=2)[2]
 vcov.SECdistrMv <- function(object) dp2cp(object=object, upto=2)[[2]]
+
+#---
+#
+profile.selm <- function(fitted, param.type, param.name, param.values, npt,
+  opt.control=list(), plot.it=TRUE, log=TRUE, level, trace=FALSE, ...)
+{ obj <- fitted
+  obj.class <- class(obj)
+  if(obj.class != "selm" | attr(obj.class, "package") != "sn") 
+    stop(gettextf("wrong object class: '%s'", obj.class), domain = NA)
+  param.type <- match.arg(toupper(param.type), c("DP", "CP"))
+  family <- slot(obj, "family")
+  obj.par <- slot(obj, "param")
+  dp.full <- if(length(obj.par$fixed)==0) obj.par$dp else obj.par$dp.complete
+  if(param.type == "CP") { 
+    cp.full <- mle.full <- dp2cpUv(dp.full, family)
+    profile.comp <- match(param.name, names(cp.full))
+    }
+  else {
+    mle.full <- dp.full
+    profile.comp <- match(param.name, names(dp.full))
+    }
+  fixed.names <- setdiff(names(obj.par$dp.complete), names(obj.par$dp))
+  if(length(fixed.names) > 0) {
+    fixed.comp <- match(fixed.names, names(dp.full))
+    fixed.values <- mle.full[fixed.comp] 
+    }
+    else fixed.comp <- fixed.values <- NULL
+  clash <- intersect(fixed.comp, profile.comp)
+  if(length(clash) > 0)  stop(paste("parameter component No.", clash,
+       "is fixed in the model, it cannot be profiled"))
+  p <- slot(obj, "size")["p"]
+  method <- slot(obj, "method")
+  penalty <- if(method[1] == "MPLE") method[2] else NULL
+  constr.comp <- c(profile.comp, fixed.comp)
+  free.comp <- setdiff(1:length(dp.full), constr.comp)
+  if(anyNA(profile.comp)) stop("some wrong item in param.name")
+  npc <- length(profile.comp) # number of terms in profile.comp (either 1 or 2)
+  if((npc != 1) && (npc != 2)) stop("wrong length(param.name)")
+  if(missing(npt)) npt <- rep((50+npc) %/% npc, npc) else
+     if(length(npt) != npc) npt <- rep(npt[1], npc)
+  log.comp <- if(!log)  rep(NA, npc) else { 
+    if(param.type == "DP") match(c("omega", "nu"), param.name, NULL)   
+    else match(c("s.d.", "gamma2"), param.name, NULL) }  
+  logScale <- (1:2) %in% which(!is.na(log.comp))   
+  m <- slot(obj,"input")$model
+  x <- model.matrix(attr(m, "terms"), data=m)
+  w <- slot(obj, "input")$model$"(weights)"
+  weights <- if(is.null(w)) rep(1, nrow(x)) else w
+  opt.control$fnscale <- (-1)
+  par.val <- param.values
+  if(npc == 1) { # one-parameter profile logLik
+    par.val <- as.vector(par.val)
+    if(any(diff(par.val) <= 0)) stop("param.values not an increasing sequence")
+    if(prod(range(par.val) - mle.full[profile.comp]) > 0)
+      stop(gettextf("param range does not bracket the MLE/MPLE point: '%s'"),
+        format(mle.full[profile.comp]), domain=NA)
+    logScale <- logScale[1]
+    if(length(par.val) > 2) npt <- length(par.val) else 
+      par.val <- seqLog(par.val[1], par.val[2], length=npt, logScale)
+    logL <- numeric(npt)
+    for(k in 1:npt) {
+      constr.values <- c(par.val[k], fixed.values)
+      free.values <- mle.full[-constr.comp] 
+      opt <- optim(free.values, constrained.logLik,  method="BFGS",
+        control=opt.control, param.type=param.type, x=x, y=m[[1]],
+        weights=weights, family=family, constr.comp=constr.comp, 
+        constr.values=constr.values, penalty=penalty, trace=trace)
+      logL[k] <- opt$value  
+      }
+    out <- list(call=match.call(), param=par.val, logLik=logL)
+    names(out)[2] <- param.name  
+    deviance <- 2*(logLik(obj) - logL)
+    if(any(deviance + sqrt(.Machine$double.eps) < 0)) warning(paste(
+      "A relative maximum of the (penalized) likelihood seems to have been",
+      "taken as\n the MLE (or MPLE).",
+      "Re-fit the model with starting values suggested by the plot."))
+    s <- diff((sign(diff(deviance))))
+    if(length(which(s != 0)) > 1) {
+       message(paste("The log-likelihood function appears to have multiple",
+        "maxima.\n", "Confidence intervals may be handled improperly.\n"))
+       # readline("Press <Enter> to continue<cr>")
+       # browser()
+       }
+    if(missing(level)) level <- 0.95
+    level <- level[1]
+    if(is.na(level) | level <= 0 | level >= 1) {
+      message("illegal level value is reset to default value")
+      level <- 0.95 }
+    if(obj.par$boundary) {
+      message("parameter estimates at the boundary, no confidence interval")
+      level <- NULL
+      } 
+    if(!is.null(level)) {
+      q <- qchisq(level[1], 1)
+      if(deviance[1] < q | deviance[npt] < q) warning(
+        "parameter range seems short; confidence interval may be inaccurate")
+      dev.fn <- splinefun(par.val, deviance - q, method="monoH.FC")
+      rootL <- try(uniroot(dev.fn, lower=min(par.val),  check.conv=TRUE, 
+                   upper=mle.full[profile.comp],  extendInt="downX"))
+      rootH <- try(uniroot(dev.fn, lower=mle.full[profile.comp], 
+                   upper=max(par.val), check.conv=TRUE, extendInt="upX")) 
+      fail.confint <- (class(rootL)=="try-error" | class(rootH)=="try-error")                   
+      out$confint <- if(fail.confint) rep(NULL,2) else c(rootL$root, rootH$root)   
+      out$level <- level                         
+      }
+    if(plot.it) {  
+      if(logScale) { 
+        par.val <-  log(par.val)
+        param.name <- paste("log(", param.name, ")", sep="")
+        }
+      plot(par.val, deviance, type="l", xlab=param.name,
+          ylab="2*{max(logLik) - logLik}", ...)
+      if(logScale) {
+          rug(log(mle.full[profile.comp]), ticksize = 0.02)
+          if(is.null(level) | fail.confint) low <- hi <- NULL else { 
+            low <- log(rootL$root)
+            hi <- log(rootH$root) }}
+        else {
+          rug(mle.full[profile.comp], ticksize = 0.02)
+          if(is.null(level)| fail.confint) low <- hi <- NULL else { 
+            low <- rootL$root
+            hi <- rootH$root
+          }}
+      if(!is.null(level) & !fail.confint) { 
+        abline(h=q, lty=3, ...)
+        lines(rep(low, 2), c(par()$usr[3], q), lty=3, ...)
+        lines(rep(hi, 2), c(par()$usr[3], q), lty=3, ...)
+        }
+      }
+    }
+  else { # npc==2, two-parameter profile logLik
+    if(length(par.val) != 2) stop("wrong dimension of param.values")
+    u <- unlist(lapply(par.val, length))
+    param1 <- par.val[[1]]
+    param2 <- par.val[[2]]
+    if(prod(range(param1) - mle.full[profile.comp][1]) > 0 |
+          prod(range(param2) - mle.full[profile.comp][2]) > 0) stop(
+       gettextf("parameter range does not bracket the MLE/MPLE point: '%s'",
+           paste(format(mle.full[profile.comp]), collapse=",")), domain=NA)  
+    if(u[1] > 2) npt[1] <- u[1] else 
+      param1 <- seqLog(param1[1], param1[2], length=npt[1], logScale[1])
+    if(u[2] > 2) npt[2] <- u[2] else   
+      param2 <- seqLog(param2[1], param2[2], length=npt[2], logScale[2]) 
+    logL <- matrix(NA, npt[1], npt[2])
+    if(any(diff(param1) <= 0)) 
+       stop("param.values[[1]] not an increasing sequence")
+    if(any(diff(param2) <= 0)) 
+       stop("param.values[[2]] not an increasing sequence")
+    for(k1 in 1:npt[1]) for(k2 in 1:npt[2]){
+      constr.values <- c(param1[k1], param2[k2], fixed.values)
+      free.values <- mle.full[-constr.comp] 
+      opt <- optim(free.values, constrained.logLik,  method="BFGS",
+        control=opt.control, param.type=param.type, x=x, y=m[[1]],
+        weights=weights, family=family, constr.comp=constr.comp, 
+        constr.values=constr.values, penalty=penalty, trace=trace)  
+      logL[k1,k2] <- opt$value  
+      }
+    out <- list(call=match.call(), param1=param1, param2=param2, logLik=logL)
+    names(out)[2:3] <- param.name  
+    if(missing(level)) level <- c(0.25, 0.5, 0.75, 0.9, 0.95, 0.99)
+    if(anyNA(level) | any(level<=0) | any(level>=1)) {
+      message("illegal level values; vector 'level' reset to default value")
+      level <- c(0.25, 0.5, 0.75, 0.9, 0.95, 0.99) }
+    if(obj.par$boundary) {
+      message("parameter estimates at the boundary, no confidence regions")
+      level <- NULL
+      } 
+    q <- if(is.null(level)) c(1, 2, 5, 8, 15) else  qchisq(level, 2) 
+    deviance <- 2*(logLik(obj)-logL)
+    if(any(deviance + sqrt(.Machine$double.eps) < 0)) warning(paste(
+      "A relative maximum of the (penalized) likelihood seems to have taken",
+      "as\n the MLE (or MPLE).",
+      "Re-fit the model with starting values suggested by the plot."))
+    cL <- contourLines(param1, param2, deviance, levels=q)
+    out$deviance.contour <- cL
+    if(!is.null(level)) for(j in 1:length(cL)) {
+      k <- which(q == cL[[j]]$level)
+      out$deviance.contour[[j]]$prob <- level[k]
+      }
+    if(plot.it) {
+      if(logScale[1]) { 
+	    param1 <-  log(param1)
+    	param.name[1] <- paste("log(", param.name[1], ")", sep="")
+    	}		  
+      if(logScale[2]) {
+	    param2 <-  log(param2)
+	    param.name[2] <- paste("log(", param.name[2], ")", sep="")
+	    }      
+      contour(param1, param2, deviance, levels=q, labels=level,
+          xlab=param.name[1], ylab=param.name[2], ...)
+      mark <- mle.full[profile.comp]
+      mark[logScale] <- log(mark[logScale])
+      points(mark[1], mark[2], ...)  
+      }
+    }
+  invisible(out)
+}
+
+constrained.logLik <- function(free.param, param.type, x, y, weights, family, 
+    constr.comp=NA, constr.values=NA, penalty=NULL, trace=FALSE)
+{
+ if(trace) cat("constrained.logLik, free.param:", format(free.param))
+  n <- sum(weights)
+  p <- ncol(x)
+  param <- numeric(length(free.param) + length(constr.values))
+  param[constr.comp] <- constr.values
+  param[-constr.comp] <- free.param
+  par0 <- c(0, param[-(1:p)])
+  # if(par0[2] <= 0) return(-Inf)
+  # if(family=="ST" & par0[4] <= 0) return(-Inf) 
+  # if(family=="ST" & par0[4] > 1e4) par0[4] <- Inf
+  dp0 <- if(param.type =="DP") par0 else 
+     cp2dpUv(par0, family, tol=1e-7, silent=TRUE)
+  if(anyNA(dp0)) {
+      if(is.null(dp0)) {message("null dp0"); browser()}
+    excess <- attr(dp0, "excess")
+    if(length(excess) == 0) {message("0-length excess"); browser() }
+    if(is.null(excess) | is.na(excess) | abs(excess)==Inf ) 
+        excess <- (.Machine$double.xmax)^(1/3)
+        # {message("bad excess"); browser()}
+    return(-1e9 * (1+ excess)^2)
+    } 
+  d.fn <- get(paste("d", tolower(family), sep=""), inherits = TRUE)
+  logL <- try(d.fn((y - x %*% param[1:p]), dp=dp0, log=TRUE))
+  if(class(logL) == "try-error") browser()
+  Q <- if(is.null(penalty)) 0 else {
+    penalty.fn <- get(penalty, inherits = TRUE)
+    nu <- if(family=="ST") par0[4] else NULL
+    penalty.fn(dp0[3], nu)
+    } 
+  out <- if(anyNA(logL)) -Inf else sum(logL * weights) - Q 
+  if(trace) cat(", logL:", format(out), "\n")
+  return(out)
+}
+
+seqLog <- function(from, to, length, logScale=FALSE) {
+  if(logScale & any(c(from, to) <= 0)) 
+    stop("logScale requires positive arguments 'from' and 'to'")
+  if(logScale)  exp(seq(log(from), log(to), length.out=length)) else
+    seq(from, to, length.out=length) 
+  }

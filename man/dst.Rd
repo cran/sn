@@ -15,8 +15,8 @@
 
 \usage{
 dst(x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, log=FALSE) 
-pst(x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method, ...)
-qst(p, xi=0, omega=1, alpha=0, nu=Inf, tol=1e-08, dp=NULL, method, ...)
+pst(x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
+qst(p, xi=0, omega=1, alpha=0, nu=Inf, tol=1e-08, dp=NULL, method=0, ...)
 rst(n=1, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL)
 }
 
@@ -48,7 +48,7 @@ specified, the individual parameters cannot be set.  }
 
 \item{method}{an integer value between \code{0} and \code{4} which selects 
   the computing method; see \sQuote{Details} below for the meaning of these
-  values. If \code{method=0} (default values),  an automatic choice is made
+  values. If \code{method=0} (default value),  an automatic choice is made
   among the four actual computing methods, which depends on the other
   arguments.}
 

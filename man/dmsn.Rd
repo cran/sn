@@ -86,7 +86,12 @@ including subsequent developments.
 Notice that the location vector \code{xi} does not represent the mean vector 
 of the distribution. Similarly, \code{Omega} is not \emph{the} covariance 
 matrix of the distribution, although it is \emph{a} covariance matrix. 
-}
+Finally, the components of \code{alpha} are not equal to the slant parameters 
+of the marginal  distributions; to fix the marginal parameters at prescribed 
+values, it is convenient to start from the OP parameterization, as illustrated 
+in the \sQuote{Examples} below. Another option is to start from the \acronym{CP}
+parameterization, but notice that, at variance from the \acronym{OP}, not all
+\acronym{CP} sets are invertible to lend a \acronym{DP} set.}
 
 \references{
 
@@ -106,7 +111,7 @@ The multivariate skew-normal distribution.
 }
 
 \seealso{\code{\link{dsn}},  \code{\link{dmst}}, \code{\link[mnormt]{dmnorm}},
-  \code{\link{op2dp}}}
+  \code{\link{op2dp}},  \code{\link{cp2dp}}}
 
 \examples{
 x <- seq(-3,3,length=15)
@@ -121,13 +126,14 @@ p2 <- pmsn(c(2,1), xi, Omega, alpha, abseps=1e-12, maxpts=10000)
 #
 rnd <- rmsn(10, xi, Omega, alpha)
 #
-# Recall: the components of alpha are not the slant parameters of the marginal 
-# distributions; to fix these parameters, it is convenient to start 
-# from the OP parameterization, for instance as follows:
+# use OP parameters to fix marginal shapes at given lambda values:
 op <- list(xi=c(0,1), Psi=matrix(c(2,2,2,3), 2, 2), lambda=c(5, -2))
-rnd2 <- rmsn(10, dp=op2dp(op,"SN"))
-
+rnd <- rmsn(10, dp=op2dp(op,"SN"))
+# 
+# use CP parameters to fix mean vector, variance matrix and marginal skewness:
+cp <- list(mean=c(0,0), var.cov=matrix(c(3,2,2,3)/3, 2, 2), gamma1=c(0.8, 0.4))
+dp <- cp2dp(cp, "SN")
+rnd <- rmsn(5, dp=dp)
 }
-
 \keyword{distribution}
 \keyword{multivariate}

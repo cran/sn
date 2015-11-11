@@ -8,15 +8,15 @@
 \encoding{UTF-8}
 \title{Piedmont wines data}
 
-\description{Data refer to chemical properties of 178 specimens of 3 types
-  of wine produced in the Piedmont region of Italy. }
+\description{Data refer to chemical properties of 178 specimens of three 
+  types of wine produced in the Piedmont region of Italy. }
    
 \usage{data(wines)}
  
 \format{
   A data frame with 178 observations on the following 28 variables.
   \tabular{ll}{%
-    \code{wine}\tab wine name (categorical variable, i.e. factor, 
+    \code{wine}\tab wine name (categorical variable % i.e. factor, 
          with levels \code{Barbera}, \code{Barolo}, \code{Grignolino})\cr
     \code{alcohol}\tab alcohol percentage (numeric)\cr
     \code{sugar}\tab sugar-free extract (numeric)\cr
@@ -38,9 +38,9 @@
     \code{proanthocyanins}\tab proanthocyanins (numeric)\cr
     \code{colour}\tab colour intensity (numeric)\cr
     \code{hue}\tab hue (numeric)\cr
-    \code{OD_dw}\tab \eqn{OD_{280}/OD_{315}}{OD₂₈₀/OD₃₁₅} of diluted wines
+    \code{OD_dw}\tab \eqn{OD_{280}/OD_{315}}{OD₂??/OD₃₁?} of diluted wines
           (numeric)\cr
-    \code{OD_fl}\tab \eqn{OD_{280}/OD_{315}}{OD₂₈₀/OD₃₁₅} of flavanoids 
+    \code{OD_fl}\tab \eqn{OD_{280}/OD_{315}}{OD₂??/OD₃₁?} of flavanoids 
           (numeric)\cr          
     \code{glycerol}\tab glycerol (numeric)\cr
     \code{butanediol}\tab 2,3-butanediol (numeric)\cr
