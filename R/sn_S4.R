@@ -391,3 +391,7 @@ setMethod("fitted", signature(object="mselm"), fitted.mselm)
 setMethod("residuals", signature(object="selm"), residuals.selm)
 setMethod("residuals", signature(object="mselm"), residuals.mselm)
  
+# setMethod("profile", signature(object="selm"), profile.selm)
+setMethod("confint", signature(object="selm"), confint.selm)
+setMethod("predict", signature(object="selm"), predict.selm)
+

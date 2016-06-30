@@ -63,8 +63,9 @@ One- or two-dimensional profile (penalized) log-likelihood function of a
    }
   
   \item{log}{a logical value (default: \code{TRUE})  indicating whether the
-   scale and tail-weight parameters must be log-transformed, if case any of
-   them occurs in \code{param.name}. This applied to \code{omega} and 
+   scale and tail-weight parameter (the latter only for the \acronym{ST} 
+   family) must be log-transformed, if case any of them occurs in   
+   \code{param.name}. This applies to \code{omega} and 
    \code{nu} in the \code{DP} parameter set and to \code{s.d.} and 
    \code{gamma2} in the \code{CP} parameter set.}
    
@@ -110,7 +111,7 @@ Azzalini and Capitanio (2014).
 When the \acronym{MLE} occurs on the frontier of the parameter space, 
 a message is issued and no confidence interval is produced, while in the
 two-parameter case the plot is not labelled with probability values, but only
-deviance levels.
+with deviance levels.
 }
 
 \value{An invisible list whose components, described below, are partly 
@@ -160,9 +161,9 @@ m1 <-  selm(log(Fe) ~ BMI + LBM, family = "sn", data = ais)
 
 pll <- profile(m1, "dp", param.name="alpha", param.val=c(-3,2))
 
-profile(m1, "cp", param.name="gamma1", param.val=seq(-0.7, 0.5, by=0.1))
+profile(m1, "cp", param.name="gamma1", param.val=seq(-0.7, 0.4, by=0.1))
 
-# reduce grid points to save time
+# in the next example, we reduce grid points to save execution time
 pll <- profile(m1, "cp", param.name=c("(Intercept.CP)", "gamma1"), 
          param.val=list(c(1.5, 4), c(-0.8, 0.5)), npt=c(11,16) )                 
                                       

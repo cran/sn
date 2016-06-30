@@ -32,7 +32,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    }
 
   \item{family}{a character string which selects the parametric family
-   of \acronym{SEC} type  assumed for the error term. It must one of
+   of \acronym{SEC} type  assumed for the error term. It must be one of
    \code{"SN"} (default), \code{"ST"} or \code{"SC"}, which correspond to the
    skew-normal, the skew-\emph{t} and the skew-Cauchy family, respectively.
    See \code{\link{makeSECdistr}} for more information on these families and
@@ -136,16 +136,20 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   Background information on \acronym{MLE} in the context of \acronym{SEC} 
   distributions is provided by Azzalini and Capitanio (2014); 
   see specifically Chapter 3, Sections 4.3, 5.2,  6.2.5--6. For additional
-  information, see the original research work referenced therein.
+  information, see the original research work referenced therein as well as
+  the sources quoted below.
  
   Although the density functionof SEC distributions are expressed using
   \acronym{DP} parameter sets, the methods associated to the objects created
   by this function communicate, by default, their outcomes in the \acronym{CP}
   parameter set, or its variant form pseudo-\acronym{CP} when \acronym{CP}
   does not exist; the \sQuote{Note} at \code{\link{summary.selm}} explains why. 
-  A more detailed discussion is available in Sections 3.1.4--6 and 5.2.3 of 
-  Azzalini and Capitanio (2014) and in Section 4 of Arellano-Valle and 
-  Azzalini (2008).
+  A more detailed discussion  is provided by Azzalini and Capitanio 
+  (1999,  Section 5.2) and Arellano-Valle and  Azzalini (2008, Section 4), 
+  for the univariate and the multivariate SN case, respectively; 
+  an abriged account is available in Sections 3.1.4--6 and 5.2.3 of 
+  Azzalini and Capitanio (2014). For the ST case, see Arellano-Valle 
+  and  Azzalini (2013).
   
   There is a known open issue which affects computation of the information
   matrix of the multivariate skew-normal distribution when the slant
@@ -172,7 +176,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   If \code{family="ST"} or \code{family="SC"}, a symmetric Student's \eqn{t} 
   or Cauchy distribution is adopted. 
   
-  Under the constraint  \eqn{\alpha=0}, the location parameter \eqn{\xi}{xi}
+  Under the constraint \eqn{\alpha=0}, the location parameter \eqn{\xi}{xi}
   coincides with the mode and the mean of the distribution, when the latter 
   exists; in addition, when the covariance matrix exists, it differs from 
   \eqn{\Omega}{Omega} only by a multiplicative factor. For this reason,
@@ -265,13 +269,24 @@ Arellano-Valle, R. B., and Azzalini, A. (2008).
  \emph{J. Multiv. Anal.} \bold{99}, 1362--1382.
   Corrigendum: \bold{100} (2009), 816.
 
+Arellano-Valle, R. B., and Azzalini, A. (2011, available online 12 June 2011).
+  The centred parametrization and related quantities for the  skew-\emph{t} 
+  distribution.
+  \emph{J. Multiv. Anal.} \bold{113}, 73--90. 
+
+Azzalini, A. and Capitanio, A. (1999).
+  Statistical applications of the multivariate skew normal distribution.
+  \emph{J.Roy.Statist.Soc. B} \bold{61}, 579--602. 
+  Full-length version available at \url{http://arXiv.org/abs/0911.2093}
+
+Azzalini, A. and Arellano-Valle, R. B. (2013, available online 30 June 2012). 
+  Maximum penalized likelihood estimation for skew-normal and skew-\emph{t} 
+  distributions. \emph{J. Stat. Planning & Inference} \bold{143}, 419--433. 
+
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 
  \emph{The Skew-Normal and Related Families}. 
  Cambridge University Press, IMS Monographs series.
 
-Azzalini, A. and Arellano Valle, R. V. (2013, available on line 30 June 2012). 
-  Maximum penalized likelihood estimation for skew-normal and skew-\emph{t} 
-  distributions. \emph{J. Stat. Planning & Inference} \bold{143}, 419--433. 
 }
 
 \author{Adelchi Azzalini}
@@ -279,8 +294,8 @@ Azzalini, A. and Arellano Valle, R. V. (2013, available on line 30 June 2012).
 \section{Warning}{
 The estimates are obtained by numerical optimization methods and, as
 usual in similar cases, there is no guarantee that the maximum of the
-objective function is achieved. Both consideration of model simplicity
-and numerical experience indicate that models with \acronym{SN} error
+objective function is achieved. Consideration of model simplicity
+and of numerical experience indicate that models with \acronym{SN} error
 terms generally produce more reliable results compared to those with 
 the \acronym{ST} family. Take into account that models involving a 
 traditional Student's \eqn{t} distribution with unknown degres of freedom 
@@ -290,8 +305,11 @@ Consequently, care must be exercised, especially so if one works with
 the (multivariate) \acronym{ST} family. 
 Consider re-fitting a model with different starting values and, 
 in the \acronym{ST} case, building the profile log-likelihood for a range 
-of \eqn{\nu} values. Details on the numerical optimization which has produced
-object \code{obj} can be estracted with \code{slot(obj, "opt.method")}.
+of \eqn{\nu} values; function \code{\link{profile.selm}} can be useful here.
+
+Details on the numerical optimization which has produced object \code{obj} 
+can be estracted with \code{slot(obj, "opt.method")}; inspection of this
+component can be useful in problematic cases.
 Be aware that  occasionally \code{optim} and \code{nlminb} declare successful
 completion of a regular minimization problem at a point where the Hessian 
 matrix is not positive-definite. Two cases of this sort are presented in the 
@@ -308,7 +326,8 @@ final portion of the examples below.
 
 \item
   the generic functions \code{\link{coef}}, \code{\link{logLik}}, 
-  \code{\link{vcov}}.
+  \code{\link{vcov}}, \code{\link{profile}}, \code{\link{confint}}, 
+  \code{\link{predict}}
 
 \item
   the underlying function \code{\link{selm.fit}} and those further down

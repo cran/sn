@@ -30,9 +30,9 @@ rsn(n=1, xi=0, omega=1, alpha=0, tau=0,  dp=NULL)
 
  \item{omega}{vector of  scale parameters;  must be positive.}
 
- \item{alpha}{  vector of slant parameters; \code{+/- Inf} is allowed.
-   With \code{psn} and \code{qsn}, it must be of length 1 if 
-   \code{engine="T.Owen"}.}
+ \item{alpha}{vector of slant parameter(s); \code{+/- Inf} is allowed.
+   With \code{psn}, it must be of length 1 if \code{engine="T.Owen"}. 
+   With \code{qsn}, it must be of length 1.}
 
  \item{tau}{a single value representing the `hidden mean' parameter 
    of the \acronym{ESN} distribution; \code{tau=0} (default) corresponds to 

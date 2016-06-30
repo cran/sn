@@ -145,8 +145,10 @@ this case these represent merely the matrices of second derivatives;
 \seealso{\code{\link{dsn}}, \code{\link{dmsn}}, \code{\link{dp2cp}}}
 
 \examples{
-infoE <- sn.infoUv(dp=c(0,1,5))
-infoO <- sn.infoUv(cp=c(0,1,0.8), y=rsn(50, dp=c(0,1,5)))
+infoE <- sn.infoUv(dp=c(0,1,5))           # expected information
+set.seed(1); rnd <- rsn(100, dp=c(0, 1, 3))
+fit <- selm(rnd~1, family="SN")
+infoO <- sn.infoUv(cp=coef(fit), y=rnd)   # observed information
 #
 data(wines)
 X <- model.matrix(~ pH + wine, data=wines)

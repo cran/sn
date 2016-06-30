@@ -15,6 +15,8 @@
 % \alias{residuals,selm-method}    % superseded by residuals.selm.Rd
 \alias{vcov,selm-method}
 \alias{weights,selm-method}
+\alias{confint,selm-method}
+\alias{predict,selm-method}
 %
 \alias{mselm-class}
 % \alias{coef,mselm-method}        % superseded by coef.selm.Rd
@@ -72,6 +74,9 @@ An object can be created by a successful call to function \code{selm}.}
     \code{fitted} \tab \code{signature(object = "selm")}: ... \cr
     \code{vcov} \tab \code{signature(object = "selm")}: ... \cr
     \code{weights} \tab \code{signature(object = "selm")}: ... \cr
+    \code{profile} \tab \code{signature(fitted = "selm")}: ... \cr
+    \code{confint} \tab \code{signature(object = "selm")}: ... \cr
+    \code{predict} \tab \code{signature(object = "selm")}: ... \cr
     \tab \cr
     \code{coef} \tab \code{signature(object = "mselm")}: ... \cr
     \code{logLik} \tab \code{signature(object = "mselm")}: ... \cr

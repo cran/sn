@@ -1,6 +1,6 @@
 #  file sn/R/sn-funct.R  (various functions)
 #  This file is a component of the package 'sn' for R 
-#  copyright (C) 1997-2015 Adelchi Azzalini
+#  copyright (C) 1997-2016 Adelchi Azzalini
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -962,19 +962,20 @@ modeSECdistrMv <- function(dp, family)
   Omega <- dp[[2]]
   alpha <- dp[[3]]
   delta_etc <- delta.etc(alpha, Omega)
-  alpha.star <- delta_etc$alpha.star
-  if(alpha.star <  .Machine$double.eps) return(dp[[1]])
+  if(delta_etc$alpha.star < .Machine$double.eps) return(dp[[1]])
   lc.family <- tolower(family)
   if(lc.family == "esn") lc.family <- "sn"
   direct <- sqrt(diag(Omega)) * (delta_etc$delta/delta_etc$delta.star)
-  if(lc.family == "sn") {# case SN: book (5.49), +ESN
-    dp1 <- c(xi=0, omega=1, alpha=alpha.star, dp$tau) 
-    mode.can <- modeSECdistrUv(dp1, family)
-    mode <- as.numeric(dp[[1]] + mode.can * direct)  
-  } else { #  ST, SC: book Prop. 6.2
+  if(lc.family == "sn") {# case SN: book (5.49);
+    # the same result is used also for ESN, see handwritten Problem 5.18 
+    dp1 <- c(xi=0, omega=1, alpha=delta_etc$alpha.star, dp$tau) 
+    mode.canon <- modeSECdistrUv(dp1, family)
+    mode <- as.numeric(dp[[1]] + mode.canon * direct)  
+  } else {# case ST, SC: book Proposition 6.2, p.178, 
+    # but maximizes along canonical direction, instead of solving equation
     d.fn <- get(paste("dm", lc.family, sep=""), inherits = TRUE)
     f <- function(u, dp, direct) -d.fn(dp[[1]]+ u*direct, dp=dp, log=TRUE)
-    maxM <- max(dp2cpMv(dp, family, "auto", upto=1)[[1]] - dp[[1]]/direct)
+    maxM <- max(abs(dp2cpMv(dp, family, "auto", upto=1)[[1]] - dp[[1]]/direct))
     opt <- optimize(f, lower=0, upper=maxM, dp=dp, direct=direct)
     mode <- as.numeric(dp[[1]]+ opt$minimum * direct)
   }
@@ -1453,26 +1454,32 @@ st.gamma2 <- function(delta, nu)
   gamma2
   }
 #
-st.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE) 
+st.cp2dp <- 
+function(cp, cp.type="proper", start=NULL, silent=FALSE, tol=1e-8, trace=FALSE) 
 {
-  fn0 <- function(log.nu, g1) st.gamma1(1, exp(log.nu)) - g1
   if(any(is.na(cp))) stop("NA's in argument 'cp'")
+  if(!(cp.type %in% c("proper", "pseudo"))) stop("invalid cp.type") 
+  a <- if(cp.type == "proper") rep(0,4) else (1:4) 
   p <- length(cp)-3
   x.names <- if(p>1) names(cp[2:p]) else NULL
   gamma1 <- cp[p+2]
   abs.g1 <- abs(gamma1)
   gamma2 <- cp[p+3]
+  tiny <- sqrt(.Machine$double.eps)
+  fn0 <- function(log.nu, g1, a) st.gamma1(1, exp(log.nu) + a[3]) - g1
   if(abs.g1 <=  0.5*(4-pi)*(2/(pi-2))^1.5) {
     # book: (2.29)+(3.20)
     feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3))
     excess <- max(0, 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3) - gamma2)
     } 
   else {
-    if(abs.g1 >= 4) { feasible <- FALSE; excess <- Inf } else {
-      r0 <- uniroot(fn0, interval=c(log(4), 1000), tol=tol, g1=abs.g1)
-      nu0 <- exp(r0$root) 
-      feasible <- (gamma2 >= st.gamma2(1,nu0))
-      excess <- max(0, st.gamma2(1,nu0) - gamma2)
+    if(abs.g1 >= 4 & cp.type=="proper") {
+        feasible <- FALSE; excess <- Inf
+      } else {
+        r0 <- uniroot(fn0, c(log(4-a[4]+tiny), 1000), tol=tol, g1=abs.g1, a)
+        nu0 <- exp(r0$root) + a[3] 
+        feasible <- (gamma2 >= st.gamma2(1, nu0+a[4]))
+        excess <- max(0, st.gamma2(1, nu0+a[4]) - gamma2)
       }
     }
   if(!feasible) {
@@ -1481,28 +1488,33 @@ st.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
       attr(out, "excess") <- excess
       return(out)} 
     else stop("CP outside feasible region")}
-  delta <- 0.75 * sign(gamma1)
-  old <- c(delta, Inf)
+  if(is.null(start)){  
+    delta <- 0.75 * sign(gamma1)
+    old <- c(delta, Inf)
+    } else {
+    delta <- start[p+2]/sqrt(1+start[p+2]^2)
+    old <- c(delta, start[p+3])
+    }
   step <- Inf
-  fn1 <- function(delta, g1, nu) st.gamma1(delta, nu) - g1
-  fn2 <- function(log.nu, g2, delta) st.gamma2(delta, exp(log.nu)) - g2
+  fn1 <- function(delta, g1, nu, a) st.gamma1(delta, nu+a[3]) - g1
+  fn2 <- function(log.nu, g2, delta, a) st.gamma2(delta, exp(log.nu)+a[4]) - g2
   out <- NULL
   while(step > tol){
-    fn21 <- fn2(log(4 + sqrt(.Machine$double.eps)), gamma2, delta)
-    fn22 <- fn2(log(1e4), gamma2, delta)
+    fn21 <- fn2(log(4 - a[4]+ tiny), gamma2, delta, a)
+    fn22 <- fn2(log(1e4), gamma2, delta, a)
     if(any(is.na(c(fn21, fn22)))) stop("parameter inversion failed")  
     if(fn21 * fn22 > 0) {
       out <- NA
       attr(out, "excess") <- fn21*fn22
       break}
-    r2 <- uniroot(fn2, interval=c(log(4 + sqrt(.Machine$double.eps)), 100), 
-           tol=tol, g2=gamma2, delta=delta)
+    r2 <- uniroot(fn2, interval=c(log(4-a[4] +sqrt(.Machine$double.eps)), 100), 
+           tol=tol, g2=gamma2, delta=delta, a=a)
     nu <- exp(r2$root)
-    if(fn1(-1, gamma1, nu) * fn1(1, gamma1, nu)> 0) {
+    if(fn1(-1, gamma1, nu, a) * fn1(1, gamma1, nu, a)> 0) {
       out <- NA
-      attr(out, "excess") <- fn1(-1, gamma1, nu) * fn1(1, gamma1, nu)
+      attr(out, "excess") <- fn1(-1, gamma1, nu, a) * fn1(1, gamma1, nu, a)
       break}
-    r1 <- uniroot(fn1, interval=c(-1,1), tol=tol, g1=gamma1, nu=nu)
+    r1 <- uniroot(fn1, interval=c(-1,1), tol=tol, g1=gamma1, nu=nu, a=a)
     delta <- r1$root
     new <- c(delta, nu)
     step <- abs(old-new)[1] + abs(log(old[2])- log(new[2]))
@@ -1511,8 +1523,10 @@ st.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
     old <- new
     }
   if(anyNA(out)) return(out)
-  mu.z <- delta * b(nu)
-  omega <- cp[p+1]/sqrt(nu/(nu-2) - mu.z^2)
+  mu.z <- function(delta, nu) delta*b(nu)
+  kappa2 <- function(delta,nu) nu/(nu-2) - mu.z(delta,nu)^2
+  omega <- cp[p+1]/sqrt(kappa2(delta, nu+a[2]))
+  xi <- cp[1] - omega*mu.z(delta, nu+a[1])
   if(omega < 0) {
     if(silent) {
       out <- NA
@@ -1520,7 +1534,7 @@ st.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
       return(out)} 
     else stop("CP outside feasible region")}
   alpha <- delta/sqrt(1-delta^2)
-  dp <- c(cp[1] - omega*mu.z, if(p>1) cp[2:p] else NULL, omega, alpha, nu)
+  dp <- c(xi, if(p>1) cp[2:p] else NULL, omega, alpha, nu)
   names(dp) <- param.names("DP", "ST", p, x.names=x.names)
   return(dp)
 }
@@ -2424,8 +2438,10 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
     score <- sn.pdev.gh(cp, x, y, w, penalty.fn, trace=FALSE, hessian=TRUE)/(-2)
     I.cp <- attr(score, "hessian")/2
     attr(score,"hessian") <- NULL
+    dimnames(I.cp) <- list(names(cp), names(cp))
     Dcp.dp <- solve(Ddp.cp)
     I.dp <- force.symmetry(t(Dcp.dp) %*% I.cp %*% Dcp.dp)
+    dimnames(I.dp) <- list(names(dp), names(dp))
     a.coef <- NULL
     asyvar.cp <- pd.solve(I.cp, silent=TRUE)
     if(is.null(asyvar.cp)) {
@@ -2494,7 +2510,9 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
     asyvar.cp <- pd.solve(I.cp, silent=TRUE)
     }
   dimnames(I.dp) <- list(names(dp), names(dp))
+  dimnames(asyvar.dp) <- list(names(dp), names(dp))
   if(!is.null(I.cp)) dimnames(I.cp) <- list(names(cp), names(cp))
+  if(!is.null(asyvar.cp)) dimnames(asyvar.cp) <- list(names(cp), names(cp))
   aux <- list(Ddp.cp=Ddp.cp, a.coef=a.coef, score.cp=score)
   list(dp=dp, cp=cp, type=type, info.dp=I.dp, info.cp=I.cp, 
        asyvar.dp=asyvar.dp, asyvar.cp=asyvar.cp, aux=aux)
@@ -4004,6 +4022,7 @@ vech2mat <- function(v)
 }
 
 #-------
+# source("/Users/aa/SN/Pkg-sn/R/Code_bits/plot_SEC_Uv.R")
 
 plot.SECdistrUv <- function(x, range, probs, main, npt=251, data=NULL, ...)
 {# plot density of object "SECdistrUv"
@@ -4059,14 +4078,13 @@ plot.SECdistrUv <- function(x, range, probs, main, npt=251, data=NULL, ...)
     rug(data, side=side, ticksize = 0.02, col="gray50")
     }
   if (!is.null(main)) {
-    font.main <- if("font.main" %in% nmdots) dots$font.main else par("font.main") 
-    cex.main <- if("cex.main" %in% nmdots) dots$cex.main else par("cex.main") 
-    title(main, line=2, cex.main=cex.main, font.main=font.main)
+    font.m <- if("font.main" %in% nmdots) dots$font.main else par("font.main") 
+    cex.m <- if("cex.main" %in% nmdots) dots$cex.main else par("cex.main") 
+    title(main, line=2, cex.main=cex.m, font.main=font.m)
     }    
   invisible(list(object=obj, x=x, density=pdf))
 }
       
-
 plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
        main, comp, compLabs, data = NULL, data.par=NULL, gap = 0.5, ...) 
 {# plot density of object of class "SECdistrMv"  
@@ -4205,10 +4223,11 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     } 
   oo <- options()
   options(warn=-1)
-  # contour(x1, x2, pdf, levels=exp(log.levels), 
-  #  labels=paste("p=", as.character(probs), sep=""),
-  #   main=main, xlab=compLabs[1], ylab=compLabs[2], ...)
-  plot(x1, x2, type="n", main=main, xlab=compLabs[1], ylab=compLabs[2], ...)
+  d.levels <- exp(log.levels)  
+  names(d.levels) <- as.character(probs)
+  contour(x1, x2, pdf, levels=d.levels, 
+    labels=paste("p=", as.character(probs), sep=""),
+    main=main, xlab=compLabs[1], ylab=compLabs[2], ...)
   if(!is.null(data)) {
     col <- if(!is.null(data.par$col)) data.par$col else par()$col
     pch <- if(!is.null(data.par$pch)) data.par$pch else par()$pch
@@ -4217,10 +4236,6 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     if(!is.null(id.i <- data.par$id.i)) 
       text(data[id.i,1], data[id.i,2], id.i, cex=cex/1.5, pos=1)
     }
-  d.levels <- exp(log.levels)  
-  names(d.levels) <- as.character(probs)
-  contour(x1, x2, pdf, levels=d.levels, 
-    labels=paste("p=", as.character(probs), sep=""), add=TRUE, ...)
   if(landmarks != "") {
     if(landmarks == "auto") { 
       mean.type <-  "proper"  
@@ -4236,8 +4251,9 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
     x.pts <- c(dp$xi[1], mode[1], cp[[1]][1])
     y.pts <- c(dp$xi[2], mode[2], cp[[1]][2])
     points(x.pts, y.pts, ...)
-    text(x.pts, y.pts, landmarks.label, pos=2, offset=0.3, ...)
-    lines(x.pts, y.pts, lty=2)
+    col <- if(!is.null(list(...)$col)) list(...)$col else par()$col
+    text(x.pts, y.pts, landmarks.label, pos=2, offset=0.3, col=col)
+    lines(x.pts, y.pts, lty=2, col=col)
     }  
   options(oo) 
   cL <- contourLines(x1, x2, pdf, levels=d.levels)
@@ -4786,9 +4802,8 @@ vcov.SECdistrMv <- function(object) dp2cp(object=object, upto=2)[[2]]
 profile.selm <- function(fitted, param.type, param.name, param.values, npt,
   opt.control=list(), plot.it=TRUE, log=TRUE, level, trace=FALSE, ...)
 { obj <- fitted
-  obj.class <- class(obj)
-  if(obj.class != "selm" | attr(obj.class, "package") != "sn") 
-    stop(gettextf("wrong object class: '%s'", obj.class), domain = NA)
+  if(class(obj) != "selm")  
+    stop(gettextf("wrong object class: '%s'", class(obj)), domain = NA)
   param.type <- match.arg(toupper(param.type), c("DP", "CP"))
   family <- slot(obj, "family")
   obj.par <- slot(obj, "param")
@@ -4817,14 +4832,14 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
   free.comp <- setdiff(1:length(dp.full), constr.comp)
   if(anyNA(profile.comp)) stop("some wrong item in param.name")
   npc <- length(profile.comp) # number of terms in profile.comp (either 1 or 2)
-  if((npc != 1) && (npc != 2)) stop("wrong length(param.name)")
+  if(!(npc %in% (1:2))) stop("wrong length(param.name)")
   if(missing(npt)) npt <- rep((50+npc) %/% npc, npc) else
      if(length(npt) != npc) npt <- rep(npt[1], npc)
-  log.comp <- if(!log)  rep(NA, npc) else { 
+  log.comp <- if(!log) rep(NA, npc) else { 
     if(param.type == "DP") match(c("omega", "nu"), param.name, NULL)   
     else match(c("s.d.", "gamma2"), param.name, NULL) }  
   logScale <- (1:2) %in% which(!is.na(log.comp))   
-  m <- slot(obj,"input")$model
+  m <- slot(obj, "input")$model
   x <- model.matrix(attr(m, "terms"), data=m)
   w <- slot(obj, "input")$model$"(weights)"
   weights <- if(is.null(w)) rep(1, nrow(x)) else w
@@ -4833,14 +4848,15 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
   if(npc == 1) { # one-parameter profile logLik
     par.val <- as.vector(par.val)
     if(any(diff(par.val) <= 0)) stop("param.values not an increasing sequence")
-    if(prod(range(par.val) - mle.full[profile.comp]) > 0)
-      stop(gettextf("param range does not bracket the MLE/MPLE point: '%s'"),
-        format(mle.full[profile.comp]), domain=NA)
     logScale <- logScale[1]
-    if(length(par.val) > 2) npt <- length(par.val) else 
+    if(length(par.val) == 2)
       par.val <- seqLog(par.val[1], par.val[2], length=npt, logScale)
-    logL <- numeric(npt)
-    for(k in 1:npt) {
+    n.values <- length(par.val)  
+    if(n.values>1 & (prod(range(par.val) - mle.full[profile.comp]) > 0))
+      stop(gettextf("param range does not bracket the MLE/MPLE point: '%s'",
+        format(mle.full[profile.comp])), domain=NA)  
+    logL <- numeric(n.values)
+    for(k in 1:n.values) {
       constr.values <- c(par.val[k], fixed.values)
       free.values <- mle.full[-constr.comp] 
       opt <- optim(free.values, constrained.logLik,  method="BFGS",
@@ -4851,6 +4867,7 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       }
     out <- list(call=match.call(), param=par.val, logLik=logL)
     names(out)[2] <- param.name  
+    if(n.values>1){
     deviance <- 2*(logLik(obj) - logL)
     if(any(deviance + sqrt(.Machine$double.eps) < 0)) warning(paste(
       "A relative maximum of the (penalized) likelihood seems to have been",
@@ -4858,11 +4875,11 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       "Re-fit the model with starting values suggested by the plot."))
     s <- diff((sign(diff(deviance))))
     if(length(which(s != 0)) > 1) {
-       message(paste("The log-likelihood function appears to have multiple",
+       warning(paste("The log-likelihood function appears to have multiple",
         "maxima.\n", "Confidence intervals may be handled improperly.\n"))
        # readline("Press <Enter> to continue<cr>")
        # browser()
-       }
+       }}
     if(missing(level)) level <- 0.95
     level <- level[1]
     if(is.na(level) | level <= 0 | level >= 1) {
@@ -4872,9 +4889,9 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       message("parameter estimates at the boundary, no confidence interval")
       level <- NULL
       } 
-    if(!is.null(level)) {
+    if(!is.null(level) & n.values>1) {
       q <- qchisq(level[1], 1)
-      if(deviance[1] < q | deviance[npt] < q) warning(
+      if(deviance[1] < q | deviance[n.values] < q) warning(
         "parameter range seems short; confidence interval may be inaccurate")
       dev.fn <- splinefun(par.val, deviance - q, method="monoH.FC")
       rootL <- try(uniroot(dev.fn, lower=min(par.val),  check.conv=TRUE, 
@@ -4885,7 +4902,7 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       out$confint <- if(fail.confint) rep(NULL,2) else c(rootL$root, rootH$root)   
       out$level <- level                         
       }
-    if(plot.it) {  
+    if(plot.it & n.values>1) {  
       if(logScale) { 
         par.val <-  log(par.val)
         param.name <- paste("log(", param.name, ")", sep="")
@@ -4915,20 +4932,22 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
     u <- unlist(lapply(par.val, length))
     param1 <- par.val[[1]]
     param2 <- par.val[[2]]
-    if(prod(range(param1) - mle.full[profile.comp][1]) > 0 |
+    if(all(u>1)) 
+      if(prod(range(param1) - mle.full[profile.comp][1]) > 0 |
           prod(range(param2) - mle.full[profile.comp][2]) > 0) stop(
-       gettextf("parameter range does not bracket the MLE/MPLE point: '%s'",
+        gettextf("parameter range does not bracket the MLE/MPLE point: '%s'",
            paste(format(mle.full[profile.comp]), collapse=",")), domain=NA)  
-    if(u[1] > 2) npt[1] <- u[1] else 
+    if(u[1] > 2) npt[1] <- u[1] else if(u[1] == 2) 
       param1 <- seqLog(param1[1], param1[2], length=npt[1], logScale[1])
-    if(u[2] > 2) npt[2] <- u[2] else   
+    if(u[2] > 2) npt[2] <- u[2] else if(u[2] == 2) 
       param2 <- seqLog(param2[1], param2[2], length=npt[2], logScale[2]) 
-    logL <- matrix(NA, npt[1], npt[2])
+    n.values <- c(length(param1), length(param2))
+    logL <- matrix(NA, n.values[1], n.values[2])
     if(any(diff(param1) <= 0)) 
        stop("param.values[[1]] not an increasing sequence")
     if(any(diff(param2) <= 0)) 
        stop("param.values[[2]] not an increasing sequence")
-    for(k1 in 1:npt[1]) for(k2 in 1:npt[2]){
+    for(k1 in 1:n.values[1]) for(k2 in 1:n.values[2]){
       constr.values <- c(param1[k1], param2[k2], fixed.values)
       free.values <- mle.full[-constr.comp] 
       opt <- optim(free.values, constrained.logLik,  method="BFGS",
@@ -4953,13 +4972,14 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       "A relative maximum of the (penalized) likelihood seems to have taken",
       "as\n the MLE (or MPLE).",
       "Re-fit the model with starting values suggested by the plot."))
-    cL <- contourLines(param1, param2, deviance, levels=q)
-    out$deviance.contour <- cL
-    if(!is.null(level)) for(j in 1:length(cL)) {
-      k <- which(q == cL[[j]]$level)
-      out$deviance.contour[[j]]$prob <- level[k]
-      }
-    if(plot.it) {
+    if(all(n.values>1)) {
+      cL <- contourLines(param1, param2, deviance, levels=q)
+      out$deviance.contour <- cL
+      if(!is.null(level)) for(j in 1:length(cL)) {
+        k <- which(q == cL[[j]]$level)
+        out$deviance.contour[[j]]$prob <- level[k]
+       }}
+    if(plot.it & all(n.values>1)) {
       if(logScale[1]) { 
 	    param1 <-  log(param1)
     	param.name[1] <- paste("log(", param.name[1], ")", sep="")
@@ -5021,3 +5041,199 @@ seqLog <- function(from, to, length, logScale=FALSE) {
   if(logScale)  exp(seq(log(from), log(to), length.out=length)) else
     seq(from, to, length.out=length) 
   }
+
+predict.selm <- function(object, newdata, param.type = "CP", 
+     interval = "none", level = 0.95, na.action = na.pass, ...) 
+{
+  model <- slot(object, "input")$model
+  interval <- match.arg(interval, c("none", "confidence", "prediction"))
+  tt <- terms(model)
+  if (missing(newdata) || is.null(newdata)) {
+      response <- attr(attr(model, "terms"), "response")
+      intercept <- attr(attr(model, "terms"), "intercept")
+      mm <- X <- cbind(intercept, data.matrix(model)[, -response])
+      mmDone <- TRUE
+      offset <- model$offset
+  }
+  else {
+      Terms <- delete.response(tt)
+      m <- model.frame(Terms, newdata, na.action = na.action, 
+          xlev = model$xlevels)
+      X <- model.matrix(Terms, m, contrasts.arg = model$contrasts)
+      offset <- rep(0, nrow(X))
+      if (!is.null(off.num <- attr(tt, "offset"))) 
+          for (i in off.num) offset <- offset + eval(attr(tt, 
+              "variables")[[i + 1]], newdata)
+      if (!is.null(model$offset)) 
+          offset <- offset + eval(mode$offset, newdata)
+      mmDone <- FALSE
+  }
+  size <- slot(object, "size")
+  n <- size["n.obs"]
+  nw <- size["nw.obs"]
+  p <- size["p"]
+  one..p <- seq_len(p)
+  beta <- coef(object, param.type=param.type)[one..p]
+  out <- predictor <- drop(X[, one..p, drop = FALSE] %*% beta)
+  if(!is.null(offset))  predictor <- predictor + offset
+  family <- slot(object, "family")
+  V <- vcov(object, param.type=param.type)[one..p,one..p]
+  var.conf <- rowSums((X %*% V) * X)
+  if(family == "SN" & param.type=="DP") {
+    alpha.interv <- confint(object, "alpha", param.type="DP")
+    if(prod(alpha.interv) <=- 0) var.conf <- rep(NA, nrow(X))
+    } 
+  if(interval == "confidence") {
+    hwid <- qnorm((1 - level)/2) * sqrt(var.conf) 
+    lwr <- predictor + hwid
+    upr <- predictor - hwid 
+    out <- cbind(predictor, lwr, upr)
+    colnames(out) <- c("fit", "lwr", "upr")       
+    }
+  if(interval == "prediction") {
+    if(missing(newdata)) 
+      warning("predictions on current data refer to _future_ responses\n")
+    probs <- c((1-level)/2, (1+level)/2)
+    npt <- nrow(X)
+    lwr <- upr <- rep(NA, npt)
+    if(family == "SN") {
+      # convolve SN+Normal
+      betaCP <- coef(object, param.type="CP")[one..p]
+      predictorCP <- drop(X[, one..p, drop = FALSE] %*% betaCP)
+      if(!is.null(offset))  predictorCP <- predictorCP + offset
+      Vcp <- vcov(object, param.type="CP")[one..p,one..p]
+      var.pred <- rowSums((X %*% Vcp) * X)
+      omega <- coef(object, param.type="DP")[p+1]
+      alpha <- coef(object, param.type="DP")[p+2]
+      mu.eps <- as.numeric(omega*sqrt(2/pi)*alpha/sqrt(1+alpha^2))
+      alpha.tilde <- alpha/sqrt(1+(1+alpha^2)*var.pred/omega^2)
+      for(j in 1:npt) {
+        q <- if(is.na(var.pred[j])) rep(NA,2) else
+          qsn(probs, -mu.eps, sqrt(var.pred[j]+omega^2), alpha.tilde[j])
+        lwr[j] <- predictorCP[j] + q[1]
+        upr[j] <- predictorCP[j] + q[2]
+      } }
+  if(family %in% c("ST", "SC")) {
+    # approximate ST+normal convolution
+    dp <- coef(object, param.type="DP")
+    betaDP <- dp[one..p]
+    nu <- if(family =="ST") dp[length(dp)] else 1
+    predictorDP <- drop(X[, one..p, drop = FALSE] %*% betaDP)
+    if(!is.null(offset))  predictorDP <- predictorDP + offset
+    Vdp <- vcov(object, param.type="DP")[one..p,one..p]
+    var.pred <- rowSums((X %*% Vdp) * X)
+    cp.type <- if(nu>4) "proper" else "pseudo"
+    cp <- st.dp2cp(dp, cp.type=cp.type)
+    for(j in 1:npt) {
+      if(!is.na(var.pred[j])) {
+        r <- sqrt(cp[p+1]^2/(cp[p+1]^2 +var.pred[j]))
+        cp.pred <- c(cp[one..p], cp[p+1]/r, cp[p+2]*r^3, cp[p+3]*r^4)  
+        dp.pred <- st.cp2dp(cp.pred, cp.type, silent=TRUE, tol=1e-4, start=dp)
+        dp.pred <- c(0, dp.pred[-one..p])
+        q <- if(!anyNA(dp.pred)) qst(probs, dp=dp.pred) else rep(NA,2)
+        }
+      else q <- rep(NA,2)
+      lwr[j] <- predictorDP[j] + q[1]
+      upr[j] <- predictorDP[j] + q[2]
+      } }  
+  out <- cbind(predictor, lwr, upr)
+  colnames(out) <- c("fit", "lwr", "upr")
+  }
+  out
+}
+ 
+confint.selm <- function(object, parm, level=0.95, param.type, tol=1e-3, ...) 
+{
+  family <- slot(object, "family")
+  object.name <- as.character(deparse(substitute(object)))
+  if(missing(param.type)) {
+    if(family=="ST") ptype <- 
+      if(slot(object,"param")$dp["nu"]>4) "CP" else "pseudo-CP"
+    param.type <- switch(family, "SN" = "CP", "ST"=ptype, "SC"="pseudo-CP")
+    }
+  param <- coef(object, param.type)
+  npar <- length(param)
+  pnames <- names(param)
+  if(missing(parm)) 
+    {par.comp <- (1:npar); parm <- pnames}
+  else {if(is.numeric(parm)) {par.comp <- parm; parm <- pnames[parm]} else
+    par.comp <- match(parm, pnames)}
+  if(slot(object, "param")$boundary) 
+    stop("parameter estimates on the boundary of the parameter space")
+  namesCP <- c("(Intercept.CP)", "s.d.", "gamma1", "gamma2")
+  namesDP <- c("(Intercept.DP)", "omega", "alpha", "nu")
+  if(param.type=="DP" & length(intersect(parm, namesCP))>0 )
+    stop("incompatible 'parm' and 'param.type'")
+  if(param.type=="CP" & length(intersect(parm, namesDP))>0 )
+    stop("incompatible 'parm' and 'param.type'")
+  if(family=="SN" & param.type=="pseudo-CP")   
+     stop("'param.type' incompatible with 'SN' family object")
+  lev2 <- (1 - level)/2
+  lev2 <- c(lev2, 1 - lev2)
+  intervals <- matrix(0, length(parm), 2,
+    dimnames=list(parm,  paste(as.character(lev2*100), "%", sep="")))
+  max.logL <- slot(object, "logL")
+  if(family=="SN") {
+    slant <- intersect(c("alpha", "gamma1"), parm)
+    check.alpha <- (length(slant) > 0 | param.type=="DP" & (1 %in% par.comp)) 
+    if(check.alpha) {
+      alpha.interv <- slot(object, "param")$alpha.interv
+      if(is.null(alpha.interv) | length(which(alpha.interv[,1]==level))==0) {
+        q <- qchisq(level, 1)
+        alpha.mle <- alpha.sx <- alpha.dx <- coef(object, "DP")["alpha"]
+        fn.alpha <- function(alpha)  (max.logL - q/2 -
+            profile.selm(object, "DP", "alpha", alpha, plot.it=FALSE)$logL) 
+        step <- 1
+        repeat {
+          alpha.sx <- alpha.sx - step
+          if(fn.alpha(alpha.sx) > 0) break
+          step <- 2*step
+        }
+        alpha.sx <- uniroot(fn.alpha, c(alpha.sx, alpha.mle), tol=tol)$root 
+        step <- 1
+        repeat {
+          alpha.dx <- alpha.dx + step
+          if(fn.alpha(alpha.dx) > 0) break
+          step <- 2*step
+        }
+        alpha.dx <- uniroot(fn.alpha, c(alpha.mle, alpha.dx), tol=tol)$root
+        alpha.interv <- rbind(alpha.interv, c(level, alpha.sx, alpha.dx))
+        slot(object, "param")$alpha.interv <- alpha.interv
+        # assign(object.name, object, pos=".GlobalEnv")
+      } else { 
+        k <- min(which(alpha.interv[,1] == level))
+        alpha.sx <- alpha.interv[k,2]
+        alpha.dx <- alpha.interv[k,3]
+      }
+      gamma1.sx <- dp2cpUv(c(0, 1, alpha.sx), "SN")[3]
+      gamma1.dx <- dp2cpUv(c(0, 1, alpha.dx), "SN")[3]
+      intervals[slant,] <- if(param.type == "DP")  
+        c(alpha.sx, alpha.dx) else c(gamma1.sx, gamma1.dx)
+      }   
+    e <- rep(1, npar)
+    e[npar-1] <- 1/param[npar-1]
+    v <- diag(e) %*% vcov(object, param.type) %*% diag(e)
+    drop.last <- 1:(npar-1)
+    se <- sqrt(diag(v))[drop.last]
+    if(param.type=="DP" & (prod(intervals[slant,]) < 0)) se[1]<- NA
+    par0 <- param[drop.last]
+    par0[npar-1] <- log(par0[npar-1])
+    interv <- par0 + outer(se[drop.last], qnorm(lev2))
+    interv[npar-1,] <- exp(interv[npar-1,])
+    if(length(slant) == 0) intervals[1:length(parm),] <- interv[par.comp,] 
+    else if(length(par.comp) > 1)
+    intervals[1:(length(parm)-1),] <- interv[par.comp[-length(par.comp)],]
+    }
+  if(family %in% c("ST", "SC")) {
+    par0 <- param
+    par0[npar - c(0,2)] <- log(par0[npar - c(0,2)]) # log scale & tailweight
+    e <- rep(1, npar)
+    e[npar-c(0,2)] <- 1/param[npar-c(0,2)]
+    v <- diag(e) %*% vcov(object, param.type) %*% diag(e)
+    se <- sqrt(diag(v))
+    interv <- par0 + outer(se, qnorm(lev2))
+    interv[npar-c(0,2),] <- exp(interv[npar-c(0,2),])
+    intervals[,] <- interv[par.comp,]
+    }
+  intervals[,,drop=FALSE]
+}

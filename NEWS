@@ -1,8 +1,16 @@
 R package 'sn' NEWS (ChangeLog) file
 ------------------------------------
+
+Version 1.4-0 (2016-06-30) 
+Methods confint and predict for selm-class objects are introduced. Fix bug in
+rmst causing some dependence among subsequent samples; fix bug of modeSECdistrMv 
+affecting certain ST cases; plot.SECdistrBv allows to overlap plots; 
+improved naming of output; profile.selm can now be called with vector(s) 
+param.values of length 1.
+
 Version 1.3-0 (2015-11-11)
 Method profile.selm is introduced. The object returned by plot.SECdistrMv 
-now includes the coordinates of the contour levels.  Fixes a bug affecting 
+now includes the coordinates of the contour curves. Fixes a bug affecting 
 rmsn when called using dp= and dp[[1]] is named beta instead of xi.
 
 Version 1.2-5 (2015-09-25)

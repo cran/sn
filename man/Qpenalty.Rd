@@ -43,13 +43,16 @@ The penalty mechanism allows to introduce a prior distribution \eqn{\pi}
 for \eqn{\alpha} by setting \eqn{Q=-\log\pi}{Q=-log(\pi)}, 
 leading to a maximum \emph{a posteriori} estimate in the stated sense. 
 
-As an illustration of this mechanism, function \code{MPpenalty} implements the
-`matching prior' distribution for the univariate \acronym{SN} distribution
-studied by Cabras \emph{et al.} (2012); a brief summary of the proposal is 
-provided in Section 3.2 of Azzalini and Capitanio (2014). 
-Note that, besides \code{alpha=+/-Inf}, this choice also penalizes 
-\code{alpha=0} with \code{Q=Inf}, effectively removing \code{alpha=0} 
-from the parameter space.
+As a simple illustration of this mechanism, function \code{MPpenalty}
+implements the `matching prior' distribution for the univariate \acronym{SN}
+distribution studied by Cabras \emph{et al.} (2012); a brief summary of the
+proposal is provided in Section 3.2 of Azzalini and Capitanio (2014). Note
+that, besides \code{alpha=+/-Inf}, this choice also penalizes \code{alpha=0}
+with \code{Q=Inf}, effectively removing \code{alpha=0} from the parameter
+space.  
+
+Starting from the code of function \code{MPpenalty}, a user should be able 
+to introduce an alternative prior distribution if so desired.
 }
 
 \value{A positive number \code{Q} representing the penalty, possibly

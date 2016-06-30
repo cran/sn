@@ -4,7 +4,8 @@ importFrom("stats",  ".getXlevels", "as.formula", "contrasts", "cov2cor",
   "lm.wfit", "model.matrix", "model.offset", "model.response", "model.weights",
   "optimize", "pf", "pnorm", "printCoefmat", "pt", "qchisq", "qf", "qnorm", 
   "qt", "quantile", "rchisq", "resid", "rnorm", "runif", "uniroot", "var",
-  "residuals", "fitted", "weights", "optim", "nlminb", "splinefun")
+  "residuals", "fitted", "weights", "optim", "nlminb", "splinefun",
+  "delete.response", "model.frame", "na.pass", "terms")
 importFrom("graphics", "plot", "Axis", "abline", "axis", "box", "boxplot", 
   "contour", "hist", "lines", "mtext", "panel.smooth", "par", "points", "rug", 
   "strheight", "text", "title")
@@ -27,6 +28,8 @@ S3method(fitted, mselm)
 S3method(residuals, selm)
 S3method(residuals, mselm)
 S3method(profile, selm)
+S3method(confint, selm)
+S3method(predict, selm)
 S3method(sd, default)
 
 export(
@@ -44,13 +47,14 @@ export(
   selm, MPpenalty, Qpenalty, extractSECdistr,
   selm.fit, sn.mple,  st.mple, msn.mle, msn.mple, mst.mple,
   vech, vech2mat, duplicationMatrix,
-  coef.selm, plot.selm, residuals.selm, fitted.selm, profile.selm, 
+  coef.selm, plot.selm, residuals.selm, fitted.selm,
   coef.mselm, plot.mselm, residuals.mselm, fitted.mselm,
+  profile.selm, confint.selm, predict.selm,
   sd.default, sd
   )
  
 exportMethods("show", "plot", "summary", "coef",  "logLik", "residuals",
-   "fitted", "mean", "vcov", "sd")
+   "fitted", "mean", "vcov", "sd", "profile", "confint", "predict")
 
 exportClasses("SECdistrUv", "SECdistrMv", "summary.SECdistrUv", 
   "summary.SECdistrMv", "selm", "mselm", "summary.selm", "summary.mselm")
