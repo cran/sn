@@ -34,10 +34,10 @@ it must be of length 1.}
 }
 
 \item{dp}{a vector of length 4, whose elements represent location, scale
-(positive), slant and degrees of freedom, respectively.  If \code{dp} is
-specified, the individual parameters cannot be set.  }
+  (positive), slant and degrees of freedom, respectively.  If \code{dp} is
+  specified, the individual parameters cannot be set.}
 
-\item{n}{sample size}
+\item{n}{a positive integer representing the sample size.}
 
 \item{log}{logical; if TRUE, densities  are given as log-densities}
 
@@ -52,7 +52,7 @@ specified, the individual parameters cannot be set.  }
   among the four actual computing methods, which depends on the other
   arguments.}
 
-\item{...}{additional parameters passed to \code{integrate} or \code{pmst}}
+\item{...}{additional parameters passed to \code{integrate} or \code{pmst}.}
 
 }
 

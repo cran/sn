@@ -14,11 +14,10 @@ Australian Institute of Sport, courtesy of Richard Telford and Ross Cunningham.
 \format{ 
   A data frame with 202 observations on the following 13 variables.
   \tabular{rll}{
-   [,1]\tab \code{sex}\tab a factor with levels: \code{female}, \code{male}\cr
-   [,2]\tab \code{sport}\tab a factor with levels:  \code{B_Ball}, 
-            \code{Field}, \code{Gym}, \code{Netball}, \code{Row},\cr
-       \tab\tab \code{Swim}, \code{T_400m}, \code{Tennis}, \code{T_Sprnt}, 
-            \code{W_Polo}\cr
+   [,1]\tab \code{sex}\tab categorical, levels: \code{female}, \code{male}\cr
+   [,2]\tab \code{sport}\tab categorical, levels: \code{B_Ball}, \code{Field},
+      \code{Gym}, \code{Netball}, \code{Row}, \code{Swim}, \code{T_400m}, \cr
+      \tab\tab \code{Tennis}, \code{T_Sprnt}, \code{W_Polo}\cr            
    [,3]\tab \code{RCC}\tab red cell count (numeric)\cr
    [,4]\tab \code{WCC}\tab white cell count (numeric)\cr
    [,5]\tab \code{Hc}\tab Hematocrit (numeric)\cr

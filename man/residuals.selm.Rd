@@ -35,11 +35,11 @@
     parameter type; possible values are \code{"CP"} (default), \code{"DP"},
     \code{"pseudo-CP"} and their equivalent lower-case  expressions.}
     
-  \item{...}{not used, included for compatibility with the generic method}  
+  \item{...}{not used, included for compatibility with the generic method.}  
 }
 
 \value{a numeric vector (for \code{selm-class} objects) or a matrix
-     (for \code{mselm-class} objects) }
+     (for \code{mselm-class} objects). }
 
 \note{The possible options of \code{param.type} are described in the
 documentation of \code{\link{dp2cp}}; their corresponding outcomes 

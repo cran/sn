@@ -40,8 +40,8 @@ In the probability section, one finds also functions \code{\link{dsn}},
 existed also in \sQuote{version 0} and their working is still very much 
 the same (not necessarily so their code).
 
-The first version of \sQuote{version 1}  series (that is, 1.0-0) has appeared
-at the same time when the companion book by Azzalini and Capitanio
+The first instance of the \sQuote{version 1}  series (that is, 1.0-0) has 
+appeared at the same time when the companion book by Azzalini and Capitanio
 (2014) was published. 
 Although the two projects are formally separate, they adopt the same notation, 
 terminology and logical frame. This matching and the numerous references 
@@ -83,15 +83,19 @@ effectively been subsumed into the more comprehensive fitting function
 A second group of functions will work with little or even minimal changes.
 Specific examples are functions \code{sn.mle} and \code{st.mle} which have
 become \code{\link{sn.mple}} and \code{\link{st.mple}}, with some additional
-arguments (again, one can achieve the same result via \code{\link{selm}}) and
-\code{dp.to.cp}, which has been replaced by the more general function
-\code{\link{dp2cp}}.
+arguments (again, one can achieve the same result via \code{\link{selm}}). 
+Another example is constitude by the group of functions \code{dp.to.cp},
+\code{cp.to.dp} and  \code{st.cumulants.inversion}, which have been replaced 
+by the more general functions \code{\link{dp2cp}} and \code{\link{cp2dp}}; 
+one only needs to pay attention to conversion from 3rd and 4th order 
+cumulants  to their standardized form in connection with the replacement of 
+\code{st.cumulants.inversion}.
 
 Finally, some functions are not there any longer, with no similarly-working
-functions in the new version. The more prominent set of cases is represented
-by the functions for computing profile log-likelihoods. There is a long-term
-plan to re-instate similar facilities, possibly in a more flexible form, but
-not in the near future. }
+functions in the new version.  This is the case of \code{sn.mle.grouped}
+and \code{st.mle.grouped} for maximum likelihood estimation from
+grouped data, that is, data recorded as intervals and corresponding 
+frequencies.}
 
 
 \section{Requirements}{
@@ -105,7 +109,7 @@ The command \code{citation("sn")} indicates, among other information,
 the running version of the package.
 The most recent version of the package can be obtained from
 the web page: \url{http://azzalini.stat.unipd.it/SN}
-which also provides additional related material.
+which also provides related material.
 
 From the above-indicated web page, one can also obtain the package 
 \sQuote{sn0} which is essentially the last \sQuote{version 0} 
@@ -124,7 +128,7 @@ whose web page is \url{http://azzalini.stat.unipd.it/}.
 This package and its documentation are usable under the terms of 
 the \dQuote{GNU General Public License} version 3 or version 2,
 as you prefer; a copy of them is available from 
-\url{http://www.R-project.org/Licenses/}.
+\url{https://www.R-project.org/Licenses/}.
   
 While the software is freely usable, it would be appreciated
 if a reference is inserted in publications or other work

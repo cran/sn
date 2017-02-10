@@ -1,5 +1,9 @@
 R package 'sn' NEWS (ChangeLog) file
 ------------------------------------
+Version 1.5-0 (2017-02-09)
+New functions for symmetry-modulated (AKA skew-symmetric) distributions
+are introduced. Fix a bug in dsn affecting the cases (a) x=Inf, alpha=0, 
+and (b) omega<=0. 
 
 Version 1.4-0 (2016-06-30) 
 Methods confint and predict for selm-class objects are introduced. Fix bug in

@@ -32,7 +32,8 @@ dsn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, log=FALSE)
   else
     logS  <- log(as.numeric(sign(alpha)*z + tau > 0)) 
   logPDF <- as.numeric(logN + logS - pnorm(tau, log.p=TRUE))
-  replace(logPDF, omega<= 0, NaN)
+  logPDF <- replace(logPDF, abs(x) == Inf, -Inf)
+  logPDF <- replace(logPDF, omega <= 0, NaN)
   if(log) logPDF else exp(logPDF)
 }
 
@@ -5237,3 +5238,155 @@ confint.selm <- function(object, parm, level=0.95, param.type, tol=1e-3, ...)
     }
   intervals[,,drop=FALSE]
 }
+#--------------------
+# Feb.2017
+#
+dSymmModulated <- function(x, xi=0, omega=1, f0, G0, w, par.f0, par.G0, 
+  odd="check", log=FALSE, ...) 
+{# density of univariate modulated-symmetry distributions, Feb.2017
+  dsbeta <- function(x, shape, log) {
+     u <- dbeta((x+1)/2, shape, shape, log=log)
+     if(log) u-logb(2) else u/2
+     }
+  psbeta <- function(x, shape, log.p) pbeta((x+1)/2, shape, shape, log.p=log.p)
+  dsunif <- function(x, log) dunif(x, -1, 1, log=log)
+  psunif <- function(x, log.p) punif(x, -1, 1, log.p=log.p)
+  if(omega <= 0) stop("omega must be positive")
+  z <- as.numeric((x-xi)/omega)
+  pdf <- switch(f0, 
+    beta=dsbeta(z, par.f0, log=log), cauchy=dcauchy(z, log=log),
+    logistic=dlogis(z, log=log), normal=dnorm(z, log=log),  
+    t=dt(z, par.f0, log=log), uniform=dsunif(z, log=log), NULL)     
+  if(is.null(pdf)) stop("unsupported 'f0' density")
+  odd <- match.arg(odd, c("check", "assume", "force"))
+  w.z <- w(z, ...)
+  if(odd == "check") { 
+    if(!isTRUE(all.equal(-w.z, w(-z, ...))) || w(0,...) != 0) 
+    stop("function 'w' is not odd")  } 
+  if(odd == "force") {
+    w.z[z < 0] <-  -w(-z[z<0], ...)
+    w.z[z == 0] <- 0
+    }
+  cdf <- switch(G0, 
+    beta=psbeta(w.z, par.G0, log.p=log), cauchy=pcauchy(w.z, log.p=log),
+    logistic=plogis(w.z, log.p=log),  normal=pnorm(w.z, log.p=log),
+    t=pt(w.z, par.G0, log.p=log), uniform=psunif(w.z, log.p=log), NULL)
+  if(is.null(cdf)) stop("unsupported 'G0' distribution") 
+  if(log) (pdf + cdf + logb(2/omega)) else (2 * pdf * cdf/omega)
+}
+#----
+rSymmModulated <- function(n=1, xi=0, omega=1, f0, G0, w, par.f0, par.G0, 
+  odd="check", ...) 
+{# random numbers from modulated-symmetry distributions, use (1.11a) of SN book
+  rsbeta <- function(n=1, shape) rbeta(n, shape, shape)*2 + 1
+  rsunif <- function(n=1) runif(n, -1, 1)
+  if(omega < 0) stop("omega must be non-negative")
+  Z0 <- switch(f0, beta=rsbeta(n, par.f0), cauchy=rcauchy(n),
+           logistic=rlogis(n), normal=rnorm(n),  
+           t=rt(n, par.f0), uniform=rsunif(n), NULL)     
+  if(is.null(Z0)) stop("unsupported 'f0' density")
+  odd <- match.arg(odd, c("check", "assume", "force"))
+  w.Z0 <- w(Z0, ...)
+  if(odd == "check") { 
+    if(!isTRUE(all.equal(-w.Z0, w(-Z0, ...))) || w(0,...) != 0)
+    stop("function 'w' is not odd")  } 
+  if(odd == "force")  {
+    w.Z0 <- ifelse(Z0>0, w(Z0, ...), -w(-Z0, ...))  
+    w.Z0[Z0 == 0] <- 0 }
+  T <- switch(G0, beta=rsbeta(n, par.G0), cauchy=rcauchy(n),
+           logistic=rlogis(n),  normal=rnorm(n),
+           t=rt(n, par.G0), uniform=rsunif(n), NULL)
+  if(is.null(T)) stop("unsupported 'G0' distribution")
+  as.numeric(xi + omega*Z0*sign(w.Z0-T))
+}
+#
+dmSymmModulated <- function(x, xi, Omega, f0, G0, w, par.f0, par.G0, 
+  odd="check", log=FALSE, ...) 
+{# density of multivariate modulated-symmetry distributions, Feb.2017
+  psbeta <- function(x, shape) pbeta((x+1)/2, shape, shape)
+  psunif <- function(x) punif(x, -1, 1)
+  if(!is.matrix(Omega)) stop("Omega must be a matrix")
+  d <- ncol(Omega)
+  x <- matrix(as.vector(x), ncol=d)
+  zero <- rep(0, d)
+  omega <- sqrt(diag(Omega))
+  Omega <- cov2cor(Omega)
+  z <- (x - outer(rep(1,nrow(x)), xi)) %*%  diag(1/omega, d, d)
+  pdf <- switch(f0, cauchy=mnormt::dmt(z, zero, Omega, 1, log=log), 
+    normal=mnormt::dmnorm(z, zero, Omega, log=log), 
+    t=mnormt::dmt(z, zero, Omega, par.f0, log=log), NULL)     
+  if(is.null(pdf)) stop("unsupported 'f0' density")
+  odd <- match.arg(odd, c("check", "assume", "force"))
+  w.z <- w(z, ...)
+  if(odd == "check") { 
+    if(!isTRUE(all.equal(-w.z, w(-z, ...))) || w(matrix(zero, 1, d), ...) != 0)
+    stop("function 'w' is not odd")  } 
+  if(odd == "force") {
+    neg <- (z[,1] < 0) 
+    w.z[neg] <- -w(-z[neg,], ...)
+    i0 <- apply(z, 1, all.equal, current=zero, check.attr=FALSE) == "TRUE"
+    w.z[i0] <- 0
+    }
+  cdf <- switch(G0, 
+    beta=psbeta(w.z, par.G0, log.p=log), cauchy=pcauchy(w.z, log.p=log),
+    logistic=plogis(w.z, log.p=log),  normal=pnorm(w.z, log.p=log),
+    t=pt(w.z, par.G0, log.p=log), uniform=psunif(w.z, log.p=log), NULL)
+  if(is.null(cdf)) stop("unsupported 'G0' distribution") 
+  logDet <- sum(log(omega))
+  if(log) as.vector(pdf + cdf + logb(2) - logDet) else  
+    as.vector(2 * pdf * cdf)/exp(logDet)
+}
+#----
+rmSymmModulated <- function(n=1, xi, Omega, f0, G0, w, par.f0, par.G0, odd="check", ...)
+{# random numbers from modulated-symmetry distributions, use (1.11a) of SN book
+  rsbeta <- function(n=1, shape) rbeta(n, shape, shape)*2 + 1
+  rsunif <- function(n=1) runif(n, -1, 1)
+  if(!is.matrix(Omega)) stop("Omega must be a matrix")
+  d <- ncol(Omega)
+  zero <- rep(0, d)
+  omega <- sqrt(diag(Omega))
+  Omega <- cov2cor(Omega)
+  Z0 <- switch(f0, cauchy=mnormt::rmt(n, zero, Omega, 1), 
+          normal=mnormt::rmnorm(n, zero, Omega), 
+          t=mnormt::rmt(n, zero, Omega, par.f0),  NULL)     
+  if(is.null(Z0)) stop("unsupported 'f0' density")
+  odd <- match.arg(odd, c("check", "assume", "force"))
+  w.Z0 <- w(Z0, ...)
+  if(odd == "check") { 
+    if(!isTRUE(all.equal(-w.Z0, w(-Z0, ...))) || w(matrix(zero,1,d) ,...) != 0)
+    stop("function 'w' is not odd")}
+  if(odd == "force") {
+    neg <- (Z0[,1] < 0) 
+    w.Z0[neg] <- -w(-Z0[neg,], ...)
+    i0 <- apply(Z0, 1, all.equal, current=zero, check.attr=FALSE) == "TRUE"
+    w.Z0[i0] <- 0
+    } 
+  T <- switch(G0, beta=rsbeta(n, par.G0), cauchy=rcauchy(n),
+         logistic=rlogis(n),  normal=rnorm(n),
+         t=rt(n, par.G0), uniform=rsunif(n), NULL)
+  if(is.null(T)) stop("unsupported 'G0' distribution") 
+  drop(outer(rep(1,n), xi) + drop(sign(w.Z0-T)) * Z0 %*% diag(omega))
+}
+
+plot2D.SymmModulated <- function(range, npt=rep(101,2), xi=c(0,0), Omega, f0, 
+  G0, w, par.f0, par.G0, odd="check", ...)
+{
+  if(ncol(Omega)!=2 || nrow(Omega) != 2 || length(xi) !=2) 
+    stop("Wrong dimension(s) of xi and/or Omega")
+  n1 <- npt[1]
+  n2 <- npt[2]
+  x1 <- seq(min(range[,1]), max(range[,1]), length=n1)
+  x2 <- seq(min(range[,2]), max(range[,2]), length=n2)
+  x1.x2 <- cbind(rep(x1, n2), as.vector(matrix(x2, n1, n2, byrow=TRUE)))
+  X <- matrix(x1.x2, n1 * n2, 2, byrow = FALSE)
+  dots <- list(...)
+  nw <- names(formals(w))[-1]
+  if(missing(par.f0)) par.f0 <- NULL
+  if(missing(par.G0)) par.G0 <- NULL
+  pdf <- do.call(dmSymmModulated, c(list(x=X, xi=xi, Omega=Omega, f0=f0, 
+    G0=G0, w=w, par.f0=par.f0, par.G0=par.G0, odd=odd, log=FALSE), dots[nw])) 
+  pdf <- matrix(pdf, n1, n2)
+  dots[nw] <- NULL
+  do.call(contour, c(list(x=x1, y=x2, z=pdf), dots))
+  invisible(list(x=x1, y=x2, pdf=pdf))
+  }

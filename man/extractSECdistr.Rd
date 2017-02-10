@@ -19,7 +19,7 @@
 
 \arguments{
   \item{object}{an object of class \code{selm} or \code{mselm}, 
-    as created by \code{\link{selm}} }
+    as created by \code{\link{selm}}.}
  
   \item{name}{an optional character string representing the name of the 
     outcome distribution; if missing, a string is constructed from the
@@ -28,9 +28,9 @@
   \item{compNames}{in the multivariate case, an optional vector  of character 
     strings  with the names of the components of the error distribution; 
     if missing, one such vector is constructed from the \code{object}
-    ingredients.}
-      
+    ingredients.}      
 }
+
 \value{An object of class \code{SECdistrMv} or \code{SECdistrUv}, 
   depending of the class of \code{object}.}
  

@@ -43,7 +43,7 @@ rsn(n=1, xi=0, omega=1, alpha=0, tau=0,  dp=NULL)
    the individual parameters described above. If \code{dp}
    is specified, the individual parameters cannot be set.}
     
- \item{n}{sample size.}
+ \item{n}{a positive integer representing the sample size.}
 
  \item{tol}{a scalar value which regulates the accuracy of the result of 
    \code{qsn}, measured on the probability scale.}

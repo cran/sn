@@ -25,11 +25,10 @@
     
 \item{family}{a character string which identifies the parametric
    family among those admissible for classes \code{SECdistrUv} or 
-   \code{SECdistrMv}
-   }
+   \code{SECdistrMv}.}
 
 \item{object}{an object of class \code{SECdistrUv} or \code{SECdistrMv} as
-   created by \code{\link{makeSECdistr}} or \code{\link{extractSECdistr}}
+   created by \code{\link{makeSECdistr}} or \code{\link{extractSECdistr}.}
    }  
 }
       

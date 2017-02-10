@@ -5,14 +5,16 @@ importFrom("stats",  ".getXlevels", "as.formula", "contrasts", "cov2cor",
   "optimize", "pf", "pnorm", "printCoefmat", "pt", "qchisq", "qf", "qnorm", 
   "qt", "quantile", "rchisq", "resid", "rnorm", "runif", "uniroot", "var",
   "residuals", "fitted", "weights", "optim", "nlminb", "splinefun",
-  "delete.response", "model.frame", "na.pass", "terms")
+  "delete.response", "model.frame", "na.pass", "terms",
+  "dbeta", "dlogis", "dunif", "pbeta", "pcauchy",
+  "plogis", "punif", "rbeta", "rcauchy", "rlogis", "rt")
 importFrom("graphics", "plot", "Axis", "abline", "axis", "box", "boxplot", 
   "contour", "hist", "lines", "mtext", "panel.smooth", "par", "points", "rug", 
   "strheight", "text", "title")
 importFrom("grDevices", "dev.interactive", "devAskNewPage", "extendrange",
   "contourLines")
 importFrom("utils", "packageDescription")
-importFrom("mnormt", pmnorm, dmt, pmt, pd.solve)
+importFrom("mnormt", dmnorm, pmnorm, rmnorm, dmt, pmt, rmt, pd.solve)
 importFrom("numDeriv", grad, hessian)
 import("methods") 
 import("stats4")
@@ -50,7 +52,9 @@ export(
   coef.selm, plot.selm, residuals.selm, fitted.selm,
   coef.mselm, plot.mselm, residuals.mselm, fitted.mselm,
   profile.selm, confint.selm, predict.selm,
-  sd.default, sd
+  sd.default, sd, 
+  dSymmModulated, rSymmModulated, dmSymmModulated, rmSymmModulated,
+  plot2D.SymmModulated
   )
  
 exportMethods("show", "plot", "summary", "coef",  "logLik", "residuals",

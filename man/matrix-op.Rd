@@ -20,15 +20,15 @@ duplicationMatrix(n)
 }
 
 \arguments{
-\item{A}{a (symmetric) square matrix}
+\item{A}{a (symmetric) square matrix.}
 
 \item{v}{a numeric vector such that \code{length(v)=n*(n+1)/2} for some
-positive integer \code{n}}
+positive integer \code{n}.}
 
-\item{n}{a positive integer number; default is \code{n=1}}
+\item{n}{a positive integer number; default is \code{n=1}.}
 }
 
-\value{a vector in case of \code{vech}, otherwise  a matrix}
+\value{a vector in case of \code{vech}, otherwise  a matrix.}
 
 \section{Details}{%
 For a  square matrix \code{A}, \code{vech(A)} returns the vector formed
@@ -44,7 +44,7 @@ order \code{n}, that is, the vector which stacks the columns of \code{M};
 for more information, see Section 3.8 of Magnus and Neudecker (1988). }
 
 \section{Author}{Adelchi Azzalini; 
-the original Octave code of \code{duplicationMatrix} is by Kurt Hornik}
+the original Octave code of \code{duplicationMatrix} is by Kurt Hornik.}
  
 \references{
 Magnus, Jan R. and Neudecker, Heinz (1988). \emph{Matrix differential

@@ -51,7 +51,7 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
    additional information.}
 
  \item{w}{an optional vector of weights; if missing, a vector of 1's is
-  generated.}
+   generated.}
 
 \item{fixed.nu}{an optional numeric value which declared a fixed value of the
    degrees of freedom, \code{nu}. If not \code{NULL}, the information matrix
@@ -60,32 +60,33 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
 \item{symmetr}{a logical flag which indicates whether a symmetry condition of 
    the distribution is being imposed; default is \code{symmetr=FALSE}.}   
 
-\item{penalty}{a optional character string with the name of the penalty function 
-   used in the call to \code{\link{selm}}; see this function for its description;}
+\item{penalty}{a optional character string with the name of the penalty 
+   function used in the call to \code{\link{selm}}; see this function for its
+   description.}
 
 \item{norm2.tol}{for the observed information case, the Mahalanobis squared
    distance of the score 0 is evaluated; if it exceeds \code{norm2.tol}, a
    warning message is issued, since the \sQuote{information matrix} so
    evaluated may be not positive-definite.  See \sQuote{Details} for
-   additional information. }
+   additional information.}
 }
 
 \value{
 a list containing the following components:
 \item{dp, cp}{one of the two arguments is the one supplied on input; 
-the other one matches the previous one in the alternative parametrization.}
+  the other one matches the previous one in the alternative parametrization.}
 
 \item{type}{the type of information matrix: "observed" or "expected".}
 
 \item{info.dp, info.cp}{matrices of Fisher (observed or expected) 
-information in the two parametrizations.}
+  information in the two parametrizations.}
  
 \item{asyvar.dp, asyvar.cp}{inverse matrices of Fisher information in the two
-parametrizations, when available; See \sQuote{Details} for additional
-information. }
+  parametrizations, when available; See \sQuote{Details} for additional
+  information. }
  
 \item{aux}{a list containing auxiliary elements, depending of the selected 
-function and the type of computation.}
+  function and the type of computation.}
 }
 
 \section{Details}{

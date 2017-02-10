@@ -56,8 +56,8 @@ rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha,  tau=0, dp=NULL)
   if \code{TRUE}, log-densities are returned.}
 
 \item{...}{
-  additional parameters passed to \code{pmnorm}
-}}
+  additional parameters passed to \code{pmnorm}.}
+}
 
 \value{
 A vector of density values (\code{dmsn}) or of probabilities

@@ -6,9 +6,9 @@
 \alias{zeta}
 \concept{Mills ratio}
 
-\title{Function \eqn{\log(2~\Phi(x))}{log(2*Phi(x))} and its derivatives}
+\title{Function \eqn{\log(2\,\Phi(x))}{log(2*Phi(x))} and its derivatives}
 
-\description{The function \code{log(2*(pnorm(x))} and its derivatives, 
+\description{The function \code{log(2*pnorm(x))} and its derivatives, 
   including inverse Mills ratio.}
   
 \usage{zeta(k, x)}
@@ -17,20 +17,19 @@
 \item{k}{an integer number between 0 and 5.}
 
 \item{x}{a numeric vector. Missing values (\code{NA}s)  and \code{Inf}s are 
-  allowed}
+  allowed.}
 }
 
-\value{
-a vector representing the \code{k}-th order derivative evaluated at \code{x}}
+\value{a vector representing the \code{k}-th order derivative evaluated at 
+  \code{x}.}
 
 \details{
-  For \code{k} between 0 and 5, the derivative of  order \code{k}
-  of \eqn{log(2\Phi(x))} is  evaluated, where \eqn{\Phi(x)} denotes the
-  \eqn{N(0,1)} cumulative distribution function.
+  For \code{k} between 0 and 5, the derivative of  order \code{k}  of
+  \eqn{\log(2\,\Phi(x))}{log(2\Phi(x))} is  evaluated, where \eqn{\Phi(x)} 
+  denotes the \eqn{N(0,1)} cumulative distribution function.
   The derivative of order \code{k=0} refers to the function itself.
   If \code{k} is not integer, it is converted to integer and a warning
-  message is generated.
-  If \code{k<0} or \code{k>5},  \code{NULL} is returned.
+  message is generated.  If \code{k<0} or \code{k>5}, \code{NULL} is returned.
 }
 
 \section{Background}{
@@ -49,16 +48,16 @@ a vector representing the \code{k}-th order derivative evaluated at \code{x}}
 }
 
 \references{
-  Abramowitz, M. and Stegun, I. A., editors (1964).
+Abramowitz, M. and Stegun, I. A., editors (1964).
   \emph{Handbook of Mathematical Functions}. 
   Dover Publications.
 
-  Azzalini, A. and Capitanio, A. (1999).
+Azzalini, A. and Capitanio, A. (1999).
   Statistical applications of the multivariate skew normal distribution.
   \emph{J.Roy.Statist.Soc. B} \bold{61}, 579--602. Full-length version 
   available at \url{http://arXiv.org/abs/0911.2093}
      
- Azzalini, A. with the collaboration of Capitanio, A. (2014). 
+Azzalini, A. with the collaboration of Capitanio, A. (2014). 
  \emph{The Skew-Normal and Related Families}. 
  Cambridge University Press, IMS Monographs series. 
 }
