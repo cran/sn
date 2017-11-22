@@ -4,8 +4,8 @@ if(!exists("meta") || is.null(meta)) meta <- packageDescription("sn")
 
 citEntry(entry="manual",
          title = paste("The {R} package \\texttt{sn}: ",
-                  "The Skew-Normal and Skew-$t$ distributions (version ",  
-                  meta$Version, ")", sep=""),
+                  "The Skew-Normal and Related Distributions such as
+                  the Skew-$t$ (version ",  meta$Version, ").", sep=""),
          author = personList(as.person("A. Azzalini")),
          address      = "Universit\\`a di Padova, Italia",
          year         = substr(meta$Date, 1, 4),
@@ -13,8 +13,8 @@ citEntry(entry="manual",
          
          textVersion = 
          paste("Azzalini, A. (", substr(meta$Date, 1, 4), "). ",
-           "The R package 'sn': The Skew-Normal and Skew-t distributions",
-	       " (version ", meta$Version, "). ",
+           "The R package 'sn': The Skew-Normal and Related Distributions
+           such as the Skew-t", " (version ", meta$Version, "). ",
                "URL http://azzalini.stat.unipd.it/SN",
                sep="")
 )

@@ -35,7 +35,44 @@ objects can be produced by \code{makeSECditr}. }
      \code{c(0.05, 0.25, 0.50, 0.75, 0.95)} is used.}
 }
 
-%\details{%%  ~~ If necessary, more details than the description above ~~}
+
+\details{For a description of  the \acronym{DP},  \acronym{CP} and    
+pseudo-\acronym{CP}  parameter sets included in the returned object, 
+see \code{\link{dp2cp}}.
+
+The \code{aux} slot of the returned object includes other summary quantities,
+as described next. 
+In the univariate case, the reported quantile-based measures of skewness and
+kurtosis refer to the  Bowley and Moors measures, respectively;
+see Groeneveld (2006) and Moors (1988) for their specifications.
+In the multivariate case, the Mardia's measures of skewness and kurtosis
+are computed from the expressions given on p.153 and p.178 of
+Azzalini and Capitanio (2014).
+
+In the univariate case, \code{delta} is a simple transformation of the 
+slant parameter \code{alpha}; it takes values in \eqn{(-1, 1)}. 
+In the multivariate case, \code{delta} is a vector with components
+of similar type; they correspond to the matching terms of the univariate 
+components. The \code{alpha*} and \code{delta*} coefficients are univariate
+comprehensive summary quantities of slant; see pp.132-3 of 
+Azzalini and Capitanio (2014) for their expressions. These quantities
+play an important role in \acronym{SEC} distributions; for instance,
+the Mardia's measures of multivariare skewness and kurtosis depend
+on the vector of slant parameters only via \code{delta*} or, equivalently,
+via \code{alpha*}.
+
+The mode, which is unique for all these distributions, is computed by a 
+numerical line search between the \acronym{DP} location and the \acronym{CP}
+location (or the pseudo-\acronym{DP} location, when the latter does
+exists). This line search is univariate also in the multivariate case, 
+using Propositions 5.14 and 6.2 of Azzalini and Capitanio (2014);
+see also Problem 5.14.
+
+The examples below illustrate how extract various components from \code{aux} 
+and other slots of the returned object. 
+}
+
+ 
 
 \value{A list with the following components:
   \item{family}{name of the family within the \acronym{SEC} class, character}
@@ -47,11 +84,12 @@ objects can be produced by \code{makeSECditr}. }
   \item{cp.type}{the name of the selected variant of the \acronym{CP} set}
   \item{aux}{a list with auxiliary ingredients (mode, coefficients of 
        skewness and kurtosis, in the parametric and non-parametric variants, 
-       and more).}
+       and more); see Section \sQuote{Details} for more information.}
        
-\acronym{DP} and \acronym{CP} are vectors if \code{class(object)} is  
-\code{SECdistrUv} (univariate distribution); they are lists if code{class(object)} is  \code{SECdistrMv} (multivariate distribution). 
-The examples below show how extract components from \code{aux} and other slots. 
+The list items \code{dp} and \code{cp} are vectors if \code{class(object)} is  
+\code{SECdistrUv} (univariate distribution); they are lists if 
+\code{class(object)} is \code{SECdistrMv} (multivariate distribution). 
+
 }
  
 \author{Adelchi Azzalini}
@@ -60,13 +98,37 @@ The examples below show how extract components from \code{aux} and other slots.
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{\code{\link{makeSECdistr}} for extracting a \acronym{SEC}
+\seealso{
+ \code{\link{makeSECdistr}} for building a \acronym{SEC} distribution
+
+ \code{\link{extractSECdistr}} for extracting a \acronym{SEC}
  distribution from a \code{\link{selm}} fit 
  
- methods \code{\link[base]{mean}} and \code{\link[stats]{vcov}} 
- for computing the mean (vector) and the variance (matrix) of 
- \code{\link{SECdistrUv-class}} and \code{\link{SECdistrMv-class}} objects
+ methods \code{\link[base]{mean}} and \code{\link[sn]{sd}} 
+ for computing the mean  and the standard deviation of 
+ \code{\link{SECdistrUv-class}} objects,
+ methods \code{\link[base]{mean}} and  \code{\link[stats]{vcov}} 
+ for computing the mean vector and the variance matrix of 
+ \code{\link{SECdistrMv-class}} objects
+ 
+ \code{\link[sn]{modeSECdistr}} for computing the mode directly 
  }
+ 
+ 
+\references{
+
+Azzalini, A. with the collaboration of Capitanio, A. (2014). 
+ \emph{The Skew-Normal and Related Families}. 
+ Cambridge University Press, IMS Monographs series.
+
+Moors, I. J. A. (1988). A quantile alternative for kurtosis. 
+\emph{The Statistician} \bold{37}, 25-32.
+
+Groeneveld, R. A. (2006).  Skewness, Bowley's measures of. 
+In volume \bold{12}, 7771-3, of \emph{Encyclopedia of Statistical Sciences}, 
+2nd edition, edited by Kotz et al. Wiley, New York.
+}
+
 
 \examples{
 f3 <- makeSECdistr(dp=c(3,2,5), family="SC")
@@ -78,12 +140,12 @@ slot(s, "aux")$mode           # the same of modeSECdistr(object=f3)
 slot(s, "aux")$q.measures     # quantile-based measures of skewness and kurtosis
 #
 dp3 <- list(xi=1:3, Omega=toeplitz(1/(1:3)), alpha=c(-3, 8, 5), nu=6)
-st3 <- makeSECdistr(dp=dp3, family="ST", compNames=c("U", "V", "W"))
+st3 <- makeSECdistr(dp=dp3, family="ST", name="ST3", compNames=c("U", "V", "W"))
 s <- summary(st3)
 dp <- slot(s, "dp")           # the same of slot(st3, "dp")
 slot(s, "cp")$var.cov         # the same of vcov(st3)
 slot(s, "aux")$delta.star     # comprehensive coefficient of shape
-slot(s, "aux")$mardia         # Mardia's measures of asymmetry and kurtosis
+slot(s, "aux")$mardia         # Mardia's measures of skewness and kurtosis
 #
 dp2 <- list(xi=rep(0,2), Omega=matrix(c(2,2,2,4),2,2), alpha=c(3,-5), tau=-1)
 esn2 <- makeSECdistr(dp=dp2, family="ESN", name="ESN-2d")

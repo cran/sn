@@ -164,6 +164,14 @@ This scheme is formulated in detail in Section 6.1 of Azzalini and Capitanio
 The same procedure is not feasible when one adopts \acronym{MPLE}; 
 hence function \code{msn.mple} has to maximize over a larger parameter space.
 
+When the SN family is fitted with the constraint \kbd{alpha=}, this amount
+to adopt a classical linear model with Gaussian distributional assumption.
+The corresponding MLE's are the same as those produced ny \code{lm}, 
+except that the denominator the of the MLE variance (matrix) has the 
+`uncorrected' form.
+In the multivariate case, the covariance matrix of MLE is computed using 
+expression (10) in Section 15.8 of Magnus and Neudecker (2007).
+
 Maximization of the univariate \acronym{ST} log-likelihood is speeded-up 
 by using the expressions of the gradient given by DiCiccio and Monti (2011),
 reproduced with inessential variants in Section 4.3.3 of Azzalini and 
@@ -195,6 +203,10 @@ version of the paper.
   DiCiccio,  T. J. and Monti, A. C. (2011).  
   Inferential aspects of the skew \eqn{t}-distribution.
   \emph{Quaderni di Statistica} \bold{13}, 1--21.
+  
+  Magnus, J. R. and Neudecker, H. (2007).
+  \emph{Matrix Differential Calculus with Applications in Statistics and 
+  Econometrics}, third edition.  John Wiley \& Sons.
 }
 
 \author{Adelchi Azzalini}

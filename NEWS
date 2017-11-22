@@ -1,13 +1,22 @@
-R package 'sn' NEWS (ChangeLog) file
-------------------------------------
+R package 'sn' - NEWS (ChangeLog) file
+--------------------------------------
+
+Version 1.5-1 (2017-11-22)
+More extensive documentation: (a) addition of 'overview' entry in standard
+documentation, (2) in directory 'doc', inclusion of a PDF file providing a
+tutorial introduction to the package, (3) additions and improvements at
+various places in Rd files. Fix a minor bug in sn.infoUv causing crash when
+the DP information matrix is not invertible. Improved numerical inversion of
+st.cp2dp in extreme situations.
+
 Version 1.5-0 (2017-02-09)
 New functions for symmetry-modulated (AKA skew-symmetric) distributions
-are introduced. Fix a bug in dsn affecting the cases (a) x=Inf, alpha=0, 
-and (b) omega<=0. 
+are introduced: {d,r}[m]SymmModulated and its bivariate density plotting. 
+Fix a bug in dsn affecting the cases (a) x=Inf, alpha=0, and (b) omega<=0. 
 
 Version 1.4-0 (2016-06-30) 
-Methods confint and predict for selm-class objects are introduced. Fix bug in
-rmst causing some dependence among subsequent samples; fix bug of modeSECdistrMv 
+Introduce methods confint and predict for selm-class objects. Fix bug in rmst 
+causing some dependence among subsequent samples; fix bug of modeSECdistrMv 
 affecting certain ST cases; plot.SECdistrBv allows to overlap plots; 
 improved naming of output; profile.selm can now be called with vector(s) 
 param.values of length 1.

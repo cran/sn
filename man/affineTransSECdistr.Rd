@@ -8,9 +8,10 @@
 \title{Affine transformations and marginals of a skew-elliptical distribution}
 
 \description{
-  Compute the distribution of a (multivariate) marginal or the distribution
-  of an affine  transformation \eqn{a + A^{\top}Y}{a + A'Y} of a multivariate 
-  variable \eqn{Y} with  skew-elliptical (\acronym{SEC}) distribution.}
+  Given a multivariate random variable \eqn{Y} with skew-elliptical
+ (\acronym{SEC}) distribution, compute the distribution 
+  of a (possibly multivariate) marginal or the distribution
+  of an affine  transformation \eqn{a + A^{\top}Y}{a + A'Y}.}
 
 \usage{
   affineTransSECdistr(object, a, A, name, compNames, drop=TRUE)
@@ -18,13 +19,15 @@
 }
 
 \arguments{
-  \item{object}{an object of class \code{SECdistrMv}, as created by
-    \code{\link{makeSECdistr}} or by a previous call to these functions}
+  \item{object}{an object of class \code{SECdistrMv} which identifies the 
+    source random variable, as created by
+    \code{\link{makeSECdistr}} or by \code{\link{extractSECdistr}} or 
+    by a previous call to these functions}
 
   \item{a}{a numeric vector with the length \code{ncol(A)}.}
   
   \item{A}{a full-rank matrix with \code{nrow(A)} equal to the dimensionality
-    of \code{object}. }
+    \kbd{d} of the random variable identified by \code{object}. }
     
   \item{name}{an optional character string representing the name of the 
     outcome distribution; if missing, one such string is constructed.}
@@ -34,7 +37,7 @@
     if missing, one such vector is constructed.}
    
   \item{drop}{a logical flag (default value: \code{TRUE}), operating only if
-    the returned object is has dimension \code{1}, in which case it indicates
+    the returned object has dimension \code{d=1}, in which case it indicates
      whether this object must be of class \code{SECdistrUv}.}
   
   \item{comp}{a vector formed by a subset of \code{1:d} which indicates which
@@ -58,7 +61,8 @@
  Cambridge University Press, IMS Monographs series. 
 }  
  
-\seealso{\code{\link{makeSECdistr}}, \code{\link{SECdistrMv-class}}}
+\seealso{\code{\link{makeSECdistr}}, \code{\link{extractSECdistr}},
+  \code{\link{SECdistrMv-class}}}
   
 \examples{
 dp3 <- list(xi=1:3, Omega=toeplitz(1/(1:3)), alpha=c(3,-1,2), nu=5)

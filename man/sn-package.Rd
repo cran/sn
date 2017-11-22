@@ -11,8 +11,9 @@
 \concept{skew-normal distribution}
 \concept{skew-t distribution}
 \concept{symmetric distribution}
+\concept{symmetry-modulated distribution}
 
-\title{Package \pkg{sn}: overview}
+\title{Package \pkg{sn}: development and brief overview}
 \description{
   The \pkg{sn} package  provides facilities to  define and manipulate 
   probability distributions of the skew-normal (\acronym{SN}) family and 
@@ -38,7 +39,9 @@ could look at their key functions, \code{\link{makeSECdistr}} and
 In the probability section, one finds also functions \code{\link{dsn}},
 \code{\link{dst}}, \code{\link{dmsn}} and others alike; these functions 
 existed also in \sQuote{version 0} and their working is still very much 
-the same (not necessarily so their code).
+the same (not necessarily so their code). Additional information
+on the current package structure and the set of commands is available in a
+more extended \code{\link[=pkg-overview]{overview}} of the package.
 
 The first instance of the \sQuote{version 1}  series (that is, 1.0-0) has 
 appeared at the same time when the companion book by Azzalini and Capitanio
@@ -135,6 +138,8 @@ if a reference is inserted in publications or other work
 which makes use of it. For the appropriate way of referencing it, 
 see the command \code{citation("sn")}. 
 }
+
+\seealso{\code{\link[=pkg-overview]{package-overview}} }
 
 \references{
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 

@@ -70,7 +70,9 @@ is available in the technical note of Azzalini (2016).
  Azzalini, A. (2016). 
  Derivation of various types of intervals from a \code{selm} object.
  Technical note distributed with the documentation of the \R package
- \code{sn}, in file \code{selm-intervals.pdf}
+ \code{sn}, in file 
+ \href{../doc/selm-intervals.pdf}{\code{selm-intervals.pdf}} within section 
+ \sQuote{User guide, package vignettes and other documentation}.
 }
  
 % \note{}

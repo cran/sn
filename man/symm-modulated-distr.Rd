@@ -42,15 +42,17 @@ plot2D.SymmModulated(range, npt=rep(101,2), xi=c(0,0), Omega, f0, G0, w,
   
   \item{f0}{a character string denoting the symmetric density to be modulated;
     admissible values for \code{dSymmModulated} and \code{dSymmModulated} 
-    are \code{"beta"}, \code{"cauchy"}, \code{"logistic"}, \code{"normal"}, 
-    \code{"t"}, \code{"uniform"};   for the other functions the possible 
-    values are \code{"cauchy"}, \code{"normal"}, \code{"t"}; 
+    are \code{"beta"}, \code{"cauchy"}, \code{"logistic"} (or \code{"logis"}), 
+    \code{"normal"} (or \code{"norm"}), \code{"t"}, \code{"uniform"};   
+    for the other functions the possible 
+    values are \code{"cauchy"}, \code{"normal"} (or \code{"norm"}), \code{"t"}; 
     the meaning of the names is described in the \sQuote{Details}  section.}
    
   \item{G0}{a character string denoting the symmetric distribution used in the
     modulating factor; admissible values are \code{"beta"}, \code{"cauchy"}, 
-    \code{"logistic"}, \code{"normal"}, \code{"t"}, \code{"uniform"}  whose 
-    meaning is described in the \sQuote{Details} section.}
+    \code{"logistic"} (or \code{"logis"}), \code{"normal"} (or \code{"norm"}), 
+    \code{"t"}, \code{"uniform"},  with meaning  described in the
+    \sQuote{Details} section.}
     
   \item{w}{the name (\emph{not} as a character string) of a user-defined 
     function which satisfies the condition \eqn{w(-z)=-w(z)} for all \eqn{z};

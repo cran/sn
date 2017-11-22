@@ -41,9 +41,10 @@ by \code{selm} fit when the response variable is univariate.}
 }
 
 \details{
-A description of the methodology underlying \code{confint.selm} is available 
-in the technical note of Azzalini (2016). This also explains why in certain
-cases an interval is not constructed and \code{NA}'s are returned as endpoint.}
+A description of the methodology underlying \code{confint.selm} is provided 
+in the technical note of Azzalini (2016).
+That document also explains why in certain cases an interval is not 
+constructed and \code{NA}'s are returned as endpoint.}
 
 \value{An invisible list whose components, described below, are partly 
 different in the one- and the two-parameter cases.
@@ -64,7 +65,9 @@ different in the one- and the two-parameter cases.
  Azzalini, A. (2016). 
  Derivation of various types of intervals from a \code{selm} object.
  Technical note distributed with the documentation of the \R package
- \code{sn}, in file \code{selm-intervals.pdf}
+ \code{sn} in file 
+ \href{../doc/selm-intervals.pdf}{\code{selm-intervals.pdf}}  within 
+ section \sQuote{User guide, package vignettes and other documentation}.
  
 % Azzalini, A. with the collaboration of Capitanio, A. (2014). 
 % \emph{The Skew-Normal and Related Families}. 

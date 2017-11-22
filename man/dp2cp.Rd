@@ -84,7 +84,7 @@ Specifically, their Section 3.1.4 presents \acronym{CP} in the univariate
 the `pseudo-\acronym{CP}' version. Section 5.2.3 presents the multivariate
 extension for the \acronym{SN} distribution, Section 6.2.5 for the 
 multivariate \acronym{ST} case. 
-For a more detailed discussion, see Arellano-Valle and Azzalini (2013).
+For a more detailed discussion, see Arellano-Valle & Azzalini (2013).
 
 The \acronym{OP} parameterization is very similar to \acronym{DP}, from which 
 it differs only for the components which regulate dispersion (or scatter) 
@@ -94,7 +94,7 @@ remain unaffected if marginalization with respect to some other components
 is performed. 
 In the multivariate \acronym{SN} case, the components of \acronym{OP}, denoted
 \eqn{\xi, \Psi, \lambda}, are associated to the expression of the density
-function (5.30) of Azzalini \& Capitanio (2014); see pp.128--131 for more
+function (5.30) of Azzalini & Capitanio (2014); see pp.128--131 for more
 information. In the univariate case, the slant component of \acronym{DP}
 and the one of \acronym{OP} coincide, that is, \eqn{\alpha=\lambda},
 Parameter \eqn{\xi} and other parameters which may exist with other families 

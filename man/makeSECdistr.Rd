@@ -34,7 +34,7 @@
     strings with the names of the component variables; its length must be 
     equal to the dimensionality of the distribution being generated. 
     If missing and the first component of \code{dp} is a named vector,
-    its names used as \code{compNames}; otherwise
+    its names are used as \code{compNames}; otherwise
     the components are named \code{"V1"}, \code{"V2"}, \dots}
 }
 

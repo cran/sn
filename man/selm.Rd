@@ -1,6 +1,6 @@
 %  file sn/man/selm.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2013 Adelchi Azzalini
+%  copyright (C) 2013-2017 Adelchi Azzalini
 %---------------------
 \name{selm}
 \encoding{UTF-8}
@@ -36,7 +36,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    \code{"SN"} (default), \code{"ST"} or \code{"SC"}, which correspond to the
    skew-normal, the skew-\emph{t} and the skew-Cauchy family, respectively.
    See \code{\link{makeSECdistr}} for more information on these families and
-   the set of \acronym{SEC} distributions; notice that family \code{"ESN"} 
+   the set of \acronym{SEC} distributions; notice that the family \code{"ESN"} 
    listed there is not allowed here.}
 
   \item{data}{an optional data frame  containing the variables in
@@ -50,7 +50,8 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    number of observations. If not assigned, a vector of all 1's is generated.}
 
   \item{subset}{an optional vector specifying a subset of observations
-   to be used in the fitting process.}
+   to be used in the fitting process. It works like the same parameter
+   in \code{\link[stats]{lm}}.}
 
   \item{na.action}{a function which indicates what should happen
    when the data contain \code{NA}s.  The default is set by the
@@ -60,10 +61,11 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    % Value \code{\link[stats]{na.exclude}} can be useful.
    }
 
-  \item{start}{a vector (in the univariate case) or a list (in the
-   multivariate case) of initial values for the search of the parameter
-   estimates. If \code{start=NULL} (default), initial values are selected by
-   the procedure.}
+  \item{start}{a vector (in the univariate case) or a list (in the  
+   multivariate case) of initial \acronym{DP} values for searching the 
+   parameter estimates. See \sQuote{Details} about a choice of
+   \kbd{start} to be avoided.  If \code{start=NULL} (default), 
+   initial values are  selected by the procedure.}
 
   \item{fixed.param}{a list of assignments of parameter values which must
    be kept fixed in the estimation process. 
@@ -77,7 +79,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   \item{method}{a character string which selects the estimation method to be
    used for fitting. Currently two options exist: \code{"MLE"} (default) and
    \code{"MPLE"}, corresponding to standard maximum likelihood and maximum
-   penalized likekelihood estimation, respectively. See \sQuote{Details} for
+   penalized likelihood estimation, respectively. See \sQuote{Details} for
    additional information.  }
 
   \item{penalty}{a character string which denotes the penalty function to be
@@ -118,7 +120,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
         \code{method} equal to \code{opt.method}.
 
     \item \code{opt.control}: a list of control parameters which is passed
-        on to \code{nlminb} or to \code{optim}, depending on the chosen
+        on to \code{nlminb} or to \code{optim}, depending on the choice of 
         \code{opt.method}.
     }
   }
@@ -177,11 +179,11 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   or Cauchy distribution is adopted. 
   
   Under the constraint \eqn{\alpha=0}, the location parameter \eqn{\xi}{xi}
-  coincides with the mode and the mean of the distribution, when the latter 
-  exists; in addition, when the covariance matrix exists, it differs from 
-  \eqn{\Omega}{Omega} only by a multiplicative factor. For this reason,
-  the summaries of a model of this sort automatically adopt the \acronym{DP}
-  parametrization.
+  coincides with the mode and the mean of the distribution, when the latter
+  exists. In addition, when the covariance matrix of a \acronym{ST}
+  distribution exists, it differs from \eqn{\Omega} only by a multiplicative
+  factor. Consequently, the summaries of a model of this sort automatically
+  adopt the \acronym{DP} parametrization.
   
   The other possible form of constraint allows to fix the degrees of
   freedom when \code{family="ST"}. The two constraints can be combined 
@@ -190,10 +192,28 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   In practice, an expression of type \code{fixed.param=list(..)} can be
   abbreviated to \code{fixed=list(..)}.
   
+  Argument \kbd{start} allows to set the initial values, with respect to the
+  \acronym{DP} parameterization, of the numerical optimization. 
+  However, there is a specific choice of start to be avoided.
+  When \kbd{family="SN"}, do not set the shape parameter \kbd{alpha} 
+  exactly at 0, as this would blow-up computation of the log-likelihood 
+  gradient and the Hessian matrix. This is not due to a software bug, 
+  but to a known peculiar behaviour of the log-likelihood  function at 
+  that specific point. Therefore, in the univariate case for instance, 
+  do not set e.g. \kbd{start=c(12, 21, 0)}, but set instead something
+  like \kbd{start=c(12, 21, 0.001)}. 
+  % Also, setting such an initial $\alpha=0$ or close to 0 is a questionable 
+  % choice anyway: if one fits a model of this class, then  some asymmetry is
+  % expected to be present and it is odd to start the search from a symmetry
+  % condition.
+  Recall that, if one needs to fit a model forcing 0 asymmetry, typically to
+  compare two log-likelihood functions with/without asymmetry, then the option
+  to use is \kbd{fixed.param=list(alpha=0)}.
+
   In some cases, especially for small sample size, the \acronym{MLE} occurs on
   the frontier of the parameter space, leading to \acronym{DP} estimates with
-  \code{alpha=Inf} or to a similar situation in the multivariate case or in an
-  alternative parameterization. Such outcome is regared by many as
+  \code{abs(alpha)=Inf} or to a similar situation in the multivariate case 
+  or in an alternative parameterization. Such outcome is regared by many as
   unsatisfactory; surely it prevents using the observed information matrix to
   compute standard errors. This problem motivates the use of maximum penalized
   likelihood estimation (\acronym{MPLE}), where the regular log-likelihood
@@ -206,7 +226,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
      \deqn{Q(\alpha) = c_1 \log(1 + c_2 \alpha_*^2)}{%
            Q(\alpha)= c₁ log(1 + c₂ [\alpha*]²)}
   where \eqn{c_1}{c₁} and \eqn{c_2}{c₂} are positive constants, which
-  depends on the degrees of freedom \code{nu} in the \code{ST} case,
+  depend on the degrees of freedom \code{nu} in the \code{ST} case,
       \deqn{\alpha_*^2 = \alpha^\top \bar\Omega \alpha}{%?
             [\alpha*]² = \alpha' cor(\Omega) \alpha}
   and \eqn{\bar\Omega}{cor(\Omega)} denotes the correlation matrix 
@@ -269,7 +289,7 @@ Arellano-Valle, R. B., and Azzalini, A. (2008).
  \emph{J. Multiv. Anal.} \bold{99}, 1362--1382.
   Corrigendum: \bold{100} (2009), 816.
 
-Arellano-Valle, R. B., and Azzalini, A. (2011, available online 12 June 2011).
+Arellano-Valle, R. B., and Azzalini, A. (2013, available online 12 June 2011).
   The centred parametrization and related quantities for the  skew-\emph{t} 
   distribution.
   \emph{J. Multiv. Anal.} \bold{113}, 73--90. 
@@ -287,11 +307,40 @@ Azzalini, A. with the collaboration of Capitanio, A. (2014).
  \emph{The Skew-Normal and Related Families}. 
  Cambridge University Press, IMS Monographs series.
 
+Magnus and Neudecker
 }
 
 \author{Adelchi Azzalini}
 
-\section{Warning}{
+\section{Cautionary notes}{
+The first of these notes applies to the stage \emph{preceding} the
+use of \kbd{selm} and related fitting procedures. Before fitting a model of
+this sort, consider whether you have enough data for this task. 
+In this respect, the passage below taken from p.63 of Azzalini 
+and Capitanio (2014) is relevant.
+
+\dQuote{Before entering technical aspects, it is advisable to underline 
+a qualitative effect of working with a parametric family which effectively 
+is regulated by moments up to the third order. 
+The implication is that the traditional rule of thumb by which a sample 
+size is small up to ‘about \eqn{n = 30}’, and then starts to become ‘large’,
+while sensible for a normal population or other two-parameter distribution, 
+is not really appropriate here. 
+To give an indication of a new threshold is especially difficult, 
+because the value of  \eqn{\alpha} also has a role here. 
+Under this \emph{caveat}, numerical experience suggests that ‘about 
+\eqn{n = 50}’ may be a more appropriate guideline in this context.}
+
+The above passage referred to the univariate SN context. 
+In the multivariate case, increase the sample size appropriately, 
+particularly in the ST case.
+All of this is not to say that one cannot attempt fitting these models 
+with small or moderate sample size. However, one must be aware of the 
+implications and not be surprised of problems, if they appear.
+
+
+The second cautionary note refers instead to the outcome of a call to 
+\kbd{selm} and related function, or the lack of it.
 The estimates are obtained by numerical optimization methods and, as
 usual in similar cases, there is no guarantee that the maximum of the
 objective function is achieved. Consideration of model simplicity
@@ -339,6 +388,9 @@ final portion of the examples below.
 \item
   the function \code{\link{extractSECdistr}} to extract the \acronym{SEC}
   error distribution from an object returned by \code{selm} 
+  
+\item the broad underlying logic and a number of ingredients are like in 
+   function \code{\link[stats]{lm}}  
 }}
 
 \examples{

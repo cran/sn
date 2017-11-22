@@ -1,7 +1,7 @@
 #  file sn/R/sn-funct.R  (various functions)
 #  This file is a component of the package 'sn' for R 
 #  copyright (C) 1997-2016 Adelchi Azzalini
-#
+# 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 2 or 3 of the License
@@ -1469,9 +1469,11 @@ function(cp, cp.type="proper", start=NULL, silent=FALSE, tol=1e-8, trace=FALSE)
   tiny <- sqrt(.Machine$double.eps)
   fn0 <- function(log.nu, g1, a) st.gamma1(1, exp(log.nu) + a[3]) - g1
   if(abs.g1 <=  0.5*(4-pi)*(2/(pi-2))^1.5) {
-    # book: (2.29)+(3.20)
-    feasible <- (gamma2 > 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3))
-    excess <- max(0, 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3) - gamma2)
+    sn.gamma2 <- 2*(pi-3)*(2*abs.g1/(4-pi))^(4/3)   # SN book: (2.29)+(3.20)
+    margin <- (gamma2 - sn.gamma2)
+    if(abs(margin) < tiny) return(c(cp2dpUv(cp[-length(cp)], "SN"), nu=Inf))
+    feasible <- (margin > 0) 
+    excess <- max(0, sn.gamma2 - gamma2)
     } 
   else {
     if(abs.g1 >= 4 & cp.type=="proper") {
@@ -1502,7 +1504,7 @@ function(cp, cp.type="proper", start=NULL, silent=FALSE, tol=1e-8, trace=FALSE)
   out <- NULL
   while(step > tol){
     fn21 <- fn2(log(4 - a[4]+ tiny), gamma2, delta, a)
-    fn22 <- fn2(log(1e4), gamma2, delta, a)
+    fn22 <- fn2(log(1e9), gamma2, delta, a)
     if(any(is.na(c(fn21, fn22)))) stop("parameter inversion failed")  
     if(fn21 * fn22 > 0) {
       out <- NA
@@ -2452,7 +2454,7 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
       not.mle <- (abs(sum(score * as.vector(asyvar.cp %*% score))) > norm2.tol)
       asyvar.dp <- pd.solve(I.dp, silent=TRUE)
       }
-    if(not.mle) warning("parameters do not seem at MLE")  
+    if(not.mle) warning("something peculiar, parameters do not seem at MLE")  
     #--Iinfo.dp 2nd form 
     I2 <- matrix(NA,p+2,p+2)
     z <- (y - as.vector(x%*% dp[1:p]))/omega
@@ -2511,7 +2513,7 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
     asyvar.cp <- pd.solve(I.cp, silent=TRUE)
     }
   dimnames(I.dp) <- list(names(dp), names(dp))
-  dimnames(asyvar.dp) <- list(names(dp), names(dp))
+  if(!is.null(asyvar.dp)) dimnames(asyvar.dp) <- list(names(dp), names(dp))
   if(!is.null(I.cp)) dimnames(I.cp) <- list(names(cp), names(cp))
   if(!is.null(asyvar.cp)) dimnames(asyvar.cp) <- list(names(cp), names(cp))
   aux <- list(Ddp.cp=Ddp.cp, a.coef=a.coef, score.cp=score)
@@ -4493,15 +4495,18 @@ plot.mselm <- function (x, param.type="CP", which, caption,
     if(missing(which)) which <- if(p == 1) c(1,3,4) else 2:4
     show <- rep(FALSE, 4)
     show[which] <- TRUE
+    if(!show[2]) param.type <- "DP"   # CP-residuals only used for show[2]
+    lc.param.type <- tolower(param.type)
+    param.type <- switch(lc.param.type, 
+      "dp"="DP", "op"="OP", "cp"="CP", "pseudo-cp"="pseudo-CP")  
+    if(param.type == "OP") stop("this method does not support OP option")
     if(missing(caption)) caption <- 
        c("Observed values and fitted distribution", 
        paste("Distribution of", param.type, "residual values"),
        "Q-Q plot of Mahalanobis distances",
        "P-P plot of Mahalanobis distances")
-    if(!show[2]) param.type <- "DP"   # CP-residuals only used for show[2]
-    param.type <- tolower(param.type)  
     all.par <- slot(x, "param")
-    param <- all.par[[param.type]]
+    param <- all.par[[lc.param.type]]
     dots <- list(...)
     if(is.null(param)) { message(paste(
         "Requested param.type='", param.type, "' evaluates to NULL.", sep=""))
@@ -4511,10 +4516,10 @@ plot.mselm <- function (x, param.type="CP", which, caption,
         message("CP makes no sense for SC family")
       if(param.type == "cp" & x@family== "ST")
         message("CP of ST family requires nu>4")  
-      stop("Consider another choice of param.type")
+      stop("Consider another choice of param.type, e.g. param.type='DP'")
       }
-    r <- residuals(x, param.type)
-    r.lab <- paste(toupper(param.type), "residuals")
+    r <- residuals(x, lc.param.type)
+    r.lab <- paste(param.type, "residuals")
     # family <- x@family 
     dp <- if(length(all.par$fixed) > 0) all.par$dp.complete else all.par$dp
     cp <- dp2cpMv(dp, family=x@family, cp.type="auto") 
@@ -5253,6 +5258,7 @@ dSymmModulated <- function(x, xi=0, omega=1, f0, G0, w, par.f0, par.G0,
   psunif <- function(x, log.p) punif(x, -1, 1, log.p=log.p)
   if(omega <= 0) stop("omega must be positive")
   z <- as.numeric((x-xi)/omega)
+  f0 <- switch(f0, "norm"="normal", "logis"="logistic", f0)
   pdf <- switch(f0, 
     beta=dsbeta(z, par.f0, log=log), cauchy=dcauchy(z, log=log),
     logistic=dlogis(z, log=log), normal=dnorm(z, log=log),  
@@ -5267,6 +5273,7 @@ dSymmModulated <- function(x, xi=0, omega=1, f0, G0, w, par.f0, par.G0,
     w.z[z < 0] <-  -w(-z[z<0], ...)
     w.z[z == 0] <- 0
     }
+  G0 <- switch(G0, "norm"="normal", "logis"="logistic", G0)  
   cdf <- switch(G0, 
     beta=psbeta(w.z, par.G0, log.p=log), cauchy=pcauchy(w.z, log.p=log),
     logistic=plogis(w.z, log.p=log),  normal=pnorm(w.z, log.p=log),
@@ -5281,6 +5288,7 @@ rSymmModulated <- function(n=1, xi=0, omega=1, f0, G0, w, par.f0, par.G0,
   rsbeta <- function(n=1, shape) rbeta(n, shape, shape)*2 + 1
   rsunif <- function(n=1) runif(n, -1, 1)
   if(omega < 0) stop("omega must be non-negative")
+  f0 <- switch(f0, "norm"="normal", "logis"="logistic", f0)
   Z0 <- switch(f0, beta=rsbeta(n, par.f0), cauchy=rcauchy(n),
            logistic=rlogis(n), normal=rnorm(n),  
            t=rt(n, par.f0), uniform=rsunif(n), NULL)     
@@ -5293,6 +5301,7 @@ rSymmModulated <- function(n=1, xi=0, omega=1, f0, G0, w, par.f0, par.G0,
   if(odd == "force")  {
     w.Z0 <- ifelse(Z0>0, w(Z0, ...), -w(-Z0, ...))  
     w.Z0[Z0 == 0] <- 0 }
+  G0 <- switch(G0, "norm"="normal", "logis"="logistic", G0)   
   T <- switch(G0, beta=rsbeta(n, par.G0), cauchy=rcauchy(n),
            logistic=rlogis(n),  normal=rnorm(n),
            t=rt(n, par.G0), uniform=rsunif(n), NULL)
@@ -5312,6 +5321,7 @@ dmSymmModulated <- function(x, xi, Omega, f0, G0, w, par.f0, par.G0,
   omega <- sqrt(diag(Omega))
   Omega <- cov2cor(Omega)
   z <- (x - outer(rep(1,nrow(x)), xi)) %*%  diag(1/omega, d, d)
+  f0 <- switch(f0, "norm"="normal", f0)
   pdf <- switch(f0, cauchy=mnormt::dmt(z, zero, Omega, 1, log=log), 
     normal=mnormt::dmnorm(z, zero, Omega, log=log), 
     t=mnormt::dmt(z, zero, Omega, par.f0, log=log), NULL)     
@@ -5327,6 +5337,7 @@ dmSymmModulated <- function(x, xi, Omega, f0, G0, w, par.f0, par.G0,
     i0 <- apply(z, 1, all.equal, current=zero, check.attr=FALSE) == "TRUE"
     w.z[i0] <- 0
     }
+  G0 <- switch(G0, "norm"="normal", "logis"="logistic", G0)   
   cdf <- switch(G0, 
     beta=psbeta(w.z, par.G0, log.p=log), cauchy=pcauchy(w.z, log.p=log),
     logistic=plogis(w.z, log.p=log),  normal=pnorm(w.z, log.p=log),
@@ -5346,6 +5357,7 @@ rmSymmModulated <- function(n=1, xi, Omega, f0, G0, w, par.f0, par.G0, odd="chec
   zero <- rep(0, d)
   omega <- sqrt(diag(Omega))
   Omega <- cov2cor(Omega)
+  f0 <- switch(f0, "norm"="normal", f0)
   Z0 <- switch(f0, cauchy=mnormt::rmt(n, zero, Omega, 1), 
           normal=mnormt::rmnorm(n, zero, Omega), 
           t=mnormt::rmt(n, zero, Omega, par.f0),  NULL)     
@@ -5361,6 +5373,7 @@ rmSymmModulated <- function(n=1, xi, Omega, f0, G0, w, par.f0, par.G0, odd="chec
     i0 <- apply(Z0, 1, all.equal, current=zero, check.attr=FALSE) == "TRUE"
     w.Z0[i0] <- 0
     } 
+  G0 <- switch(G0, "norm"="normal", "logis"="logistic", G0)     
   T <- switch(G0, beta=rsbeta(n, par.G0), cauchy=rcauchy(n),
          logistic=rlogis(n),  normal=rnorm(n),
          t=rt(n, par.G0), uniform=rsunif(n), NULL)
