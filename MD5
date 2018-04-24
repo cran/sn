@@ -1,7 +1,7 @@
-f937a5207adda96e67e353f85b1abf0e *DESCRIPTION
+d7e7d455c2ce454097a7173b69e6278d *DESCRIPTION
 3091f95579fde5633a3d575256fb34a9 *NAMESPACE
-c86cfcecdbdd97ee90f2df19bf3ea992 *NEWS
-3999c618b0d72bafbb2fc7f7becbbcf5 *R/sn-funct.R
+49ebd7a991d81803b04e056b28256f37 *NEWS
+e63abbb7462972bda37fe9e1b4fd0d2b *R/sn-funct.R
 d3cade84a9a5d7f630a01a365be651c4 *R/sn_S4.R
 111ff3ae97375c9b57aa355627798561 *R/zzz.R
 c87d56eaa84f8f6d137ab316c0c046fb *data/ais.rda
@@ -29,7 +29,7 @@ ce428499f634fa674d7d31b3be61ef16 *man/dmsn.Rd
 04b5ad3c2a0bd9f04563f55aad0cabc6 *man/dp2cp.Rd
 383f5b2e2f8c8bc78646c26cd047f42b *man/dsc.Rd
 26c8628d277684f1a434b87e3be9b4c2 *man/dsn.Rd
-1a57f778872a083e893cd631b4f32ef7 *man/dst.Rd
+ecb04adbbd198ec5cb47038bea909e4e *man/dst.Rd
 6b9e30a4866ac31ed62d6e3d9c267cae *man/extractSECdistr.Rd
 8e9b88045386ec0467941a81e1e43a50 *man/frontier.Rd
 95b05eebbb4ff97ddd98c6b75d359457 *man/makeSECdistr.Rd
@@ -43,9 +43,9 @@ cbfc94c36e7e1393b566e2bcf7a9e37a *man/predict.selm.Rd
 792d26be992fcae3d65ad6d680551383 *man/residuals.selm.Rd
 cc3dc14383601c9fa0bf8d1196ed8049 *man/sd.Rd
 e5ebae18ba50e5358fc2a9ae857c9ad9 *man/selm-class.Rd
-9c9d82c86dff2d355834eff08eb7c59f *man/selm.Rd
+2f1607e45a8ae611568a90163400c1d2 *man/selm.Rd
 8271bfcfb72a46c9cc8221df7951daee *man/selm.fit.Rd
-8e6c2f5d1e2a6d7e3b8ab0220e7b253f *man/sn-package.Rd
+b8a203fe4dc07234b60ccfdc8d97dcee *man/sn-package.Rd
 21a3be4081fda8716485cca6d329532a *man/sn-st.cumulants.Rd
 668c242732e257950d3df47f8c86b331 *man/sn-st.info.Rd
 ac9e41daa309fce5cf5fc2f3f389880a *man/summary.SECdistr-class.Rd

@@ -48,8 +48,8 @@ it must be of length 1.}
 
 \item{method}{an integer value between \code{0} and \code{4} which selects 
   the computing method; see \sQuote{Details} below for the meaning of these
-  values. If \code{method=0} (default value),  an automatic choice is made
-  among the four actual computing methods, which depends on the other
+  values. If \code{method=0} (default value), an automatic choice is made
+  among the four actual computing methods, depending on the other
   arguments.}
 
 \item{...}{additional parameters passed to \code{integrate} or \code{pmst}.}

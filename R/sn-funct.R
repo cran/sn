@@ -1,6 +1,6 @@
 #  file sn/R/sn-funct.R  (various functions)
 #  This file is a component of the package 'sn' for R 
-#  copyright (C) 1997-2016 Adelchi Azzalini
+#  copyright (C) 1997-2018 Adelchi Azzalini
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -184,7 +184,7 @@ rsn <- function(n=1, xi=0, omega=1, alpha=0, tau=0, dp=NULL)
     truncN <- qnorm(runif(n, min=pnorm(-tau), max=1))
     z <- delta * truncN + sqrt(1-delta^2) * rnorm(n)
     }
-  y <- xi+omega*z
+  y <- as.vector(xi+omega*z)
   attr(y, "family") <- "SN"
   attr(y, "parameters") <- c(xi,omega,alpha,tau)
   return(y)
@@ -324,7 +324,7 @@ rst <- function (n=1, xi = 0, omega = 1, alpha = 0, nu=Inf, dp=NULL)
     v <- rchisq(n,nu)/nu
     y <- z/sqrt(v) + xi
     }
-    else y <- z+xi
+    else y <- z + xi
   attr(y, "family") <- "ST"
   attr(y, "parameters") <- c(xi,omega,alpha,nu)
   return(y)
@@ -341,20 +341,23 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
     nu <- dp[4]
    }
   if(length(alpha) > 1) stop("'alpha' must be a single value")  
-  if(length(nu) > 1) stop("'nu' must be a single value")  
-  if (nu <= 0) stop("nu must be non-negative")
+  if(length(nu) > 1) stop("'nu' must be a single value") 
+  if(nu <= 0) return(rep(NaN, length(x))) 
   if (nu == Inf) return(psn(x, xi, omega, alpha))
   if (nu == 1) return(psc(x, xi, omega, alpha))
   int.nu <- (round(nu) == nu)
   if((method == 1 | method ==4) & !int.nu) 
-    stop("selected method does not work for non-integer nu")
-  ok <- !(is.na(x) | (x==Inf) | (x==-Inf))
+    stop("selected 'method' does not work for non-integer nu")
+  pr <- rep(NA, length(x))  
+  ok <- !(is.na(x) | (x==Inf) | (x==-Inf) | (omega<=0))
   z <- ((x-xi)/omega)[ok]
-  if(abs(alpha) == Inf) {
+  if(alpha == 0) p <- pt(z, df=nu) 
+  else if(abs(alpha) == Inf) {
     z0 <- replace(z, alpha*z < 0, 0)
     p <- pf(z0^2, 1, nu)
-    return(if(alpha>0) p else (1-p))
+    if(alpha<0) p <- (1-p)
     }  
+  else {  
   fp <- function(v, alpha, nu, t.value) 
           psn(sqrt(v) * t.value, 0, 1, alpha) * dchisq(v * nu, nu) * nu  
   if(method == 4 || (method ==0  && int.nu && 
@@ -366,8 +369,11 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
      if(abs(z[i]) == Inf)
        p[i] <- (1+sign(z[i]))/2
     else {      
-      if(method==1 | method == 0) 
-         p[i] <- pmst(z[i], 0, matrix(1,1,1), alpha, nu, ...) # method 1
+      if(method==1 | method == 0) {
+        # method 1
+        out <- try(pmst(z[i], 0, matrix(1,1,1), alpha, nu, ...), silent=TRUE) 
+        p[i] <- if(class(out) == "try-error") NA else  p[i] <- out
+        }
     else {
       # upper <- if(absalpha> 1) 5/absalpha + 25/(absalpha*nu) else 5+25/nu
       upper <- 10 + 50/nu
@@ -377,19 +383,19 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
         else 
           p[i] <- integrate(fp, 0, Inf, alpha, nu, z[i], ...)$value
           # method 3 
-   }}
-  }}
-  pr <- rep(NA, length(x))
-  pr[x==Inf] <- 1
-  pr[x==-Inf] <- 0
+      }}}}}
   pr[ok] <- p
-  return(pmax(0,pmin(1,pr)))
+  pr[x == Inf] <- 1
+  pr[x == -Inf] <- 0
+  pr[omega <= 0] <- NaN
+  return(pmax(0, pmin(1, pr)))
 }
 
 
 pst_int <- function (x, xi=0, omega=1, alpha=0, nu=Inf) 
-{# Jamalizadeh, A. and Khosravi, M. and Balakrishnan, N. (2009)
-    if(nu != round(nu) | nu < 1) stop("nu not integer or not positive")
+{# Jamalizadeh, Khosravi and Balakrishnan (2009, CSDA)
+  if(nu != round(nu) | nu < 1) stop("'nu' not integer or not positive")
+  if(omega <= 0) return(NaN)
   z <- (x-xi)/omega
   if(nu == 1) 
     atan(z)/pi + acos(alpha/sqrt((1+alpha^2)*(1+z^2)))/pi
@@ -1085,7 +1091,7 @@ function(dp, family, cp.type="proper", fixed.nu=NULL, aux=FALSE, upto=NULL)
     }
   if(family %in% c("SC","ST")){
     if(cp.type=="auto") cp.type <- 
-      if(family == "SC" || dp$nu <= 4) "pseudo" else "proper"
+      if(family == "SC" || dp[[4]] <= 4) "pseudo" else "proper"
     if(family == "SC") fixed.nu <- 1
     cp <- mst.dp2cp(dp, cp.type=cp.type, fixed.nu=fixed.nu, aux=aux, upto=upto)
     if(is.null(cp)) {warning("no CP could be found"); return(invisible())}
@@ -1960,7 +1966,7 @@ selm.fit <- function (x, y, family="SN", start=NULL, w, fixed.param=list(),
           s2 <- sum(w*res^2)/nw
           param <- c(coef(ls), sqrt(s2))
           j <- rbind(cbind(t(x) %*% (w*x)/s2, 0), c(rep(0,p), 2*nw/s2))
-          j.inv <- solve(j)
+          j.inv <- pd.solve(j)
           se <- sqrt(diag(j.inv))
           info <- list(dp=param, cp=param, info.dp=j, info.cp=j, 
                    asyvar.dp=j.inv, asyvar.cp=j.inv, se.dp=se, se.cp=se,
@@ -1990,10 +1996,10 @@ selm.fit <- function (x, y, family="SN", start=NULL, w, fixed.param=list(),
         dp <- fit$dp
         cp <- st.dp2cp(dp, cp.type="proper", fixed.nu=fixed.nu, 
                  upto=4-as.numeric(!is.null(fixed.nu)))
-        p_cp<- st.dp2cp(dp, cp.type="pseudo", fixed.nu=fixed.nu, jacobian=TRUE)
+        p_cp <- st.dp2cp(dp, cp.type="pseudo", fixed.nu=fixed.nu, jacobian=TRUE)
         fit$cp <- cp[1:npar]     
         fit$p_cp <- p_cp[1:npar]
-        Dpseudocp.dp <- attr(p_cp, "jacobian")[1:npar, 1:npar]
+        Dpcp.dp <- attr(p_cp, "jacobian")[1:npar, 1:npar]
         attr(p_cp, "jacobian") <- NULL
         boundary <- fit$boundary
         nu <- if(is.null(fixed.nu)) dp[npar] else fixed.nu
@@ -2009,15 +2015,18 @@ selm.fit <- function (x, y, family="SN", start=NULL, w, fixed.param=list(),
         fit$cp <- NULL
         p_cp0 <- st.dp2cp(fit$dp, cp.type="pseudo", fixed.nu=1, jacobian=TRUE) 
         fit$p_cp <- p_cp0[1:npar]
-        Dpseudocp.dp <- attr(p_cp0, "jacobian")[1:npar, 1:npar]
+        Dpcp.dp <- attr(p_cp0, "jacobian")[1:npar, 1:npar]
         attr(p_cp0, "jacobian") <- NULL
         boundary <- fit$boundary
         mu0 <- NA
         info <- if(boundary) NULL  else
           st.infoUv(dp=fit$dp, x=x, y=yInfo, w=w, fixed.nu=1, symmetr=symmetr) 
         }
-      if(!boundary && family %in% c("ST","SC"))  info$asyvar.p_cp <- 
-          Dpseudocp.dp %*% info$asyvar.dp %*% t(Dpseudocp.dp)
+      if(!boundary && family %in% c("ST","SC"))  {
+        # 2018-04-24
+        u <- try(Dpcp.dp %*% info$asyvar.dp %*% t(Dpcp.dp), silent=TRUE)
+        info$asyvar.p_cp <- if(class(u) == "try-error") NULL else u
+        }
       beta.dp <- fit$dp[1:p]
       dp <- fit$dp
       cp <- fit$cp
@@ -2179,7 +2188,7 @@ summary.selm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
   if(param.type=="pseudo-CP" && !(family %in% c("ST", "SC"))) 
     stop("pseudo-CP makes sense only for ST and SC families")
   if (!(family %in% c("SN","ST","SC"))) 
-     stop(gettextf("family '%s' not (yet) handled", family), domain = NA)
+     stop(gettextf("family '%s' is not handled", family), domain = NA)
   param <- slot(object, "param")[[lc.param.type]]
   if(param.type=="CP" && is.null(param)) { 
     if(family %in% c("ST", "SC")) {
@@ -2731,16 +2740,19 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
                 control=list() )
 {
   y <- data.matrix(y)
-  if(missing(x)) x <- rep(1,nrow(y))
+  n <- nrow(y)
+  if(missing(x)) x <- rep(1, n)
     else {if(!is.numeric(x)) stop("x must be numeric")}
-  if(missing(w)) w <- rep(1,nrow(y))
-  opt.method <- match.arg(opt.method)
   x <- data.matrix(x) 
+  if(nrow(x) != n) stop("incompatible dimensions") 
+  if(missing(w)) w <- rep(1, n)
+  if(length(w) != n) stop("incompatible dimensions") 
   d <- ncol(y)  
-  n <- sum(w)
+  nw <- sum(w)
   p <- ncol(x)
   y.names <- dimnames(y)[[2]] 
   x.names <- dimnames(x)[[2]]
+  opt.method <- match.arg(opt.method)
   if(is.null(start)) {
      fit0  <- lm.wfit(x, y, w, method="qr")
      beta  <- as.matrix(coef(fit0))
@@ -2873,17 +2885,19 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), control=list())
 { # MLE of DP for univariate ST distribution, allowing case symmetr[ic]=TRUE
   if(missing(y)) stop("required argument y is missing")
-  if(!is.vector(y) | !is.numeric(y)) stop("argument y must be a numeric vector")
-  x <- if(missing(x)) matrix(rep(1, length(y)), ncol = 1) else data.matrix(x)
-  if(!is.matrix(x)) stop("argument x must be a matrix")
   y.name <- deparse(substitute(y))
+  if(!is.vector(y)) y <- as.vector(y)
+  if(!is.numeric(y)) stop("argument y must be a numeric vector")
+  n <- length(y)
+  x <- if(missing(x)) matrix(rep(1, n), ncol = 1) else data.matrix(x)
   x.name <- deparse(substitute(x))
+  if(nrow(x) !=n) stop("incompatible dimensions")
   if(any(x[,1] != 1)) stop("first column of x must have all 1's")
   if(symmetr && !is.null(penalty)) 
     stop("Penalized log-likelihood not allowed with constraint alpha=0")
-  n <- length(y)
   p <- ncol(x)
   if(missing(w)) w <- rep(1,n)
+  if(length(w) !=n) stop("incompatible dimensions")
   nw <- sum(w)
   if(is.null(dp)) {
     ls <- lm.wfit(x, y, w)
@@ -3127,10 +3141,11 @@ st.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, fixed.nu=NULL,
     Ddp.cp <- solve(Dcp.dp)
     I.cp <- force.symmetry(t(Ddp.cp) %*% I.dp %*% Ddp.cp)
     dimnames(I.cp) <- list(names(cp), names(cp))
-    asyvar.cp <- pd.solve(I.cp)
-    aux$Dcp.dp <- Dcp.dp 
-    aux$Ddp.cp <- Ddp.cp
-    }  
+    asyvar.cp <- pd.solve(I.cp, silent=TRUE)  # modified 2018-04-23
+    if(!is.null(asyvar.cp)) { 
+      aux$Dcp.dp <- Dcp.dp 
+      aux$Ddp.cp <- Ddp.cp
+    }}  
   else  {
     I.cp <- NULL
     asyvar.cp <- NULL
@@ -3177,18 +3192,22 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
                 opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"),
                 control = list()) 
 {
-  opt.method <- match.arg(opt.method)
   if(missing(y)) stop("required argument y is missing")
-  if(!is.matrix(y) | !is.numeric(y)) stop("argument y must be a numeric matrix") 
   y.name <- deparse(substitute(y))
-  y.names <- dimnames(y)[[2]]
+  y <- data.matrix(y)
   n <- nrow(y)
-  x <- if (missing(x)) matrix(rep(1, n), ncol = 1) else data.matrix(x)
-  if (missing(w)) w <- rep(1, n)
-  nw <- sum(w)
+  y.names <- dimnames(y)[[2]]
+  if(missing(x)) x <- rep(1, n)
+    else {if(!is.numeric(x)) stop("x must be numeric")}
   x.names <- dimnames(x)[[2]]
+  x <- data.matrix(x)
+  if(nrow(x) != n) stop("incompatible dimensions")
+  if(missing(w)) w <- rep(1, n)
+  if(length(w) != n) stop("incompatible dimensions")
+  nw <- sum(w)
   d <- ncol(y)
   p <- ncol(x)
+  opt.method <- match.arg(opt.method)
   if (is.null(start)) {
     ls <- lm.wfit(x, y, w, singular.ok=FALSE)
     beta <- coef(ls)
@@ -3650,18 +3669,20 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
 sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE, 
   opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), control=list()) 
 {# MPLE for CP of univariate SN (not intendend for ESN)
-  y <- drop(y)
+  if(missing(y)) stop("required argument y is missing")
+  y.name <- deparse(substitute(y))
+  if(!is.vector(y)) y <- as.vector(y)
+  if(!is.numeric(y)) stop("argument y must be a numeric vector")
   n <- length(y)
-  if (missing(x))
-    x <- matrix(rep(1,n), nrow=n, ncol=1)
-  else
-    if (is.null(n <- nrow(x)))  stop("'x' must be a matrix") 
-  if (n == 0) stop("0-row design matrix cases")
+  x <- if(missing(x)) matrix(rep(1, n), ncol = 1) else data.matrix(x)
+  if(nrow(x) != n)  stop("incompatible dimensions")
+  y.name <- deparse(substitute(y))
+  x.name <- deparse(substitute(x))
   if (missing(w)) w <- rep(1,n)
   if(length(w) != n)  stop("incompatible dimensions")
-  y.name <- deparse(substitute(y))
   x.name <- deparse(substitute(x)) 
   p <- ncol(x)
+  opt.method <- match.arg(opt.method)  
   max.gamma1 <- 0.5*(4-pi)*(2/(pi-2))^1.5 - (.Machine$double.eps)^(1/4)
   if(is.null(cp)) {
     qr.x <- qr(x)
@@ -3673,7 +3694,6 @@ sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE,
   else{ 
     if(length(cp)!= (p+2)) stop("ncol(x)+2 != length(cp)")}
   penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE)  
-  opt.method <- match.arg(opt.method)  
   if(opt.method == "nlminb") {  
     opt <- nlminb(cp, objective=sn.pdev, 
            gradient=sn.pdev.gh, hessian=sn.pdev.hessian, 
@@ -3872,16 +3892,19 @@ msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
                 control=list() )
 {
   y <- data.matrix(y)
-  if(missing(x)) x <- rep(1,nrow(y))
+  n <- nrow(y)
+  if(missing(x)) x <- rep(1, n)
     else {if(!is.numeric(x)) stop("x must be numeric")}
-  if(missing(w)) w <- rep(1,nrow(y))
-  opt.method <- match.arg(opt.method)
-  x <- data.matrix(x) 
+  x <- data.matrix(x)
+  if(nrow(x) != n) stop("incompatible dimensions") 
+  if(missing(w)) w <- rep(1,n)
+  if(length(w) != n) stop("incompatible dimensions") 
+  nw <- sum(w)
   d <- ncol(y)  
-  n <- sum(w)
   p <- ncol(x)
   y.names <- dimnames(y)[[2]] 
   x.names <- dimnames(x)[[2]]
+  opt.method <- match.arg(opt.method)
   if(is.null(start))  start <- msn.mle(x, y, NULL, w)$dp
   if(trace){  
     cat("msn.mple initial parameters:\n")
@@ -4436,8 +4459,7 @@ print.summary.selm <- function(object)
     cat("Number of observations:", n, "\n")
     if(!is.null(slot(obj,"aux")$weights))
       cat("Weighted number of observations:", obj@size["nw.obs"], "\n")
-    show.family <- slot(obj,"family")
-    cat("Family:", show.family,"\n")
+    cat("Family:", slot(obj,"family"), "\n")
     fixed <- slot(obj, "param.fixed") 
     if(length(fixed) > 0) { fixed.char <-
          paste(names(fixed), format(fixed), sep=" = ", collapse=", ")

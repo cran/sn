@@ -58,11 +58,11 @@ index page.
 A word of explanation is appropriate about the numerous references to 
 Azzalini and Capitanio (2014) in the documentation of the package. 
 The reason why the documentation often refers to the monograph rather  
-than to the original research papers is because the book provides 
+than to the original research papers is that the book provides 
 a relatively informal summary of material which has been 
 elaborated in a number of technical papers, sometimes very technical 
 or with information on the point of interest mixed with other material. 
-In other words, the motivation behind this policy is readibility, 
+In other words, the motivation behind this policy is readability, 
 not indulgence in self-citation. When one or a few original sources appeared 
 to deliver the required information in a compact and accessible form, 
 they have been cited directly.  In any case,  the quoted sections of the

@@ -178,7 +178,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   If \code{family="ST"} or \code{family="SC"}, a symmetric Student's \eqn{t} 
   or Cauchy distribution is adopted. 
   
-  Under the constraint \eqn{\alpha=0}, the location parameter \eqn{\xi}{xi}
+  Under the constraint \eqn{\alpha=0}, the location parameter \eqn{\xi}
   coincides with the mode and the mean of the distribution, when the latter
   exists. In addition, when the covariance matrix of a \acronym{ST}
   distribution exists, it differs from \eqn{\Omega} only by a multiplicative
@@ -201,7 +201,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   but to a known peculiar behaviour of the log-likelihood  function at 
   that specific point. Therefore, in the univariate case for instance, 
   do not set e.g. \kbd{start=c(12, 21, 0)}, but set instead something
-  like \kbd{start=c(12, 21, 0.001)}. 
+  like \kbd{start=c(12, 21, 0.01)}. 
   % Also, setting such an initial $\alpha=0$ or close to 0 is a questionable 
   % choice anyway: if one fits a model of this class, then  some asymmetry is
   % expected to be present and it is odd to start the search from a symmetry
@@ -307,7 +307,7 @@ Azzalini, A. with the collaboration of Capitanio, A. (2014).
  \emph{The Skew-Normal and Related Families}. 
  Cambridge University Press, IMS Monographs series.
 
-Magnus and Neudecker
+% Magnus and Neudecker
 }
 
 \author{Adelchi Azzalini}
@@ -333,11 +333,10 @@ Under this \emph{caveat}, numerical experience suggests that ‘about
 
 The above passage referred to the univariate SN context. 
 In the multivariate case, increase the sample size appropriately, 
-particularly in the ST case.
-All of this is not to say that one cannot attempt fitting these models 
+especially so with the \acronym{ST} family.
+This is not to say that one cannot attempt fitting these models 
 with small or moderate sample size. However, one must be aware of the 
-implications and not be surprised of problems, if they appear.
-
+implications and not be surprised if problems appear.
 
 The second cautionary note refers instead to the outcome of a call to 
 \kbd{selm} and related function, or the lack of it.
@@ -347,7 +346,7 @@ objective function is achieved. Consideration of model simplicity
 and of numerical experience indicate that models with \acronym{SN} error
 terms generally produce more reliable results compared to those with 
 the \acronym{ST} family. Take into account that models involving a 
-traditional Student's \eqn{t} distribution with unknown degres of freedom 
+traditional Student's \eqn{t} distribution with unknown degrees of freedom 
 can already be problematic; the presence of the (multivariate) slant parameter
 \eqn{\alpha} in the \acronym{ST} family cannot make things any simpler. 
 Consequently, care must be exercised, especially so if one works with 
@@ -357,7 +356,7 @@ in the \acronym{ST} case, building the profile log-likelihood for a range
 of \eqn{\nu} values; function \code{\link{profile.selm}} can be useful here.
 
 Details on the numerical optimization which has produced object \code{obj} 
-can be estracted with \code{slot(obj, "opt.method")}; inspection of this
+can be extracted with \code{slot(obj, "opt.method")}; inspection of this
 component can be useful in problematic cases.
 Be aware that  occasionally \code{optim} and \code{nlminb} declare successful
 completion of a regular minimization problem at a point where the Hessian 
