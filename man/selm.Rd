@@ -77,7 +77,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    }
 
   \item{method}{a character string which selects the estimation method to be
-   used for fitting. Currently two options exist: \code{"MLE"} (default) and
+   used for fitting. Currently, two options exist: \code{"MLE"} (default) and
    \code{"MPLE"}, corresponding to standard maximum likelihood and maximum
    penalized likelihood estimation, respectively. See \sQuote{Details} for
    additional information.  }
@@ -108,7 +108,7 @@ selm(formula, family = "SN", data, weights, subset, na.action,
         \code{FALSE}).
     \item \code{info.type}: a character string which indicates the type of
         Fisher information matrix; possible values are \code{"observed"}
-        (default) and \code{"expected"}. Currently \code{"expected"} is
+        (default) and \code{"expected"}. Currently, \code{"expected"} is
         implemented only for the \acronym{SN} family.
 
     \item \code{opt.method}: a character string which selects the numerical
@@ -119,8 +119,8 @@ selm(formula, family = "SN", data, weights, subset, na.action,
         otherwise function \code{\link[stats]{optim}} is called with 
         \code{method} equal to \code{opt.method}.
 
-    \item \code{opt.control}: a list of control parameters which is passed
-        on to \code{nlminb} or to \code{optim}, depending on the choice of 
+    \item \code{opt.control}: a list of control parameters which is passed on
+        either to \code{nlminb} or to \code{optim}, depending on the chosen
         \code{opt.method}.
     }
   }
@@ -433,22 +433,6 @@ pcp28 <- coef(m28, "pseudo-CP", vector=FALSE)
 \donttest{# the next statement takes a little more time than others
 plot(m28)
 }
-\donttest{
-# example of computation and plot of a (relative twice) profile log-likelihood;
-# since it takes some time, set a coarse grid of nu values
-nu.vector <- seq(3, 8, by=0.5) 
-logL <- numeric(length(nu.vector))
-for(k in 1:length(nu.vector)) { 
-   m28.f <- selm(cbind(chloride, glycerol, magnesium) ~ 1, family="ST", 
-         fixed=list(nu=nu.vector[k]),  data=wines)
-   logL[k] <- logLik(m28.f)
-   cat(format(c(nu.vector[k], logL[k])), "\n")
-}
-plot(nu.vector, 2*(logL-max(logL)), type="b")
-ok <- which.max(logL)
-abline(v=nu.vector[ok], lty=2)
-# compare maximum of this curve with MLE of nu in summary(m28, 'dp')
-}
 #
 m4 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines)
 m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
@@ -467,7 +451,26 @@ m32 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais, opt.method="BFGS")
 slot(m32, "opt.method")$convergence
 }
 }
- 
+
 \keyword{regression}
 \keyword{univar}
 \keyword{multivariate} 
+%-------------------------
+%% next example has been superseded by introduction of profile.selm
+%
+% \donttest{
+% # example of computation and plot of a (relative twice) profile log-likelihood;
+% # since it takes some time, set a coarse grid of nu values
+% nu.vector <- seq(3, 8, by=0.5) 
+% logL <- numeric(length(nu.vector))
+% for(k in 1:length(nu.vector)) { 
+%    m28.f <- selm(cbind(chloride, glycerol, magnesium) ~ 1, family="ST", 
+%          fixed=list(nu=nu.vector[k]),  data=wines)
+%    logL[k] <- logLik(m28.f)
+%    cat(format(c(nu.vector[k], logL[k])), "\n")
+% }
+% plot(nu.vector, 2*(logL-max(logL)), type="b")
+% ok <- which.max(logL)
+% abline(v=nu.vector[ok], lty=2)
+% # compare maximum of this curve with MLE of nu in summary(m28, 'dp')
+% }

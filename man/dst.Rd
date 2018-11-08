@@ -98,8 +98,8 @@ Azzalini & Capitanio (2014); the recursion over \code{nu} starts from
 the explicit expression for \code{nu=1} given by \code{psc}.
 Of these, Method 1 and 4 are only suitable for integer values of \code{nu}.
 Method 4 becomes progressively less efficient as \code{nu} increases,
-because its value corresponds to the number of nested calls, but the
-decay of efficiency is slower for larger values of \code{length(x)}.
+because the value of \code{nu} determines the number of nested calls, 
+but the decay of efficiency is slower for larger values of \code{length(x)}.
 If the default argument value \code{method=0} is retained, an automatic choice
 among the above four methods is made, which depends on the values of 
 \code{nu, alpha, length(x)}. The numerical accuracy of methods 1, 2 and 3 can 
@@ -122,8 +122,8 @@ Azzalini, A. with the collaboration of Capitanio, A. (2014).
  Cambridge University Press, IMS Monographs series. 
 
 Jamalizadeh, A., Khosravi, M., and Balakrishnan, N. (2009).
-  Recurrence relations for distributions of a skew-$t$ and a linear
-  combination of order statistics from a bivariate-$t$.
+  Recurrence relations for distributions of a skew-\emph{t} and a linear
+  combination of order statistics from a bivariate-\emph{t}.
   \emph{Comp. Statist. Data An.} \bold{53}, 847--852.
 }
   

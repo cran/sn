@@ -20,7 +20,7 @@
 
 \usage{ 
 selm.fit(x, y, family = "SN", start = NULL, w, fixed.param = list(), 
-   offset = NULL, selm.control)
+   offset = NULL, selm.control=list())
 
 sn.mple(x, y, cp = NULL, w, penalty = NULL, trace = FALSE, opt.method =
    c("nlminb",  "Nelder-Mead", "BFGS", "CG", "SANN"), control = list()) 

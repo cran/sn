@@ -28,9 +28,12 @@
    \code{SECdistrMv}.}
 
 \item{object}{an object of class \code{SECdistrUv} or \code{SECdistrMv} as
-   created by \code{\link{makeSECdistr}} or \code{\link{extractSECdistr}.}
-   }  
-}
+   created by \code{\link{makeSECdistr}} or \code{\link{extractSECdistr}};
+   if this argument is used, arguments \code{dp} and \code{family} must 
+   not be set, and \emph{vice versa}.
+   }
+}  
+
       
 \value{a numeric vector}
 
@@ -57,10 +60,8 @@ using Propositions 5.14 and 6.2 of the reference below.}
 \examples{
 dp3 <- list(xi=1:3, Omega=toeplitz(1/(1:3)), alpha=c(3,-1,2), nu=5)
 st3 <- makeSECdistr(dp3, family="ST", name="ST3", compNames=c("U", "V", "W"))
-A <- matrix(c(1,-1,1, 3,0,-2), 3, 2)
-new.st <- affineTransSECdistr(st3, a=c(-3,0), A=A)
-#
-st2 <- marginalSECdistr(st3, comp=c(3,1), name="2D marginal of ST3")
+mode1 <- modeSECdistr(dp3, "ST")
+mode2 <- modeSECdistr(object=st3) # the same of mode1
 }
 
 \keyword{multivariate}

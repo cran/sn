@@ -244,6 +244,7 @@ pmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, tau=0,
   d <- length(alpha)
   Omega <- matrix(Omega, d, d) 
   omega <- sqrt(diag(Omega))
+  if(d == 1) return(psn(x, xi, omega, alpha, tau)) # 2018-05-02
   delta_etc <- delta.etc(alpha, Omega)
   delta <- delta_etc$delta
   Ocor <- delta_etc$Omega.cor
@@ -340,49 +341,53 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
     alpha <- dp[3]
     nu <- dp[4]
    }
+  dp.std <- c(0, 1, alpha, nu) 
+  delta <- alpha/sqrt(1+alpha^2)
   if(length(alpha) > 1) stop("'alpha' must be a single value")  
   if(length(nu) > 1) stop("'nu' must be a single value") 
   if(nu <= 0) return(rep(NaN, length(x))) 
   if (nu == Inf) return(psn(x, xi, omega, alpha))
   if (nu == 1) return(psc(x, xi, omega, alpha))
   int.nu <- (round(nu) == nu)
+  if(method<0 | method>4) stop("invalid 'method' value")
   if((method == 1 | method ==4) & !int.nu) 
     stop("selected 'method' does not work for non-integer nu")
   pr <- rep(NA, length(x))  
   ok <- !(is.na(x) | (x==Inf) | (x==-Inf) | (omega<=0))
   z <- ((x-xi)/omega)[ok]
+  nu0 <- (8.2 + 3.55* log(log(length(z)+1)))
   if(alpha == 0) p <- pt(z, df=nu) 
   else if(abs(alpha) == Inf) {
     z0 <- replace(z, alpha*z < 0, 0)
     p <- pf(z0^2, 1, nu)
-    if(alpha<0) p <- (1-p)
+    if(alpha < 0) p <- (1-p)
     }  
   else {  
   fp <- function(v, alpha, nu, t.value) 
           psn(sqrt(v) * t.value, 0, 1, alpha) * dchisq(v * nu, nu) * nu  
-  if(method == 4 || (method ==0  && int.nu && 
-     (nu < (8.2 + 3.55* log(log(length(z)+1))))))
-    p <- pst_int(z, 0, 1, alpha, nu)  # "method 4"
+  if(method == 4 || (method==0  && int.nu &&  (nu <= nu0)))    # method 4
+    p <- pst_int(z, 0, 1, alpha, nu)  
   else  {
     p <- numeric(length(z))
     for (i in seq_len(length(z))) {
      if(abs(z[i]) == Inf)
-       p[i] <- (1+sign(z[i]))/2
+       p[i] <- (1 + sign(z[i]))/2
     else {      
-      if(method==1 | method == 0) {
-        # method 1
+      if(method==1 || (method==0  && int.nu &&  (nu > nu0))) { # method 1
         out <- try(pmst(z[i], 0, matrix(1,1,1), alpha, nu, ...), silent=TRUE) 
         p[i] <- if(class(out) == "try-error") NA else  p[i] <- out
         }
     else {
       # upper <- if(absalpha> 1) 5/absalpha + 25/(absalpha*nu) else 5+25/nu
       upper <- 10 + 50/nu
-      if(method==2 || (method==0 & (z[i] < upper) ))
-          p[i] <- integrate(dst, -Inf, z[i], dp=c(0,1,alpha, nu), ...)$value
-          # method 2
-        else 
-          p[i] <- integrate(fp, 0, Inf, alpha, nu, z[i], ...)$value
-          # method 3 
+      if(method==2 || (method==0 & (z[i] < upper) )) 
+        {# method 2         
+         p0 <- acos(delta)/pi  # CDF at x=0 
+         int <- integrate(dst, min(0,z[i]), max(0,z[i]), dp=dp.std, ...) 
+         p[i] <- p0 + sign(z[i]) * int$value
+        } 
+        else # method 3 
+          p[i] <- integrate(fp, 0, Inf, alpha, nu, z[i], ...)$value           
       }}}}}
   pr[ok] <- p
   pr[x == Inf] <- 1
@@ -420,16 +425,18 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
     omega <- dp[2]
     alpha <- dp[3]
     nu <- dp[4]
-    }
+    }    
   if(length(alpha) > 1) stop("'alpha' must be a single value")  
   if(length(nu) > 1) stop("'nu' must be a single value")  
-  if (nu <= 0) stop("nu must be non-negative")  
-  if (nu > 1e4) return(qsn(p, xi, omega, alpha))
-  if (nu == 1) return(qsc(p, xi, omega, alpha))
-  if (alpha == Inf) 
-      return(xi + omega * sqrt(qf(p, 1, nu)))
-  if (alpha == -Inf) 
-      return(xi - omega * sqrt(qf(1 - p, 1, nu)))
+  if(nu <= 0) stop("nu must be non-negative")  
+  if(nu > 1e4) return(qsn(p, xi, omega, alpha))
+  if(nu == 1) return(qsc(p, xi, omega, alpha))
+  if(alpha == Inf) 
+    return(xi + omega * sqrt(qf(p, 1, nu)))
+  if(alpha == -Inf) 
+    return(xi - omega * sqrt(qf(1 - p, 1, nu)))
+  # if(some.unknown.rule)  message(
+  #  "Running qst with small nu and high/low p can be numerically problematic")    
   na <- is.na(p) | (p < 0) | (p > 1)
   abs.alpha <- abs(alpha)
   if(alpha < 0) p <- (1-p)
@@ -439,22 +446,28 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
   nc <- rep(TRUE, length(p)) # not converged (yet)
   nc[(na| zero| one)] <- FALSE
   fc[!nc] <- 0
-  xa[nc] <- qt(p[nc], nu)
-  xb[nc] <- sqrt(qf(p[nc], 1, nu)) 
+  bounds <- qst_bounds(p[nc], abs.alpha, nu)
+  xa[nc] <- bounds[,"lower"]
+  xb[nc] <- bounds[,"upper"]
   fa[nc] <- pst(xa[nc], 0, 1, abs.alpha, nu, method=method, ...) - p[nc]
   fb[nc] <- pst(xb[nc], 0, 1, abs.alpha, nu, method=method, ...) - p[nc]
-  regula.falsi <- FALSE
-  while (sum(nc) > 0) { # alternate regula falsi/bisection
+  regula.falsi <- FALSE 
+  while (sum(nc) > 0) { # alternate bisection/regula falsi
     xc[nc] <- if(regula.falsi) 
        xb[nc] - fb[nc] * (xb[nc] - xa[nc])/(fb[nc] - fa[nc])    else
-       (xb[nc] + xa[nc])/2
-    fc[nc] <- pst(xc[nc], 0, 1, abs.alpha, nu, method=method, ...) - p[nc]
+       (xb[nc] + xa[nc])/2      
+    fc[nc] <- pst(xc[nc], 0, 1, abs.alpha, nu, method=method) - p[nc]
     pos <- (fc[nc] > 0)
     xa[nc][!pos] <- xc[nc][!pos]
     fa[nc][!pos] <- fc[nc][!pos]
     xb[nc][pos] <- xc[nc][pos]
     fb[nc][pos] <- fc[nc][pos]
-    x[nc] <- xc[nc]
+    fail <- ((xc[nc]-xa[nc]) * (xc[nc]-xb[nc])) > 0 
+    fail[is.na(fail)] <- TRUE
+    xc[fail] <- NA
+    x[nc] <- xc[nc]  
+    # 2018-05-22: swap two adjacent lines to yield either NA or last estimate
+    nc[fail] <- FALSE
     nc[(abs(fc) < tol)] <- FALSE
     regula.falsi <- !regula.falsi 
     }
@@ -466,7 +479,35 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
   names(q) <- names(p)
   return(q)
 }
- 
+
+qst_bounds <- function(p, alpha, nu)
+{# function created 2018-05-03 
+  if(length(alpha) > 1) stop("alpha must be of length 1")
+  if(length(nu) > 1) stop("nu must be of length 1")
+  if(alpha==0) { upper <- lower <- qt(p,nu); return(cbind(lower, upper))}
+  s <- sign(alpha)
+  if(alpha < 0) { p <- (1-p); alpha <- abs(alpha)} 
+  # from now on have alpha>0
+  lower <- qt(p, nu)           # quantiles for alpha=0
+  upper <- sqrt(qf(p, 1, nu))  # quantiles for alpha=Inf
+  wide <- (upper-lower) > 5
+  if(any(wide)) {
+    for(k in 1:sum(wide)) {
+      kk <- which(wide)[k]
+      step <- 5
+      m <- 0
+      repeat{ 
+        lower[kk] <- upper[kk] - step
+        p0 <- pst(lower[kk], 0, 1, alpha, nu, method=2)
+        if(p0 < p[kk]) break
+        step <- step*2^(2/(m+2))
+        m <- m+1
+        }
+      }}
+  if(s>0) cbind(lower, upper) else cbind(lower=-upper, upper=-lower)
+} 
+
+
 dmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL,
                   log = FALSE) 
 {
@@ -981,10 +1022,11 @@ modeSECdistrMv <- function(dp, family)
   } else {# case ST, SC: book Proposition 6.2, p.178, 
     # but maximizes along canonical direction, instead of solving equation
     d.fn <- get(paste("dm", lc.family, sep=""), inherits = TRUE)
-    f <- function(u, dp, direct) -d.fn(dp[[1]]+ u*direct, dp=dp, log=TRUE)
-    maxM <- max(abs(dp2cpMv(dp, family, "auto", upto=1)[[1]] - dp[[1]]/direct))
-    opt <- optimize(f, lower=0, upper=maxM, dp=dp, direct=direct)
-    mode <- as.numeric(dp[[1]]+ opt$minimum * direct)
+    f <- function(u, dp, direct) d.fn(dp[[1]]+ u*direct, dp=dp, log=TRUE)
+    direct.pmean <- dp2cpMv(dp, family, "auto", upto=1)[[1]] - dp[[1]]/direct
+    maxM <- max(abs(direct.pmean), na.rm=TRUE)
+    opt <- optimize(f, lower=0, upper=maxM, dp=dp, direct=direct, maximum=TRUE)
+    mode <- as.numeric(dp[[1]]+ opt$maximum * direct)
   }
   return(mode)
 }
@@ -1637,7 +1679,7 @@ affineTransSECdistr <- function(object, a, A, name, compNames, drop=TRUE)
   xi.X  <- as.vector(a + t(A) %*% matrix(dp$xi, ncol=1))
   Omega <- dp$Omega
   omega <- sqrt(diag(Omega))
-  Omega.X <- as.matrix(t(A) %*% Omega %*% A) 
+  Omega.X <- force.symmetry(t(A) %*% Omega %*% A) 
   invOmega.X <- pd.solve(Omega.X, silent=TRUE)
   if (is.null(invOmega.X)) stop("not full-rank transformation") 
   omega.X <- sqrt(diag(Omega.X))
@@ -1653,11 +1695,9 @@ affineTransSECdistr <- function(object, a, A, name, compNames, drop=TRUE)
      dp1[2] <- sqrt(dp1[2])
      names(dp1) <- names(dp.X) 
      names(dp1)[2] <- tolower(names(dp)[2])
-     # new.obj <- new("SECdistrUv", dp=dp1, family=family, name=name) #??
      new.obj <- makeSECdistr(dp=dp1, family=family, name=name)
      } else 
   new.obj <- makeSECdistr(dp.X, family, name, compNames) 
-  # new.obj <- new("SECdistrMv", dp.X, family, name, compNames) #??
   return(new.obj)
 }
   
@@ -1903,7 +1943,7 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
 
 #------------------------------------------------------
 selm.fit <- function (x, y, family="SN", start=NULL, w, fixed.param=list(), 
-                 offset = NULL, selm.control) 
+                 offset = NULL, selm.control=list()) 
 {
     if (!(toupper(family) %in% c("SN", "ST", "SC")))
         stop(gettextf("I do not know family '%s'", family), domain = NA)
@@ -2534,14 +2574,19 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
 {# computes observed/expected Fisher information matrix for multiv.SN variates
  # using results in Arellano-Valle & Azzalini (JMVA, 2008+erratum)
   type <- if(missing(y)) "expected" else "observed"
-  if(type == "observed") {if(!is.matrix(y)) stop("y is not a matrix")}
+  if(type == "expected") {
+    y <- NULL 
+    if(!missing(w)) 
+    stop("argument 'w' is meaningless for expected information")
+    }
+  if(type == "observed" & !is.matrix(y)) stop("y is not a matrix")
   cp <- dp2cpMv(dp, "SN")
   d <- length(dp$alpha)
   d2 <- d*(d+1)/2
-  if(missing(w)) w <- rep(1, max(NROW(cbind(x,y)),1))
+  if(missing(w)) w <- rep(1, max(NROW(x), 1))
   if(any(w != round(w)) | any(w<0))
     stop("weights must be non-negative integers")
-  n <- length(w)
+  n <- if(type=="expected") length(w) else nrow(y)
   nw <- sum(w)
   if(is.null(x)) {
     p <- 1
@@ -2554,7 +2599,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
     xx <- drop(t(x) %*% (w*x))
     sum.x <- drop(matrix(colSums(w*x)))
     }
-  beta <- as.matrix(dp[[1]],p,d)
+  beta <- matrix(dp[[1]],p,d)
   Omega <- dp$Omega
   omega <- sqrt(diag(Omega))
   alpha <- dp$alpha
@@ -2564,7 +2609,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
   Obar.alpha <-  as.vector(Obar %*% alpha)
   alpha.star <- sqrt(sum(alpha * Obar.alpha)) 
   if(alpha.star < 1e-4) {
-    warning("information matrix of multivariate SN not computed near alpha=0")
+    warning("information matrix of multivariate SN not computed at/near alpha=0")
     return(NULL)
     }
   # delta.star <- alpha.star/sqrt(1+alpha.star^2)
@@ -2584,14 +2629,16 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
     z1 <- zeta(1, y0.eta) * w
     z2 <- (-zeta(2, y0.eta) * w)
     # Z2 <- diag(z2, n)
+    # score function of theta; see 2008 JMVA paper, p.1377, lines 9-11
+    # (except for a multiplicative constant of S2, irrelevant for MLE eqn's) 
     S1 <- (O.inv %x% t(x)) %*% as.vector(w*y0)- (eta %x% t(x)) %*% z1
     S2 <- (nw/2) * t(D) %*% ((O.inv %x% O.inv) %*% as.vector(S0-Omega))
     S3 <- t(y0) %*% z1
-    score <- c(S1,S2,S3)
+    score <- c(S1,S2,S3) 
     u  <- t(x) %*% z1
     U  <- t(x) %*% (z2 * y0)
     V  <- O.inv %*% (2*S0-Omega) %*% O.inv
-    # terms as given in the last but one matrix of p.16 
+    # terms as given in the last but one matrix of p.1377 on JMVA paper 2008
     j11 <- O.inv %x% xx + outer(eta,eta) %x% (t(x) %*% (z2 *x) )
     j12 <- (O.inv %x% (t(x) %*% (w*y0) %*% O.inv))  %*% D
     j13 <- diag(d) %x% u - eta %x% U
@@ -2924,7 +2971,7 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
   if(opt.method == "nlminb") {
     opt <- nlminb(dp, objective=st.pdev, gradient=st.pdev.gh, 
-           # do NOT set: hessian=st.dev.hessian, 
+           # Note: do NOT set 'hessian=st.dev.hessian', much time-comsuming 
            lower=low.dp, upper=high.dp, control=control,
            x=x, y=y, w=w, fixed.nu=fixed.nu, symmetr=symmetr, 
            penalty=penalty.fn, trace=trace)
@@ -3002,14 +3049,14 @@ st.pdev.gh <- function(dp, x, y, w, fixed.nu=NULL, symmetr=FALSE,
   score[p+1] <- sum(w * (-1 + zt^2 -alpha*nu*z*tw/(nu+z^2)))/omega
   if(!symmetr) score[p+2] <- sum(w*z*tw)
   if(is.null(fixed.nu)){
-    fun.g <- function(x, nu1) dt(x,nu1) *
-              (((nu1+1)*x^2)/(nu1*(nu1+x^2)) - log1p(x^2/nu1))
-    int.g <- numeric(n)
-    for (i in 1:n)
-      int.g[i] <- integrate(fun.g, -Inf, alpha*zt[i], nu1=nu+1)$value
-    score[j.nu] <- 0.5 * sum(w * (digamma(1+nu/2) -digamma(nu/2)
-       - (2*nu+1)/(nu*(nu+1)) -log1p(z^2/nu) + zt^2/nu 
-       + alpha*zwz2/(nu+z^2)^2 + int.g/cdf))
+    # 2018-10-30 new coding, code computing int.g moved to 'hessian' section 
+    logTwz <- function(nu, alpha, z) {
+       r <- sqrt((nu+1)/(nu+z^2))
+       pt(alpha*z*r, df=nu+1, log.p=TRUE)
+       }   
+    DlogTwz <- numDeriv::jacobian(logTwz, nu, z=z, alpha=alpha)   
+    score[j.nu] <- 0.5* sum(w*(-1/nu + digamma((nu+1)/2) - digamma(nu/2)  
+          -log(1+z^2/nu) + (nu+1)*z^2/(nu*(nu+z^2)) + 2*DlogTwz))
     }
   if(is.null(penalty)) { 
     Q <- 0
@@ -3024,6 +3071,14 @@ st.pdev.gh <- function(dp, x, y, w, fixed.nu=NULL, symmetr=FALSE,
   gradient <- (-2)*score
   if(hessian){ 
     info <- matrix(NA, npar, npar) 
+    fun.g <- function(x, nu1) dt(x,nu1) *
+              (((nu1+1)*x^2)/(nu1*(nu1+x^2)) - log1p(x^2/nu1))
+    int.g <- numeric(n)
+    for (i in 1:n)
+      int.g[i] <- integrate(fun.g, -Inf, alpha*zt[i], nu1=nu+1)$value
+    # score[j.nu] <- 0.5 * sum(w * (digamma(1+nu/2) -digamma(nu/2)
+    #  - (2*nu+1)/(nu*(nu+1)) -log1p(z^2/nu) + zt^2/nu 
+    #   + alpha*zwz2/(nu+z^2)^2 + int.g/cdf))
     w.z  <- (-nu*(nu+2)*alpha^2*z*loro.w/((nu+z^2*(1+alpha^2))*nuz2)
              -nu*alpha*loro.tau*loro.w^2/nuz2)
     w.alpha <- (-(nu+2)* alpha*z^2*loro.w/(nu+z^2*(1+alpha^2)) -zt*loro.w^2)
@@ -3356,11 +3411,17 @@ mst.pdev.grad <- function(param, x, y, w, fixed.nu=NULL, symmetr=FALSE,
       }
     dlogft.ddf <- 0.5 * (diff.digamma - d/df0
                         + (1+d/df0)*Q/((1+Q/df0)*df0) - log1Q)
-    eps   <- 1.0e-4
-    df1 <- df0 + eps
-    sf1 <- if(df0 < 1e4) sqrt((df1+d)/(Q+df1)) else sqrt((1+d/df1)/(1+Q/df1))
-    logT.eps <- pt(L*sf1, df1+d, log.p=TRUE)
-    dlogT.ddf <- (logT.eps-logT.)/eps
+    ## eps   <- 1.0e-4
+    ## df1 <- df0 + eps
+    ## sf1 <- if(df0 < 1e4) sqrt((df1+d)/(Q+df1)) else sqrt((1+d/df1)/(1+Q/df1))
+    ## logT.eps <- pt(L*sf1, df1+d, log.p=TRUE)
+    ## dlogT.ddf <- (logT.eps-logT.)/eps
+    funct.logT. <- function(nu, d, L, Q) {
+      sf <- if(nu < 1e4) sqrt((nu+d)/(nu+Q)) else sqrt((1+d/nu)/(1+Q/nu))
+      pt(L*sf, nu+d, log.p=TRUE)
+      }
+    dlogT.ddf <- numDeriv::jacobian(funct.logT., x=df0, d=d, L=L, Q=Q)[,1]
+    ## browser() 2018-10-30
     Ddf   <- sum((dlogft.ddf + dlogT.ddf)*w)
     grad <- c(grad, -2*Ddf*df0)
     }
@@ -3730,8 +3791,9 @@ sn.pdev <- function(cp, x, y, w, penalty=NULL, trace=FALSE)
   if(missing(w)) w <- rep(1, length(y))
   if(any(w < 0)) stop("weights must be non-negative")
   dp <- cp2dpUv(cp, "SN") 
-  xi <- as.vector(x %*% as.matrix(dp[1:p]))
+  if(any(is.na(dp))) return(NA)
   if(dp[p+1] <= 0) return(NA)
+  xi <- as.vector(x %*% as.matrix(dp[1:p]))
   logL <- sum(w * dsn(y, xi, dp[p+1], dp[p+2], log=TRUE))
   Q <- if(is.null(penalty)) 0 else penalty(dp[p+2], der=0)
   if(trace) cat("sn.pdev: (cp,pdev) =", format(c(cp, -2*(logL-Q))),"\n")
@@ -4880,9 +4942,12 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
     if(length(par.val) == 2)
       par.val <- seqLog(par.val[1], par.val[2], length=npt, logScale)
     n.values <- length(par.val)  
-    if(n.values>1 & (prod(range(par.val) - mle.full[profile.comp]) > 0))
-      stop(gettextf("param range does not bracket the MLE/MPLE point: '%s'",
-        format(mle.full[profile.comp])), domain=NA)  
+    if(n.values>1 & (prod(range(par.val) - mle.full[profile.comp]) > 0)) {
+       message(gettextf("param range does not bracket the MLE/MPLE point: '%s'",
+         format(mle.full[profile.comp])), domain=NA)
+       bracket <- FALSE 
+       fail.confint <- TRUE
+       } else bracket <- TRUE
     logL <- numeric(n.values)
     for(k in 1:n.values) {
       constr.values <- c(par.val[k], fixed.values)
@@ -4895,8 +4960,9 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       }
     out <- list(call=match.call(), param=par.val, logLik=logL)
     names(out)[2] <- param.name  
-    if(n.values>1){
-    deviance <- 2*(logLik(obj) - logL)
+    if(n.values > 1){
+    deviance <- 2*(slot(obj, "logL") - logL)
+    out$deviance <- deviance
     if(any(deviance + sqrt(.Machine$double.eps) < 0)) warning(paste(
       "A relative maximum of the (penalized) likelihood seems to have been",
       "taken as\n the MLE (or MPLE).",
@@ -4917,7 +4983,7 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       message("parameter estimates at the boundary, no confidence interval")
       level <- NULL
       } 
-    if(!is.null(level) & n.values>1) {
+    if(!is.null(level) & n.values>1 & bracket) {
       q <- qchisq(level[1], 1)
       if(deviance[1] < q | deviance[n.values] < q) warning(
         "parameter range seems short; confidence interval may be inaccurate")
@@ -4937,6 +5003,7 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
         }
       plot(par.val, deviance, type="l", xlab=param.name,
           ylab="2*{max(logLik) - logLik}", ...)
+      if(bracket) {     
       if(logScale) {
           rug(log(mle.full[profile.comp]), ticksize = 0.02)
           if(is.null(level) | fail.confint) low <- hi <- NULL else { 
@@ -4952,7 +5019,7 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
         abline(h=q, lty=3, ...)
         lines(rep(low, 2), c(par()$usr[3], q), lty=3, ...)
         lines(rep(hi, 2), c(par()$usr[3], q), lty=3, ...)
-        }
+        }}
       }
     }
   else { # npc==2, two-parameter profile logLik
@@ -4962,9 +5029,11 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
     param2 <- par.val[[2]]
     if(all(u>1)) 
       if(prod(range(param1) - mle.full[profile.comp][1]) > 0 |
-          prod(range(param2) - mle.full[profile.comp][2]) > 0) stop(
-        gettextf("parameter range does not bracket the MLE/MPLE point: '%s'",
-           paste(format(mle.full[profile.comp]), collapse=",")), domain=NA)  
+        prod(range(param2) - mle.full[profile.comp][2]) > 0) {
+          message(gettextf(
+            "parameter range does not bracket the MLE/MPLE point: '%s'",
+            paste(format(mle.full[profile.comp]), collapse=",")), domain=NA)
+          bracket <- FALSE} else bracket <- TRUE    
     if(u[1] > 2) npt[1] <- u[1] else if(u[1] == 2) 
       param1 <- seqLog(param1[1], param1[2], length=npt[1], logScale[1])
     if(u[2] > 2) npt[2] <- u[2] else if(u[2] == 2) 
@@ -4995,11 +5064,11 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       level <- NULL
       } 
     q <- if(is.null(level)) c(1, 2, 5, 8, 15) else  qchisq(level, 2) 
-    deviance <- 2*(logLik(obj)-logL)
-    if(any(deviance + sqrt(.Machine$double.eps) < 0)) warning(paste(
-      "A relative maximum of the (penalized) likelihood seems to have taken",
-      "as\n the MLE (or MPLE).",
-      "Re-fit the model with starting values suggested by the plot."))
+    deviance <- 2*(slot(obj, "logL") - logL)
+    if(any(deviance + sqrt(.Machine$double.eps) < 0)) message(paste(
+      "A relative maximum of the (penalized) likelihood seems to have taken as",
+      "\nthe MLE (or MPLE). Unless the global maximum is divergent, consider",
+      "\nrefitting the model with starting values suggested by the plot."))
     if(all(n.values>1)) {
       cL <- contourLines(param1, param2, deviance, levels=q)
       out$deviance.contour <- cL
@@ -5017,28 +5086,31 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
 	    param.name[2] <- paste("log(", param.name[2], ")", sep="")
 	    }      
       contour(param1, param2, deviance, levels=q, labels=level,
-          xlab=param.name[1], ylab=param.name[2], ...)
-      mark <- mle.full[profile.comp]
-      mark[logScale] <- log(mark[logScale])
-      points(mark[1], mark[2], ...)  
+         xlab=param.name[1], ylab=param.name[2], ...)
+      if(bracket) {     
+        mark <- mle.full[profile.comp]
+        mark[logScale] <- log(mark[logScale])
+        points(mark[1], mark[2], ...)  
+        }
       }
     }
   invisible(out)
 }
 
 constrained.logLik <- function(free.param, param.type, x, y, weights, family, 
-    constr.comp=NA, constr.values=NA, penalty=NULL, trace=FALSE)
+  constr.comp=NA, constr.values=NA, penalty=NULL, trace=FALSE, negative=FALSE)
 {
- if(trace) cat("constrained.logLik, free.param:", format(free.param))
+  if(trace) cat("constrained.logLik, free.param:", format(free.param))
   n <- sum(weights)
   p <- ncol(x)
   param <- numeric(length(free.param) + length(constr.values))
   param[constr.comp] <- constr.values
   param[-constr.comp] <- free.param
+  bad <- if(negative) Inf else -Inf
   par0 <- c(0, param[-(1:p)])
-  # if(par0[2] <= 0) return(-Inf)
-  # if(family=="ST" & par0[4] <= 0) return(-Inf) 
-  # if(family=="ST" & par0[4] > 1e4) par0[4] <- Inf
+  if(par0[2] <= 0) return(bad)
+  if(family=="ST" & par0[4] <= 0) return(bad) 
+  if(family=="ST" & par0[4] > 1e4) par0[4] <- Inf
   dp0 <- if(param.type =="DP") par0 else 
      cp2dpUv(par0, family, tol=1e-7, silent=TRUE)
   if(anyNA(dp0)) {
@@ -5060,6 +5132,7 @@ constrained.logLik <- function(free.param, param.type, x, y, weights, family,
     } 
   out <- if(anyNA(logL)) -Inf else sum(logL * weights) - Q 
   if(trace) cat(", logL:", format(out), "\n")
+  if(negative) out <- (-out)
   return(out)
 }
 

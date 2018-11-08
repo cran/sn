@@ -1,5 +1,15 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+Version 1.5-3 (2018-11-08)
+In pst, improved implementation of Method 2; slight modification of automatic
+method selection when 'method=0'. Internal function qst_bounds introduced for
+better initial bracketing of ST quantiles; improved qst coding. In profile.selm 
+the selected parameter area does no longer need to include the MLE/MPLE point.
+In sn.infoMv removed bugs in the stage of parameter parsing, which prevented 
+computing the expected information matrix. In internal functions st.pdev.gh 
+and mst.pdev.grad, improved computation of 'nu' component of logLik gradient, 
+yielding faster fitting of ST models. Improved handling of arguments of
+sn.infoMv. Improved documentation of modeSECdistr and coding of modeSECdistrMv.
 
 Version 1.5-2 (2018-04-24)
 Improved checking of input arguments to lower level fitting procedures (those 
@@ -16,9 +26,9 @@ the DP information matrix is not invertible. Improved numerical inversion of
 st.cp2dp in extreme situations.
 
 Version 1.5-0 (2017-02-09)
-New functions for symmetry-modulated (AKA skew-symmetric) distributions
-are introduced: {d,r}[m]SymmModulated and its bivariate density plotting. 
-Fix a bug in dsn affecting the cases (a) x=Inf, alpha=0, and (b) omega<=0. 
+Tools for user-defined symmetry-modulated (AKA skew-symmetric) distributions
+are introduced: {d,r}[m]SymmModulated and its bivariate density plotting. Fixed 
+a bug in dsn affecting the cases (a) x=Inf, alpha=0, and (b) omega<=0. 
 
 Version 1.4-0 (2016-06-30) 
 Introduce methods confint and predict for selm-class objects. Fix bug in rmst 

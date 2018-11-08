@@ -101,7 +101,8 @@ where \eqn{L} denotes the likelihood.
 The range of \code{param.values} must enclose the maximum (penalized)
 likelihood estimates (\acronym{MLE} or \acronym{MPLE}) by an adequate extent 
 such that suitable confidence intervals or regions can be established from
-standard asymptotic theory.
+standard asymptotic theory. If this condition does not hold, the function
+still proceeds, but no confidence interval or region is delivered.
 For the \acronym{SN} family and \acronym{DP} parameterization, the asymptotic
 theory is actually non-standard near the important point \eqn{\alpha=0}, 
 but the correspondence with the regular case of the \acronym{CP} 
@@ -118,7 +119,7 @@ with deviance levels.
 different in the one- and the two-parameter cases.
   \item{call}{the calling statement}
   \item{<param1>}{values of the first parameter}
-  \item{<param2>}{values of the second parameter (in a two-parameter case)}
+  \item{<param2>}{values of the second parameter (in the two-parameter case)}
   \item{logLik}{numeric vector or matrix of the profile log-likelihood values}
   \item{confint}{in the one-parameter case, the confidence interval}
   \item{level}{in the one-parameter case, the confidence level}
@@ -141,7 +142,7 @@ different in the one- and the two-parameter cases.
 \itemize{
 \item This function is experimental and changes in future versions
 of the package may occur. Users should not rely on the persistence of the 
-same user interface or the same name.
+same user interface or the same name(s).
 
 \item It is a known fact that, in some critical situations, peculiar outcomes
 are produced.

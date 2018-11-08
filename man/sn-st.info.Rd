@@ -31,16 +31,16 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
 
 \arguments{
 
- \item{dp, cp}{direct or centred parameters, respectively; one of the two
-  vectors must be supplied, but not both. For the univariate \acronym{SN}
+\item{dp, cp}{direct or centred parameters, respectively; one of them
+  can be a non-\code{NULL} argument. For the univariate \acronym{SN}
   distribution, \code{sn.infoUv} is to be used, and these arguments are
   vectors. In the multivariate case, \code{sn.infoMv} is to be used and these
   arguments are lists. See \code{\link{dp2cp}} for their description.}
 
- \item{x}{an optional matrix which represents the design matrix of a 
+\item{x}{an optional matrix which represents the design matrix of a 
   regression model}
 
- \item{y}{a numeric vector (for \code{sn.infoUv} and \code{st.infoUv})
+\item{y}{a numeric vector (for \code{sn.infoUv} and \code{st.infoUv})
    or a matrix (for \code{sn.infoMv} and \code{st.infoMv}) representing the
    response.  In the \acronym{SN} case ( \code{sn.infoUv} and
    \code{sn.infoMv}), \code{y} can be missing, and in this case the expected
@@ -50,10 +50,11 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
    for \acronym{ST} distributions is implemented. See \sQuote{Details} for
    additional information.}
 
- \item{w}{an optional vector of weights; if missing, a vector of 1's is
+\item{w}{an optional vector of weights (only meaningful for the observed 
+   information, hence if \code{y} is missing); if missing, a vector of 1's is
    generated.}
 
-\item{fixed.nu}{an optional numeric value which declared a fixed value of the
+\item{fixed.nu}{an optional numeric value which declares a fixed value of the
    degrees of freedom, \code{nu}. If not \code{NULL}, the information matrix
    has a dimension reduced by 1.}
    
@@ -61,14 +62,14 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
    the distribution is being imposed; default is \code{symmetr=FALSE}.}   
 
 \item{penalty}{a optional character string with the name of the penalty 
-   function used in the call to \code{\link{selm}}; see this function for its
-   description.}
+  function used in the call to \code{\link{selm}}; see this function for its
+  description.}
 
 \item{norm2.tol}{for the observed information case, the Mahalanobis squared
-   distance of the score 0 is evaluated; if it exceeds \code{norm2.tol}, a
-   warning message is issued, since the \sQuote{information matrix} so
-   evaluated may be not positive-definite.  See \sQuote{Details} for
-   additional information.}
+  distance of the score function from 0 is evaluated; if it exceeds
+  \code{norm2.tol}, a warning message is issued, since the \sQuote{information
+  matrix} so evaluated may be not positive-definite.  See \sQuote{Details} for
+  additional information.}
 }
 
 \value{
@@ -98,12 +99,13 @@ must have length 3.  If \code{x} is set, then the supplied vector of parameters,
 \code{dp} or \code{cp}, must have length \code{ncol(x)+2}.
 In the multivariate case, a direct extension of this scheme applies.
 
-If the observed information matrix is required, \code{dp} or \code{dp} should
+If the observed information matrix is required, \code{dp} or \code{cp} should
 represent the maximum likelihood estimates (MLE) for the given \code{y},
-otherwise the information matrix may fail to be positive-definite. Therefore,
-the squared Mahalobis norm of the score vector is evaluated and compared with
-\code{norm2.tol}. If it exceeds this threshold, it is taken as an indication
-that the parameter is not at the \acronym{MLE} and a warning message is issued.
+otherwise the information matrix may fail to be positive-definite and it
+would be meaningless anyway. 
+Therefore, the squared Mahalobis norm of the score vector is evaluated and compared with \code{norm2.tol}. 
+If it exceeds this threshold, this is taken as an indication that the supplied
+parameter list is not at the \acronym{MLE} and a warning message is issued.
 The returned list still includes \code{info.dp} and \code{info.cp}, but in 
 this case these represent merely the matrices of second derivatives;
 \code{asyvar.dp} and \code{asyvar.cp} are set to \code{NULL}.
@@ -118,21 +120,21 @@ this case these represent merely the matrices of second derivatives;
   Arellano-Valle and Azzalini (2008).
  
   For \acronym{ST} distributions, only the observed information matrix is 
-  provided currently. Computation for the univariate case is based on 
+  provided, at the moment. Computation for the univariate case is based on 
   DiCiccio and Monti (2011). For the multivariate case, the score function is
-  computed using expression of Arellano-Valle (2010) followed by numerical
+  computed using an expression of Arellano-Valle (2010) followed by numerical
   differentiation.
 }
 
 \references{
   Arellano-Valle, R. B. (2010).
-  The information matrix of the multivariate skew-$t$ distribution.
+  The information matrix of the multivariate skew-\emph{t} distribution.
   \emph{Metron}, \bold{LXVIII}, 371--386.
 
   Arellano-Valle, R. B., and Azzalini, A. (2008).
   The centred parametrization for the multivariate skew-normal distribution.
   \emph{J. Multiv. Anal.} \bold{99}, 1362--1382.
-  Corrigendum: vol.\,100 (2009), p.\,816.
+  Corrigendum: \bold{100} (2009), 816.
 
   Azzalini, A. with the collaboration of Capitanio, A. (2014). 
   \emph{The Skew-Normal and Related Families}. 
