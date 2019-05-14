@@ -383,11 +383,11 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
       if(method==2 || (method==0 & (z[i] < upper) )) 
         {# method 2         
          p0 <- acos(delta)/pi  # CDF at x=0 
-         int <- integrate(dst, min(0,z[i]), max(0,z[i]), dp=dp.std, ...) 
+         int <- integrate(dst, min(0,z[i]), max(0,z[i]), dp=dp.std, stop.on.error=FALSE, ...) 
          p[i] <- p0 + sign(z[i]) * int$value
         } 
         else # method 3 
-          p[i] <- integrate(fp, 0, Inf, alpha, nu, z[i], ...)$value           
+          p[i] <- integrate(fp, 0, Inf, alpha, nu, z[i], stop.on.error=FALSE, ...)$value           
       }}}}}
   pr[ok] <- p
   pr[x == Inf] <- 1
@@ -399,7 +399,7 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
 
 pst_int <- function (x, xi=0, omega=1, alpha=0, nu=Inf) 
 {# Jamalizadeh, Khosravi and Balakrishnan (2009, CSDA)
-  if(nu != round(nu) | nu < 1) stop("'nu' not integer or not positive")
+  if(nu != round(nu) | nu < 1) stop("'nu' not a positive integer")
   if(omega <= 0) return(NaN)
   z <- (x-xi)/omega
   if(nu == 1) 
@@ -1047,10 +1047,10 @@ summary.SECdistrMv <- function(object, cp.type="auto")
   if(family=="SN" | family=="SC") cp <- cp[1:3] 
   cp[["aux"]] <- NULL
   mode <- modeSECdistrMv(dp, family)
-  aux0 <- list(mode=mode, delta=aux$delta,  
-     alpha.star=aux$alpha.star, delta.star=aux$delta.star, mardia=aux$mardia)
+  aux0 <- list(mode=mode, delta=aux$delta, alpha.star=aux$alpha.star, 
+    delta.star=aux$delta.star, mardia=aux$mardia)
   new("summary.SECdistrMv", dp=dp, family=family, name=object@name, 
-      compNames=object@compNames,  cp=cp, cp.type=cp.type, aux=aux0)
+    compNames=object@compNames,  cp=cp, cp.type=cp.type, aux=aux0)
 }
 
 dp2cp <- function(dp, family, object=NULL, cp.type="proper", upto=NULL)
@@ -1703,13 +1703,14 @@ affineTransSECdistr <- function(object, a, A, name, compNames, drop=TRUE)
   
                        
 marginalSECdistr <- function(object, comp, name, drop=TRUE)   
-{# marginals of SECdistrMv obj; 2nd version, computing marginal delta's
+{# marginals of SECdistrMv obj; version 2, computing marginal delta's
   family <- slot(object,"family")
   if(missing(name)) {
      basename <- if(object@name != "") object@name 
-                 else deparse(substitute(object))
-     name<- paste(basename, ".components=(",
-                paste(as.character(comp),collapse=","), ")", sep="")
+                 else deparse(substitute(object))               
+     name <- if(length(comp)>1) paste(basename, "[",
+                paste(as.character(comp), collapse=","), "]", sep="") else
+                paste(basename, "[", as.character(comp), "]", sep="")
      }
   else name <- as.character(name)[1]
   dp <- slot(object,"dp")
@@ -1744,7 +1745,7 @@ marginalSECdistr <- function(object, comp, name, drop=TRUE)
      names(dp) <- names(dp0)
      dp[2] <- sqrt(dp[2])
      names(dp)[2] <- "omega"
-     new.obj <- new("SECdistrUv", dp=dp, family=family, name=compNames[comp])
+     new.obj <- new("SECdistrUv", dp=dp, family=family, name=name)
      }
   new.obj
 }
@@ -1904,7 +1905,7 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
     if (is.empty.model(mt)) stop("empty model") else
     {
       x <- model.matrix(mt, mf, contrasts)
-      xt <- pd.solve(t(x) %*% (w*x), silent=TRUE)
+      xt <- pd.solve(force.symmetry(t(x) %*% (w*x)), silent=TRUE)
       if(is.null(xt)) stop("design matrix appears to be of non-full rank")
       z <- selm.fit(x, y, family=family, start, w=w, fixed.param=fixed.param, 
              offset=offset, selm.control=contr)
@@ -3421,7 +3422,6 @@ mst.pdev.grad <- function(param, x, y, w, fixed.nu=NULL, symmetr=FALSE,
       pt(L*sf, nu+d, log.p=TRUE)
       }
     dlogT.ddf <- numDeriv::jacobian(funct.logT., x=df0, d=d, L=L, Q=Q)[,1]
-    ## browser() 2018-10-30
     Ddf   <- sum((dlogft.ddf + dlogT.ddf)*w)
     grad <- c(grad, -2*Ddf*df0)
     }
@@ -4181,8 +4181,7 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
   compNames <- slot(obj, "compNames")
   d <- length(compNames)
   if(missing(probs)) probs <- c(0.25, 0.50, 0.75, 0.95)    
-  if(any(probs <= 0 || probs >= 1)) stop("probs must be within (0,1)") 
-  if(sum(probs > 0 && probs < 1) == 0) stop("invalid probs") 
+  if(any(probs <= 0) | any(probs >= 1)) stop("probs must be within (0,1)") 
   if(missing(npt)) npt <- rep(101, d)
   if(missing(main))  { main <- if(d==2) 
       paste("Density function of", slot(obj, "name")) else
@@ -4202,10 +4201,14 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
       q <- q.fn(c(0.05, 0.25, 0.75, 0.95), dp=marg@dp)
       dq <- diff(q)
       range[,j] <- c(q[1] - 1.5*dq[1], q[length(q)] + 1.5*dq[length(dq)])
+      # 2019-01-13: next lines have been modified 
       if(!is.null(data)) {
-        range[1,j] <- min(range[1,j], min(data[,j]))
-        range[2,j] <- max(range[2,j], max(data[,j]))
-       }}
+        q <- quantile(data[,j], probs=c(0.05, 0.25, 0.75, 0.95))
+        dq <- diff(q)
+        range[1,j] <- min(range[1,j], q[1] - 1.5*dq[1])
+        range[2,j] <- max(range[2,j], q[length(q)] + 1.5*dq[length(dq)])
+        }
+      }
     }
   dots <- list(...)
   nmdots <- names(dots)  

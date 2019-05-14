@@ -148,57 +148,62 @@ setMethod("show", "summary.SECdistrUv",
 setMethod("show","summary.SECdistrMv",
   function(object){
     obj <- object
-    #------ DP
-    dp <- obj@dp
-    if(obj@name != "") cat("Probability distribution of",obj@name,"\n")
+    dp <- slot(object, "dp")
+    namesV <- slot(object, "compNames") # names of the variables
+    if(obj@name != "") cat("Probability distribution of", obj@name,"\n")
     cat("Skew-elliptically contoured distribution of ", length(dp[[3]]),
-        "-dimensional family ", obj@family,"\n", sep="")
+        "-dimensional family ", slot(object, "family"), "\n", sep="")
+    #------ DP
     cat("\nDirect parameters (DP):\n")
     attr(dp[[2]], "dimnames") <- 
-         list(paste("  Omega[", obj@compNames, ",]", sep=""),NULL)
-    out.dp <- rbind("  xi"=dp[[1]], omega=dp[[2]],"  alpha"=dp[[3]])
-    colnames(out.dp) <- obj@compNames
+       list(paste(names(dp)[2], "[", namesV, ",]", sep=""), NULL)
+    out.dp <- rbind(dp[[1]], dp[[2]], dp[[3]])
+    colnames(out.dp) <- namesV
+    rownames(out.dp) <- c(names(dp)[1], rownames(dp[[2]]), names(dp)[3])
+    rownames(out.dp) <- paste("  ", rownames(out.dp), sep="") 
     print(out.dp)
-    if(length(dp) > 3){
+    if(length(dp) > 3) {
       extra <- unlist(dp[-(1:3)])
       names(extra) <- paste("  ",names(dp[-(1:3)]), sep="")
-      # print(extra)
       for(j in 1:length(extra)) cat(names(extra)[j], "=", extra[j], "\n")
       }
     #------ OP
     if(FALSE) {
-    op <- obj@op  
+    op <- slot(object, "op")
     cat("\nOriginal parameters (OP):\n")
     attr(op[[2]], "dimnames") <- 
-         list(paste("  Psi[", obj@compNames, ",]", sep=""),NULL)
-    out.op <- rbind("  xi"=op[[1]], "  psi"=op[[2]],"  lambda"=op[[3]])
-    colnames(out.op) <- obj@compNames
+       list(paste(names(op)[2], "[", namesV, ",]", sep=""), NULL)
+    out.dp <- rbind(op[[1]], op[[2]], op[[3]])
+    colnames(out.op) <- namesV
+    rownames(out.op) <- c(names(op)[1], rownames(op[[2]]), names(op)[3])
+    rownames(out.op) <- paste("  ", rownames(out.op), sep="") 
     print(out.op)
     if(length(op) > 3){
       extra <- unlist(op[-(1:3)])
       names(extra) <- paste("  ",names(op[-(1:3)]), sep="")
-      # print(extra)
       for(j in 1:length(extra)) cat(names(extra)[j], "=", extra[j], "\n")
       }  
     }
     #------ CP  
-    cp <- obj@cp
-    note <- if(obj@cp.type == "proper") NULL else ", type=pseudo-CP" 
+    cp <- slot(object, "cp")
+    note <- if(obj@cp.type == "proper") NULL else ", type = pseudo-CP" 
     cat("\nCentred parameters (CP)", note, ":\n", sep="")
     attr(cp[[2]], "dimnames") <- 
-       list(paste("  var.cov[", obj@compNames, ",]", sep=""),NULL)
-    out.cp <- rbind("  mean"=cp[[1]], cp[[2]], "  gamma1"=cp[[3]])
-    colnames(out.cp) <- obj@compNames
+       list(paste(names(cp)[2], "[", namesV, ",]", sep=""), NULL)
+    out.cp <- rbind(cp[[1]], cp[[2]], cp[[3]])
+    colnames(out.cp) <- namesV
+    rownames(out.cp) <- c(names(cp)[1], rownames(cp[[2]]), names(cp)[3])
+    rownames(out.cp) <- paste("  ", rownames(out.cp), sep="") 
     print(out.cp)
     if(length(cp) > 3) {
       extra <- unlist(cp[-(1:3)])
       names(extra) <- paste("  ", names(cp[-(1:3)]), sep="")
       for(j in 1:length(extra)) cat(names(extra)[j], "=", extra[j], "\n")
       }
-    aux <- obj@aux
+    aux <- slot(object, "aux")
     out.aux <- rbind("  delta" = aux$delta, "  mode" = aux$mode) 
         #"  lambda"=aux$lambda, 
-    colnames(out.aux) <- obj@compNames
+    colnames(out.aux) <- namesV
     cat("\nAuxiliary quantities:\n")
     print(out.aux)
     cat("\nGlobal quantities:\n")

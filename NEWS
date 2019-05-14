@@ -1,5 +1,13 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+Version 1.5-4 (2019-05-09) 
+On request from the CRAN group, a modification is inserted to get around
+numerical problems arising in connection with use of OpenBLAS (version 0.3.5).
+For plotting of multivariate SECdistr when 'range' is not supplied and 'data' 
+is not-NULL, calculation of plotting range has been modified. Proper handling
+of the 'name' argument of marginalSECdistr when the result is a univariate
+distribution.
+
 Version 1.5-3 (2018-11-08)
 In pst, improved implementation of Method 2; slight modification of automatic
 method selection when 'method=0'. Internal function qst_bounds introduced for

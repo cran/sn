@@ -1,6 +1,6 @@
 Package: sn
-Version: 1.5-3
-Date: 2018-11-08
+Version: 1.5-4
+Date: 2019-05-09
 Title: The Skew-Normal and Related Distributions Such as the Skew-t
 Author: Adelchi Azzalini <adelchi.azzalini@unipd.it>
 Maintainer: Adelchi Azzalini <adelchi.azzalini@unipd.it>
@@ -14,6 +14,6 @@ License: GPL-2 | GPL-3
 URL: http://azzalini.stat.unipd.it/SN
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2018-11-07 21:18:45 UTC; aa
+Packaged: 2019-05-14 10:28:23 UTC; aa
 Repository: CRAN
-Date/Publication: 2018-11-08 15:40:02 UTC
+Date/Publication: 2019-05-14 14:00:03 UTC

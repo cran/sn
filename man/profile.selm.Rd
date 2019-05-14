@@ -157,7 +157,7 @@ are produced.
 }
 
 \examples{
-data(ais)
+data(ais, package="sn")
 m1 <-  selm(log(Fe) ~ BMI + LBM, family = "sn", data = ais)
 
 pll <- profile(m1, "dp", param.name="alpha", param.val=c(-3,2))
@@ -165,8 +165,7 @@ pll <- profile(m1, "dp", param.name="alpha", param.val=c(-3,2))
 profile(m1, "cp", param.name="gamma1", param.val=seq(-0.7, 0.4, by=0.1))
 
 # in the next example, we reduce grid points to save execution time
-pll <- profile(m1, "cp", param.name=c("(Intercept.CP)", "gamma1"), 
-         param.val=list(c(1.5, 4), c(-0.8, 0.5)), npt=c(11,16) )                 
-                                      
+pll <- profile(m1, "cp", param.name=c("(Intercept.CP)", "gamma1"),
+           param.val = list(c(1.5, 4), c(-0.8, 0.5)), npt=c(11,16) )
 }
 

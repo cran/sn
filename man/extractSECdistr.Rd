@@ -10,7 +10,7 @@
 \description{
   Given an object created by a call to \code{selm}, the function delivers
   the \acronym{SEC} distribution representing the stochastic term of the 
-  fitted distribution
+  fitted model
 }
 
 \usage{
