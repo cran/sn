@@ -1,6 +1,6 @@
 #  file sn/R/sn-funct.R  (various functions)
 #  This file is a component of the package 'sn' for R 
-#  copyright (C) 1997-2018 Adelchi Azzalini
+#  copyright (C) 1997-2019 Adelchi Azzalini
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -23,14 +23,17 @@ dsn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, log=FALSE)
     xi <- dp[1]
     omega <- dp[2]
     alpha <- dp[3]
-    tau <- if(length(dp)>3) dp[4] else 0
+    tau <- if(length(dp) > 3) dp[4] else 0
     }
   z <- (x-xi)/omega
-  logN <- (-log(sqrt(2*pi)) -logb(omega) -z^2/2)
-  if(abs(alpha) < Inf)   
-    logS <- pnorm(tau * sqrt(1+alpha^2) + alpha*z, log.p=TRUE)
-  else
-    logS  <- log(as.numeric(sign(alpha)*z + tau > 0)) 
+  logN <- (-log(sqrt(2*pi)) -logb(omega) - z^2/2)
+  za <- cbind(z, alpha)
+  z <- za[,1]
+  alpha <- za[,2]
+  logS <- numeric(length(z))
+  ok <- (abs(alpha) < Inf)   
+  logS[ok] <- pnorm(tau * sqrt(1+alpha[ok]^2) + (alpha*z)[ok], log.p=TRUE)
+  logS[!ok]  <- log(as.numeric((sign(alpha)*z)[!ok] + tau > 0)) 
   logPDF <- as.numeric(logN + logS - pnorm(tau, log.p=TRUE))
   logPDF <- replace(logPDF, abs(x) == Inf, -Inf)
   logPDF <- replace(logPDF, omega <= 0, NaN)
@@ -64,16 +67,18 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
     delta <- delta.etc(alpha)
     p.tau <- pnorm(tau) 
     for(k in seq_len(nz)) {
+      if(abs(z[k])==Inf) p[k] <- (sign(z[k]) + 1)/2
+      else {
       if(abs(alpha[k]) == Inf){
        p[k] <- if(alpha[k] > 0)
              (pnorm(pmax(z[k],-tau)) - pnorm(-tau))/p.tau
            else
              1- (pnorm(tau) - pnorm(pmin(z[k], tau)))/p.tau
       }
-    else { # SNbook: formula (2.48), p.40
+    else { # SNbook: (2.48), p.40
       R <- matrix(c(1, -delta[k], -delta[k], 1), 2, 2)
       p[k]<- mnormt::biv.nt.prob(0, rep(-Inf,2), c(z[k], tau), c(0, 0), R)/p.tau
-      }
+      }}
     }}
   p <- pmin(1, pmax(0, as.numeric(p)))
   replace(p, omega <= 0, NaN)
@@ -90,8 +95,9 @@ qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08,
       alpha <- dp[3]
       tau <- if(length(dp) > 3) dp[4] else 0
       }
-  max.q <- sqrt(qchisq(p,1)) + tau
-  min.q <- -sqrt(qchisq(1-p,1)) + tau
+  p <- as.vector(p)    
+  max.q <- sqrt(qchisq(p, 1)) + tau
+  min.q <- -sqrt(qchisq(1-p, 1)) + tau
   if(tau == 0) {
     if(alpha == Inf)  return(as.numeric(xi + omega * max.q))
     if(alpha == -Inf) return(as.numeric(xi + omega * min.q))
@@ -375,7 +381,7 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
     else {      
       if(method==1 || (method==0  && int.nu &&  (nu > nu0))) { # method 1
         out <- try(pmst(z[i], 0, matrix(1,1,1), alpha, nu, ...), silent=TRUE) 
-        p[i] <- if(class(out) == "try-error") NA else  p[i] <- out
+        p[i] <- if(inherits(out, "try-error"))  NA else  p[i] <- out
         }
     else {
       # upper <- if(absalpha> 1) 5/absalpha + 25/(absalpha*nu) else 5+25/nu
@@ -1178,7 +1184,7 @@ msn.dp2cp <- function(dp, aux=FALSE)
     R <- force.symmetry(Ocor + zeta(2,tau)*outer(delta,delta))
     ratio2 <- delta.star^2/(1+zeta(2,tau)*delta.star^2)
     mardia <- c(gamma1M=zeta(3,tau)^2*ratio2^3, gamma2M=zeta(4,tau)*ratio2^2)
-    # book: (5.74), (5.75) on p.153
+    # SN book: see (5.74), (5.75) on p.153
     cp$aux <- list(omega=omega, cor=R, Omega.inv=O.inv, Omega.cor=Ocor, 
       Omega.pcor=O.pcor, lambda=lambda, Psi=Psi, delta=delta, lambda=lambda,
       delta.star=delta.star, alpha.star=alpha.star, mardia=mardia)
@@ -1850,8 +1856,8 @@ delta.etc <- function(alpha, Omega=NULL)
 }
 
 selm <- function (formula, family="SN", data, weights, subset, na.action, 
-    start=NULL, fixed.param=list(), method="MLE",  penalty=NULL, offset, 
-    model=TRUE, x = FALSE, y = FALSE, ...) 
+    start=NULL, fixed.param=list(), method="MLE",  penalty=NULL, 
+    model=TRUE, x = FALSE, y = FALSE,  contrasts = NULL, offset,  ...) 
 {
     ret.x <- x
     ret.y <- y
@@ -1862,8 +1868,8 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
     m <- match(c("formula", "data", "subset", "weights", "na.action", 
         "offset"), names(mf), 0L)
     mf <- mf[c(1L, m)]
-    mf$drop.unused.levels <- TRUE
-    mf[[1L]] <- as.name("model.frame")
+    mf$drop.unused.levels <- TRUE 
+    mf[[1L]] <- as.name("model.frame")  # in lm(): quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
     method <- toupper(method)
     if(!(method %in% c("MLE", "MPLE"))) {
@@ -1904,7 +1910,7 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
       }  
     if (is.empty.model(mt)) stop("empty model") else
     {
-      x <- model.matrix(mt, mf, contrasts)
+      x <- model.matrix(mt, mf, contrasts)                    
       xt <- pd.solve(force.symmetry(t(x) %*% (w*x)), silent=TRUE)
       if(is.null(xt)) stop("design matrix appears to be of non-full rank")
       z <- selm.fit(x, y, family=family, start, w=w, fixed.param=fixed.param, 
@@ -2066,7 +2072,7 @@ selm.fit <- function (x, y, family="SN", start=NULL, w, fixed.param=list(),
       if(!boundary && family %in% c("ST","SC"))  {
         # 2018-04-24
         u <- try(Dpcp.dp %*% info$asyvar.dp %*% t(Dpcp.dp), silent=TRUE)
-        info$asyvar.p_cp <- if(class(u) == "try-error") NULL else u
+        info$asyvar.p_cp <- if(inherits(u, "try-error"))  NULL else u
         }
       beta.dp <- fit$dp[1:p]
       dp <- fit$dp
@@ -2571,7 +2577,7 @@ sn.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,
        asyvar.dp=asyvar.dp, asyvar.cp=asyvar.cp, aux=aux)
 }
 
-sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
+sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6, at.MLE=TRUE)
 {# computes observed/expected Fisher information matrix for multiv.SN variates
  # using results in Arellano-Valle & Azzalini (JMVA, 2008+erratum)
   type <- if(missing(y)) "expected" else "observed"
@@ -2609,8 +2615,8 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
   Obar <- cov2cor(Omega)
   Obar.alpha <-  as.vector(Obar %*% alpha)
   alpha.star <- sqrt(sum(alpha * Obar.alpha)) 
-  if(alpha.star < 1e-4) {
-    warning("information matrix of multivariate SN not computed at/near alpha=0")
+  if(alpha.star < 1e-4) {warning(
+    "information matrix of multivariate SN not computed at/near alpha=0")
     return(NULL)
     }
   # delta.star <- alpha.star/sqrt(1+alpha.star^2)
@@ -2701,12 +2707,15 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6)
   I.theta <- force.symmetry(I.theta, tol=1e3)
   inv_I.theta <- pd.solve(I.theta, silent=TRUE)
   if(is.null(inv_I.theta)) {
-     warning("numerically unstable information matrix")
+    inv_I.theta <- matrix(NaN, nrow(I.theta), ncol(I.theta))
+    if(at.MLE){
+     warning("information matrix numerically not positive-definite")
      return(NULL)
-     }
+     }}
   if(type == "observed" ) {
     score.norm2 <- sum(score * as.vector(inv_I.theta %*% score))
-    if(score.norm2/d > norm2.tol) stop("'dp' does not seem to be at MLE")
+    if(at.MLE & (score.norm2/d > norm2.tol)) 
+      stop("'dp' does not seem to be at the MLE")
     }
   D32 <- matrix(0,d, d2)
   tmp32 <- matrix(0,d^2,d^2)
@@ -4949,7 +4958,7 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
        message(gettextf("param range does not bracket the MLE/MPLE point: '%s'",
          format(mle.full[profile.comp])), domain=NA)
        bracket <- FALSE 
-       fail.confint <- TRUE
+       no.roots <- TRUE
        } else bracket <- TRUE
     logL <- numeric(n.values)
     for(k in 1:n.values) {
@@ -4995,8 +5004,8 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
                    upper=mle.full[profile.comp],  extendInt="downX"))
       rootH <- try(uniroot(dev.fn, lower=mle.full[profile.comp], 
                    upper=max(par.val), check.conv=TRUE, extendInt="upX")) 
-      fail.confint <- (class(rootL)=="try-error" | class(rootH)=="try-error")                   
-      out$confint <- if(fail.confint) rep(NULL,2) else c(rootL$root, rootH$root)   
+      no.roots <- (inherits(rootL, "try-error") | inherits(rootH, "try-error"))                
+      out$confint <- if(no.roots) rep(NULL,2) else c(rootL$root, rootH$root)   
       out$level <- level                         
       }
     if(plot.it & n.values>1) {  
@@ -5009,16 +5018,16 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       if(bracket) {     
       if(logScale) {
           rug(log(mle.full[profile.comp]), ticksize = 0.02)
-          if(is.null(level) | fail.confint) low <- hi <- NULL else { 
+          if(is.null(level) | no.roots) low <- hi <- NULL else { 
             low <- log(rootL$root)
             hi <- log(rootH$root) }}
         else {
           rug(mle.full[profile.comp], ticksize = 0.02)
-          if(is.null(level)| fail.confint) low <- hi <- NULL else { 
+          if(is.null(level)| no.roots) low <- hi <- NULL else { 
             low <- rootL$root
             hi <- rootH$root
           }}
-      if(!is.null(level) & !fail.confint) { 
+      if(!is.null(level) & !no.roots) { 
         abline(h=q, lty=3, ...)
         lines(rep(low, 2), c(par()$usr[3], q), lty=3, ...)
         lines(rep(hi, 2), c(par()$usr[3], q), lty=3, ...)
@@ -5115,11 +5124,11 @@ constrained.logLik <- function(free.param, param.type, x, y, weights, family,
   if(family=="ST" & par0[4] <= 0) return(bad) 
   if(family=="ST" & par0[4] > 1e4) par0[4] <- Inf
   dp0 <- if(param.type =="DP") par0 else 
-     cp2dpUv(par0, family, tol=1e-7, silent=TRUE)
+    cp2dpUv(par0, family, tol=1e-7, silent=TRUE)
   if(anyNA(dp0)) {
-      if(is.null(dp0)) {message("null dp0"); browser()}
+    if(is.null(dp0)) {message("null dp0, please report"); browser()}
     excess <- attr(dp0, "excess")
-    if(length(excess) == 0) {message("0-length excess"); browser() }
+    if(length(excess) == 0) {message("0-length excess, please report"); browser()}
     if(is.null(excess) | is.na(excess) | abs(excess)==Inf ) 
         excess <- (.Machine$double.xmax)^(1/3)
         # {message("bad excess"); browser()}
@@ -5127,7 +5136,7 @@ constrained.logLik <- function(free.param, param.type, x, y, weights, family,
     } 
   d.fn <- get(paste("d", tolower(family), sep=""), inherits = TRUE)
   logL <- try(d.fn((y - x %*% param[1:p]), dp=dp0, log=TRUE))
-  if(class(logL) == "try-error") browser()
+  if(inherits(logL, "try-error"))  browser()
   Q <- if(is.null(penalty)) 0 else {
     penalty.fn <- get(penalty, inherits = TRUE)
     nu <- if(family=="ST") par0[4] else NULL

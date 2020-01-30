@@ -1,5 +1,10 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+Version 1.5-5 (2020-01-30)
+In sn.infoMv, new argument at.MLE is introduced. Arguments of selm are updated
+to match changes in R. Fix a bug in dsn when called with a non-scalar argument
+alpha. Changed internal checks on 'try' output, to accomplish R changes.
+
 Version 1.5-4 (2019-05-09) 
 On request from the CRAN group, a modification is inserted to get around
 numerical problems arising in connection with use of OpenBLAS (version 0.3.5).

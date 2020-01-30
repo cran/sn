@@ -39,8 +39,8 @@
     \item{show}{\code{signature(object = "SECdistrMv-class")}: \dots }
     \item{plot}{\code{signature(x = "SECdistrMv-class")}: \dots }
     \item{summary}{\code{signature(object = "SECdistrMv-class")}: \dots }
-    \item{mean}{\code{signature(x = "SECdistrUv")}: \dots}
-    \item{vcov}{\code{signature(object = "SECdistrUv")}: \dots}
+    \item{mean}{\code{signature(x = "SECdistrMv")}: \dots}
+    \item{vcov}{\code{signature(object = "SECdistrMv")}: \dots}
     }
 }
 

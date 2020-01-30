@@ -18,7 +18,7 @@
 \usage{
 selm(formula, family = "SN", data, weights, subset, na.action, 
   start = NULL, fixed.param = list(), method = "MLE",  penalty=NULL, 
-  offset, model = TRUE, x = FALSE, y = FALSE,  ...)
+  model = TRUE, x = FALSE, y = FALSE, contrasts = NULL, offset, ...)
 }
  
 \arguments{
@@ -90,16 +90,20 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    \code{method="MLE"}, no penalization is applied and this argument has no
    effect.}
 
+
+  \item{model, x, y}{logicals.  If \code{TRUE}, the corresponding components
+   of the fit are returned.}
+ 
+  \item{contrasts}{an optional list. See the \code{contrasts.arg} of
+   \code{\link[stats]{model.matrix.default}}.}
+ 
   \item{offset}{this can be used to specify an \emph{a priori} known
    component to be included in the linear predictor during fitting.  This
    should be \code{NULL} or a numeric vector of length equal to the number of
    cases.  One or more \code{\link{offset}} terms can be included in the
    formula instead or as well, and if more than one are specified their sum 
    is used. }
-
-  \item{model, x, y}{logicals.  If \code{TRUE}, the corresponding components
-   of the fit are returned.}
-
+   
   \item{\dots}{optional control parameters, as follows.
    \itemize{
 

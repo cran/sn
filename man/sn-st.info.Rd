@@ -20,7 +20,7 @@
 \usage{
 sn.infoUv(dp=NULL, cp=NULL, x=NULL, y, w, penalty=NULL,  norm2.tol=1e-06) 
     
-sn.infoMv(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-06)
+sn.infoMv(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-06, at.MLE=TRUE)
 
 st.infoUv(dp = NULL, cp = NULL, x = NULL, y, w, fixed.nu = NULL, 
     symmetr = FALSE, penalty = NULL, norm2.tol = 1e-06) 
@@ -70,6 +70,12 @@ st.infoMv(dp, x = NULL, y, w, fixed.nu = NULL, symmetr = FALSE,
   \code{norm2.tol}, a warning message is issued, since the \sQuote{information
   matrix} so evaluated may be not positive-definite.  See \sQuote{Details} for
   additional information.}
+  
+\item{at.MLE}{a logical flag; if \code{at.MLE=TRUE} (default value), 
+  it generates  a warning if the information matrix is not positive 
+  definite or an error if the observed information matrix is not evaluated 
+  at a maximum of the log-likelihood function.}
+  
 }
 
 \value{
