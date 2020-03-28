@@ -1,11 +1,12 @@
 
-importFrom("stats",  ".getXlevels", "as.formula", "contrasts", "cov2cor", 
+importFrom("stats",  ".getXlevels", "approxfun", "as.formula", 
+  "contrasts", "cov2cor", 
   "dcauchy", "dchisq", "dnorm", "dt", "integrate", "is.empty.model", 
   "lm.wfit", "model.matrix", "model.offset", "model.response", "model.weights",
   "optimize", "pf", "pnorm", "printCoefmat", "pt", "qchisq", "qf", "qnorm", 
   "qt", "quantile", "rchisq", "resid", "rnorm", "runif", "uniroot", "var",
   "residuals", "fitted", "weights", "optim", "nlminb", "splinefun",
-  "delete.response", "model.frame", "na.pass", "terms",
+  "delete.response", "model.frame", "na.pass", "terms", "median",
   "dbeta", "dlogis", "dunif", "pbeta", "pcauchy",
   "plogis", "punif", "rbeta", "rcauchy", "rlogis", "rt")
 importFrom("graphics", "plot", "Axis", "abline", "axis", "box", "boxplot", 
@@ -54,7 +55,9 @@ export(
   profile.selm, confint.selm, predict.selm,
   sd.default, sd, 
   dSymmModulated, rSymmModulated, dmSymmModulated, rmSymmModulated,
-  plot2D.SymmModulated
+  plot2D.SymmModulated,
+  fournum, st.prelimFit, mst.prelimFit, galton_moors2alpha_nu, 
+  pprodt2, pprodn2, qprodt2
   )
  
 exportMethods("show", "plot", "summary", "coef",  "logLik", "residuals",

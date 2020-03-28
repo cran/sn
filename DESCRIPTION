@@ -1,11 +1,13 @@
 Package: sn
-Version: 1.5-5
-Date: 2020-01-30
+Version: 1.6-0
+Date: 2020-03-28
 Title: The Skew-Normal and Related Distributions Such as the Skew-t
-Author: Adelchi Azzalini <adelchi.azzalini@unipd.it>
+Authors@R: person(given = "Adelchi", family = "Azzalini", 
+                  email = "adelchi.azzalini@unipd.it", role = c("aut", "cre"), 
+                  comment = c(ORCID = "0000-0002-7583-1269"))
 Maintainer: Adelchi Azzalini <adelchi.azzalini@unipd.it>
 Depends: R (>= 2.15.3), methods, stats4
-Imports: mnormt (>= 1.5-4), numDeriv, stats, grDevices, graphics, utils
+Imports: mnormt (>= 1.5-4), numDeriv, utils, quantreg
 Description: Build and manipulate probability distributions of the skew-normal 
   family and some related ones, notably the skew-t family, and provide related
   statistical methods for data fitting and model diagnostics, in the univariate 
@@ -14,6 +16,7 @@ License: GPL-2 | GPL-3
 URL: http://azzalini.stat.unipd.it/SN
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2020-01-30 20:07:22 UTC; aa
+Packaged: 2020-03-28 07:33:15 UTC; aa
+Author: Adelchi Azzalini [aut, cre] (<https://orcid.org/0000-0002-7583-1269>)
 Repository: CRAN
-Date/Publication: 2020-01-30 22:40:02 UTC
+Date/Publication: 2020-03-28 09:50:02 UTC

@@ -1,4 +1,4 @@
-%  file sn/man/sn-package.Rd  
+%  file sn/man/overview.Rd  
 %  This file is a component of the package 'sn' for R
 %  copyright (C) 2017 Adelchi Azzalini
 %---------------------
@@ -8,6 +8,7 @@
 \docType{package}
 \encoding{UTF-8}
 \alias{overview}
+\alias{overview-sn}
 \alias{pkg-overview}
 
 
@@ -133,7 +134,13 @@ distribution from  \dfn{selm}-class and \dfn{mselm}-class objects, hence
 providing a bridge with the probability side of the package.
 }
  
- 
+\section{Additional material}{
+Additional material is available in the section 
+\sQuote{User guides, package vignettes and other documentation}
+accessible from the front page of the documentation. 
+See especially the document \code{pkg_sn-intro.pdf}
+}
+
 \section{Author}{Adelchi Azzalini.
 % Dipart. Scienze Statistiche, Università di Padova, Italia.
 Please send comments, error reports \emph{et cetera} to the author, 

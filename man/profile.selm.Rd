@@ -16,7 +16,7 @@ One- or two-dimensional profile (penalized) log-likelihood function of a
 }
 \usage{
   \S3method{profile}{selm}(fitted, param.type, param.name, param.values, npt, 
-   opt.control = list(), plot.it = TRUE, log = TRUE, level, 
+   opt.control = list(), plot.it = TRUE, log = TRUE, levels, 
    trace = FALSE, ...)
 }
 
@@ -69,7 +69,7 @@ One- or two-dimensional profile (penalized) log-likelihood function of a
    \code{nu} in the \code{DP} parameter set and to \code{s.d.} and 
    \code{gamma2} in the \code{CP} parameter set.}
    
-  \item{level}{a single probability value (in the one-parameter case) or a 
+  \item{levels}{a single probability value (in the one-parameter case) or a 
    vector of such values (in the two-parameter case) for which the confidence
    interval or region is requited; see \sQuote{Details} for more information.}
    

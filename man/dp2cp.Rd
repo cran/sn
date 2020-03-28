@@ -155,7 +155,7 @@ The multivariate skew-normal distribution.
 # univariate case
 cp <- dp2cp(c(1, 2222, 3333, 2, 3), "SN")
 dp <- cp2dp(cp, "SN")
-# notice that 2nd and 3rd component remain unchanged
+# notice that the 2nd and the 3rd component remain unchanged
 #
 # multivariate case
 dp3 <- list(xi=1:3, Omega=toeplitz(1/(1:3)), alpha=c(-3, 8, 5), nu=6)

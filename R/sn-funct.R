@@ -1,6 +1,6 @@
 #  file sn/R/sn-funct.R  (various functions)
-#  This file is a component of the package 'sn' for R 
-#  copyright (C) 1997-2019 Adelchi Azzalini
+#  This file is a component of the R package 'sn' 
+#  copyright (C) 1997-2020 Adelchi Azzalini
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #
 #  A copy of the GNU General Public License is available at
 #  http://www.r-project.org/Licenses/
+
 #---------
 dsn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, log=FALSE)
 {
@@ -426,7 +427,7 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
 {
   if(!is.null(dp)) {
     if(!missing(alpha)) 
-      stop("You cannot set both component parameters and dp")
+      stop("You cannot set both component parameters and 'dp'")
     xi <- dp[1]
     omega <- dp[2]
     alpha <- dp[3]
@@ -434,7 +435,7 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
     }    
   if(length(alpha) > 1) stop("'alpha' must be a single value")  
   if(length(nu) > 1) stop("'nu' must be a single value")  
-  if(nu <= 0) stop("nu must be non-negative")  
+  if(nu <= 0) stop("'nu' must be non-negative")  
   if(nu > 1e4) return(qsn(p, xi, omega, alpha))
   if(nu == 1) return(qsc(p, xi, omega, alpha))
   if(alpha == Inf) 
@@ -720,9 +721,8 @@ rsc <- function(n=1, xi=0, omega=1, alpha=0, dp=NULL) {
   return(y) 
 }
 
-sn.cumulants <- function(xi = 0, omega = 1, alpha = 0, tau=0, 
-                         dp=NULL, n=4)
- {
+sn.cumulants <- function(xi = 0, omega = 1, alpha = 0, tau=0,  dp=NULL, n=4)                        
+{
    cumulants.half.norm <- function(n=4){
      n <- max(n,2)
      n <- as.integer(2*ceiling(n/2))
@@ -742,7 +742,7 @@ sn.cumulants <- function(xi = 0, omega = 1, alpha = 0, tau=0,
     }
   if(!is.null(dp)) {
     if(!missing(alpha)) 
-      stop("You cannot set both component parameters and dp")
+      stop("You cannot set both 'dp' and the component parameters")
     dp <- c(dp,0)[1:4]
     dp <- matrix(dp, 1, ncol=length(dp))
     }
@@ -807,29 +807,29 @@ st.cumulants <- function(xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, n=4)
 {
   if(!is.null(dp)) {
       if(!missing(alpha)) 
-        stop("You cannot set both component parameters and dp")
+        stop("You cannot set both 'dp' and the component parameters")
       xi <- dp[1]
       omega <- dp[2]
       alpha <- dp[3]
       nu <- dp[4]
       }
+  if(length(nu) > 1) stop("'nu' must be a scalar value")    
   if(nu == Inf) return(sn.cumulants(xi, omega, alpha, n=n))
-  n <- min(as.integer(n),4)
-  # if(nu <= n) stop("need nu>n")
-  par <- cbind(xi,omega,alpha)
-  delta <- par[,3]/sqrt(1+par[,3]^2)
-  cum<- matrix(NA, nrow=nrow(par), ncol=n)
-  cum[,1]<- mu <- b(nu)*delta
-  # if(n>1) cum[,2] <- nu/(nu-2) - mu^2
-  # if(n>2) cum[,3] <- mu*(nu*(3-delta^2)/(nu-3) - 3*nu/(nu-2)+2*mu^2)
-  # if(n>3) cum[,4] <- (3*nu^2/((nu-2)*(nu-4)) - 4*mu^2*nu*(3-delta^2)/(nu-3)
-  #                    + 6*mu^2*nu/(nu-2)-3*mu^4)- 3*cum[,2]^2
-  r <- function(nu, k1, k2) 1/(1-k2/nu) - k1/(nu-k2) # (nu-k1)/(nu-k2)
-  if(n>1 & nu>2) cum[,2] <- r(nu,0,2) - mu^2
-  if(n>2 & nu>3) cum[,3] <- mu*((3-delta^2)*r(nu,0,3) - 3*r(nu,0,2) + 2*mu^2)
-  if(n>3 & nu>4) cum[,4] <- (3*r(nu,0,2)*r(nu,0,4) - 4*mu^2*(3-delta^2)*r(nu,0,3)
-                      + 6*mu^2*r(nu,0,2)-3*mu^4) - 3*cum[,2]^2
-  cum <- cum*outer(par[,2],1:n,"^")
+  n <- min(as.integer(n), 4)      
+  par <- cbind(xi, omega, alpha)
+  alpha <- par[,3]
+  delta <- ifelse(abs(alpha)<Inf, alpha/sqrt(1+alpha^2), sign(alpha))
+  cum <- matrix(NaN, nrow=nrow(par), ncol=n)
+  cum[,1] <- mu <- b(nu)*delta
+  # r <- function(nu, k1, k2) 1/(1-k2/nu) - k1/(nu-k2)     # = (nu-k1)/(nu-k2)
+  s <- function(nu, k) 1/(1 - k/nu)                        # = nu/(nu-k)
+  if(n>1 & nu>2) cum[,2] <- s(nu,2) - mu^2
+  if(n>2 & nu>3) cum[,3] <- mu*((3-delta^2)*s(nu,3) - 3*s(nu,2) + 2*mu^2)
+  if(n>2 & nu==3) cum[,3] <- sign(alpha) * Inf  
+  if(n>3 & nu>4) cum[,4] <- (3*s(nu,2)*s(nu,4) - 4*mu^2*(3-delta^2)*s(nu,3)
+                             + 6*mu^2*s(nu,2)-3*mu^4) - 3*cum[,2]^2
+  if(n>3 & nu==4) cum[,4] <- Inf
+  cum <- cum*outer(par[,2], 1:n, "^")
   cum[,1] <- cum[,1]+par[,1]
   cum[,,drop=TRUE]
 }
@@ -1234,7 +1234,7 @@ mst.dp2cp <- function(dp, cp.type="proper", fixed.nu=NULL, symmetr=FALSE,
     }
   cp$gamma1 <- if(upto > 2 & !symmetr) st.gamma1(delta, nu+a[3]) else NULL
   cp$gamma2M <- if(upto > 3 & is.null(fixed.nu))  
-      mst.gamma2M(delta.star^2, nu+a[4], d) else NULL
+      mst.mardia(delta.star^2, nu+a[4], d)[2] else NULL
   names(cp) <- paste(names(cp), tilde[1:length(cp)], sep="")  
   # cp <- cp[1:length(dp1)]
   if(aux){
@@ -1246,23 +1246,25 @@ mst.dp2cp <- function(dp, cp.type="proper", fixed.nu=NULL, symmetr=FALSE,
   return(cp)  
 }
 
-
-mst.gamma2M <- function(delta.sq, nu, d)
-{ # Mardia's index of kurtosis gamma_2 for ST-d
-  if(delta.sq < 0 | delta.sq >1 )  stop("delta.sq not in (0,1)")
-  ifelse(nu>4, 
-    {R <- b(nu)^2 * delta.sq * (nu-2)/nu
-     R1R <- R/(1-R)
-     (2*d*(d+2)/(nu-4) + (R/(1-R)^2)*8/((nu-3)*(nu-4))
-      +2*R1R^2*(-(nu^2-4*nu+1)/((nu-3)*(nu-4))+2*(nu/((nu-3)*b(nu)^2)-1))
-      +4*d*R1R/((nu-3)*(nu-4))) },
-    Inf)
-}
+#-- function mst.gamma2M is subsumend in  mst.mardia, in practical terms
+# mst.gamma2M <- function(delta.sq, nu, d)
+#  {# Mardia measure of kurtosis \gamma_{2,d} for multiv.ST
+#  if(delta.sq < 0 | delta.sq >1 )  stop("delta.sq not in (0,1)")
+#   ifelse(nu>4, 
+#     {R <- b(nu)^2 * delta.sq * (nu-2)/nu
+#      R1R <- R/(1-R)
+#      (2*d*(d+2)/(nu-4) + (R/(1-R)^2)*8/((nu-3)*(nu-4))
+#       +2*R1R^2*(-(nu^2-4*nu+1)/((nu-3)*(nu-4))+2*(nu/((nu-3)*b(nu)^2)-1))
+#      +4*d*R1R/((nu-3)*(nu-4))) },
+#     Inf)
+# }
 
 mst.mardia <- function(delta.sq, nu, d) 
-{# Mardia's gamma1 and gamam2 for MST; book: (6.31), (6.32), p.178
-  if(delta.sq < 0 | delta.sq > 1)  stop("delta.sq not in (0,1)")
+{# Mardia measures gamma1 and gamma2 for MST; book: (6.31), (6.32), p.178
   if(d < 1) stop("d < 1") 
+  if(d != round(d)) stop("'d' must be a positive integer")
+  if(delta.sq < 0 | delta.sq > 1)  stop("delta.sq not in (0,1)")
+  if(nu <= 3) stop("'nu>3' is required")
   cum <- st.cumulants(0, 1, sqrt(delta.sq/(1-delta.sq)), nu)
   mu <- cum[1]
   sigma <- sqrt(cum[2])
@@ -1465,49 +1467,44 @@ function(dp, cp.type="proper", fixed.nu=NULL, jacobian=FALSE, upto=NULL)
 # b <- function (nu)  ifelse(nu>1, ifelse(nu < 1e8, 
 #        sqrt(nu/pi)*exp(lgamma((nu-1)/2)-lgamma(nu/2)), sqrt(2/pi)), NA)
 
-b <- function(nu){ 
-   out <- rep(NA, length(nu))
-   big.nu <- 1e4
-   big <- (nu > big.nu)
+b <- function(nu)  # function b(.) in SN book, eq.(4.15)
+{# vectorized for 'nu', intended for values nu>1, otherwise it returns NaN
+   out <- rep(NaN, length(nu))
+   big <- (nu > 1e4)
    ok  <- ((nu > 1) & (!big) & (!is.na(nu)))  
+   # for large nu use asymptotic expression (from SN book, exercise 4.6)
    out[big] <- sqrt(2/pi) * (1 + 0.75/nu[big] + 0.78125/nu[big]^2)
    out[ok] <-  sqrt(nu[ok]/pi) * exp(lgamma((nu[ok]-1)/2) - lgamma(nu[ok]/2))
-   out}
+   return(out)
+}
 #
 st.gamma1 <- function(delta, nu)
-{# this function is vectorized for delta, works with a single value of nu
-  if(nu > 1e6) {  
-    mu <- delta*sqrt(2/pi)
-    return(0.5*(4-pi)*mu^3/(1-mu^2)^1.5)
+{# this function is vectorized for delta, works for a single value of nu
+  if(length(nu) > 1) stop("'nu' must be a single value")
+  if(nu <= 0) stop("'nu' must be positive")
+  out <- rep(NaN, length(delta)) 
+  ok <- (abs(delta) <= 1) 
+  if((nu >= 3) & (sum(ok) > 0)) {
+    alpha <- delta[ok]/sqrt(1 - delta[ok]^2)
+    cum <- st.cumulants(0, 1, alpha, nu, n=3)
+    out[ok] <- if(sum(ok) == 1) cum[3]/cum[2]^1.5 else cum[,3]/cum[,2]^1.5  
     }
-  if(nu > 3) {
-    mu <- delta*b(nu)
-    k2 <-  nu/(nu-2)- mu^2
-    k3 <- mu * (nu * (3 - delta^2)/(nu-3) -3 * nu/(nu - 2) + 2 * mu^2)
-    gamma1 <- k3/sqrt(k2)^3 } 
-  else 
-    gamma1<- Inf*sign(delta)
-  gamma1
+  return(out) 
 }
 #     
 st.gamma2 <- function(delta, nu) 
-{# this function is vectorized for delta, works a single value of nu
- #
-  if(nu > 1e6) {  
-    mu <- delta*sqrt(2/pi)
-    return(2*(pi-3)*mu^4/(1-mu^2)^2)
+{# this function is vectorized for delta, works for a single value of nu
+  if(length(nu) > 1) stop("'nu' must be a single value")
+  if(nu <= 0) stop("'nu' must be positive")
+  out <- rep(NaN, length(delta)) 
+  ok <- (abs(delta) <= 1)
+  if((nu >= 4) & (sum(ok) > 0)) {
+    alpha <- delta[ok]/sqrt(1 - delta[ok]^2)
+    cum <- st.cumulants(0, 1, alpha, nu, n=4)
+    out[ok] <- if(sum(ok) == 1) cum[4]/cum[2]^2 else cum[,4]/cum[,2]^2
     }
-  if(nu > 4) {
-    mu <- delta*b(nu)
-    k2 <- nu/(nu-2)- mu^2
-    k4 <- (3 * nu^2/((nu - 2) * (nu - 4))
-           - 4 * mu^2 * nu * (3 - delta^2)/(nu - 3)
-           + 6 * mu^2 * nu/(nu - 2) -3*mu^4)                  
-    gamma2 <- k4/k2^2 - 3 }   
-  else  
-    gamma2 <- Inf
-  gamma2
-  }
+  return(out)  
+}
 #
 st.cp2dp <- 
 function(cp, cp.type="proper", start=NULL, silent=FALSE, tol=1e-8, trace=FALSE) 
@@ -1533,7 +1530,7 @@ function(cp, cp.type="proper", start=NULL, silent=FALSE, tol=1e-8, trace=FALSE)
     if(abs.g1 >= 4 & cp.type=="proper") {
         feasible <- FALSE; excess <- Inf
       } else {
-        r0 <- uniroot(fn0, c(log(4-a[4]+tiny), 1000), tol=tol, g1=abs.g1, a)
+        r0 <- uniroot(fn0, c(log(4-a[4]+tiny), 1000), tol=tol, g1=abs.g1, a=a)
         nu0 <- exp(r0$root) + a[3] 
         feasible <- (gamma2 >= st.gamma2(1, nu0+a[4]))
         excess <- max(0, st.gamma2(1, nu0+a[4]) - gamma2)
@@ -1569,7 +1566,7 @@ function(cp, cp.type="proper", start=NULL, silent=FALSE, tol=1e-8, trace=FALSE)
     nu <- exp(r2$root)
     if(fn1(-1, gamma1, nu, a) * fn1(1, gamma1, nu, a)> 0) {
       out <- NA
-      attr(out, "excess") <- fn1(-1, gamma1, nu, a) * fn1(1, gamma1, nu, a)
+      attr(out, "excess") <- fn1(-1, gamma1, nu, a) * fn1(1, gamma1, nu, a=a)
       break}
     r1 <- uniroot(fn1, interval=c(-1,1), tol=tol, g1=gamma1, nu=nu, a=a)
     delta <- r1$root
@@ -1629,7 +1626,7 @@ mst.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
     delta.sq <- sum(delta * as.vector(Obar.inv %*% delta))
     if(delta.sq >= 1) return(delta.sq*10^10)
     L1 <- sum((st.gamma1(delta, nu) - gamma1)^2)
-    L2 <- (mst.gamma2M(delta.sq, nu, d) - gamma2M)^2
+    L2 <- (mst.mardia(delta.sq, nu, d)[2] - gamma2M)^2
     # if(trace){  ecat(c(nu,delta,L1,L2))} # ; readline("<cr>")}
     L1 + L2
     }
@@ -1949,7 +1946,7 @@ selm <- function (formula, family="SN", data, weights, subset, na.action,
 
 
 #------------------------------------------------------
-selm.fit <- function (x, y, family="SN", start=NULL, w, fixed.param=list(), 
+selm.fit <- function(x, y, family="SN", start=NULL, w, fixed.param=list(), 
                  offset = NULL, selm.control=list()) 
 {
     if (!(toupper(family) %in% c("SN", "ST", "SC")))
@@ -2671,9 +2668,9 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6, at.MLE=TRU
     else {u0 <- 2; u1<- u2 <- 0}
     a0 <- u0
     a1 <- u1 * mu.c
-    A2 <- u2 * outer(mu.c, mu.c) + u0 * Omega.c                    # cfr (19)
+    A2 <- u2 * outer(mu.c, mu.c) + u0 * Omega.c                    # cf  (19)
     A1 <- (c1*(diag(d)-outer(eta,eta) %*% Omega/(1+alpha.star^2))
-           - c2*outer(eta, a1))   # cfr line after (12)
+           - c2*outer(eta, a1))   # cf  line after (12)
     # terms as given in the last matrix of p.16
     j11 <- (O.inv + c2*a0*outer(eta,eta)) %x% xx
     j12 <- c1*(O.inv %x% outer(sum.x, eta)) %*% D
@@ -2728,7 +2725,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6, at.MLE=TRU
   # here we use the expression given in the notes, not in the paper
   Dlow <- cbind(matrix(0,d,d*p), D32, diag(1/omega,d,d))
   Dtheta.dp <- rbind(cbind(diag(d*p+d2), matrix(0,d*p+d2,d)), Dlow)
-  I.dp <- t(Dtheta.dp) %*% I.theta %*% Dtheta.dp                     # cfr (14)
+  I.dp <- t(Dtheta.dp) %*% I.theta %*% Dtheta.dp                     # cf  (14)
   I.dp <- force.symmetry(I.dp, tol=1e3)
   #
   # psi<- c(mu, vSigma, mu0)
@@ -2749,7 +2746,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6, at.MLE=TRU
   Dtheta.psi <- rbind(
         cbind(diag(p*d),  matrix(0,p*d,d2), -diag(d) %x% one00),
         cbind(matrix(0,d2,p*d),  diag(d2),   D23),
-        cbind(matrix(0,d,p*d),    D32,       D33))                # cfr (22a)
+        cbind(matrix(0,d,p*d),    D32,       D33))                # cf  (22a)
   mu0. <- mu0/(sigma*beta0)  # \bar{\mu}_0
   D32. <- matrix(0, d, d2)   # \tilde{D}_{32}
   for(i in 1:d)  {
@@ -2760,9 +2757,9 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6, at.MLE=TRU
   D32. <- 0.5* beta0 * D32.
   D33. <- (2/(4-pi)) * diag(sigma/mu0.^2, d, d)/(3*beta0.sq)
   Dpsi.cp <- rbind(cbind(diag(p*d+d2), matrix(0,p*d+d2,d)), 
-                   cbind(matrix(0,d,p*d), D32., D33.))            # cfr (22b)
+                   cbind(matrix(0,d,p*d), D32., D33.))            # cf  (22b)
   jacob <- Dtheta.psi %*% Dpsi.cp
-  I.cp <- t(jacob) %*% I.theta %*% jacob                          # cfr (17)
+  I.cp <- t(jacob) %*% I.theta %*% jacob                          # cf  (17)
   I.cp <- if(any(is.na(I.cp))) NULL else force.symmetry(I.cp)  
   asyvar.dp <- pd.solve(I.dp, silent=TRUE)
   if(is.null(asyvar.dp))  se.dp <- list(NULL) else {
@@ -2843,7 +2840,7 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
                   control=control, x=x, y=y, w=w, trace=trace)    
   if(trace) {
     cat("Message from function", opt.method, ":", opt$message,"\n")
-    cat("Output parameters " , format(opt$par), "\n")
+    cat("Output parameters: " , format(opt$par), "\n")
     }
   logL <- opt$value/(-2) 
   beta <- matrix(opt$par[1:(p*d)],p,d)
@@ -2948,24 +2945,30 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   n <- length(y)
   x <- if(missing(x)) matrix(rep(1, n), ncol = 1) else data.matrix(x)
   x.name <- deparse(substitute(x))
-  if(nrow(x) !=n) stop("incompatible dimensions")
+  if(nrow(x) != n) stop("incompatible dimensions")
   if(any(x[,1] != 1)) stop("first column of x must have all 1's")
   if(symmetr && !is.null(penalty)) 
     stop("Penalized log-likelihood not allowed with constraint alpha=0")
   p <- ncol(x)
-  if(missing(w)) w <- rep(1,n)
-  if(length(w) !=n) stop("incompatible dimensions")
+  if(missing(w)) w <- rep(1, n)
+  if(length(w) != n) stop("incompatible dimensions")
   nw <- sum(w)
-  if(is.null(dp)) {
-    ls <- lm.wfit(x, y, w)
-    res <- ls$residuals
-    s <- sqrt(sum(w*res^2)/nw)
-    gamma1 <- sum(w*res^3)/(nw*s^3)
-    gamma2 <- sum(res^4)/(nw*s^4) - 3 
-    cp <- c(ls$coef, s, gamma1, gamma2)
-    dp <- st.cp2dp(cp, silent=TRUE)
-    if(is.null(dp)) dp <- rep(NA,length(cp))
-    if(any(is.na(dp))) dp <- c(cp[1:(p+1)], 0, 10)
+  if(is.null(dp) | mode(dp)=="character") {
+    Mx <- if(mode(dp) == "character") dp[1] else "M2" 
+    if(!(Mx %in% c("M0", "M2", "M3"))) stop("invalid 'dp' initialization")
+    if(Mx == 0) { # old method, not recommended
+      ls <- lm.wfit(x, y, w)
+      res <- ls$residuals
+      s <- sqrt(sum(w*res^2)/nw)
+      gamma1 <- sum(w*res^3)/(nw*s^3)
+      gamma2 <- sum(res^4)/(nw*s^4) - 3 
+      cp <- c(ls$coef, s, gamma1, gamma2)
+      dp <- st.cp2dp(cp, silent=TRUE)
+      if(is.null(dp)) dp <- rep(NA,length(cp))
+      if(any(is.na(dp))) dp <- c(cp[1:(p+1)], 0, 10)
+      }
+    if(Mx == "M2") dp <- st.prelimFit(x, y, w, quick=TRUE)$dp
+    if(Mx == "M3") dp <- st.prelimFit(x, y, w, quick=NULL)$dp
     if(!is.null(fixed.nu)) dp <- dp[-length(dp)]
     if(symmetr) dp <- dp[-length(dp)]
     }
@@ -3273,28 +3276,30 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
   d <- ncol(y)
   p <- ncol(x)
   opt.method <- match.arg(opt.method)
-  if (is.null(start)) {
-    ls <- lm.wfit(x, y, w, singular.ok=FALSE)
-    beta <- coef(ls)
-	Omega <-  var(resid(ls))
-	omega <- sqrt(diag(Omega))
-	alpha <- rep(0, d)
-    nu <- if(is.null(fixed.nu)) 8 else fixed.nu
-    if (trace) cat("mst.mple: starting dp = (",
-         c(beta, Omega[!upper.tri(Omega)], alpha, nu),  ")\n")
+  if(is.null(start) | mode(start)=="character") {
+    Mx <- if(mode(start) == "character") start[1] else "M3" 
+    if(!(Mx %in% c("M0", "M2", "M3"))) stop("invalid 'dp' initialization")
+    if(Mx == 0) { # old method, not recommended
+      ls <- lm.wfit(x, y, w, singular.ok=FALSE)
+      beta <- coef(ls)
+	  Omega <-  var(resid(ls))
+	  omega <- sqrt(diag(Omega))
+	  alpha <- rep(0, d)
+      nu <- if(is.null(fixed.nu)) 8 else fixed.nu
+      }
+    if(Mx == "M2") dp <- mst.prelimFit(x, y, quick=TRUE)$dp
+    if(Mx == "M3") dp <- mst.prelimFit(x, y, quick=NULL)$dp  
   }
   else {
-    if (!is.null(fixed.nu))  start$nu <- fixed.nu
-    if (all(names(start)[2:4] == c("Omega", "alpha", "nu"))) {
-        beta <- start[[1]] # was start$beta
-        Omega <- start$Omega
-        alpha <- start$alpha
-        nu <- start$nu
-      }
+    if (all(dim(start[[2]]) == c(d,d), length(start[3]) == dp))  dp <- start
     else stop("argument 'start' is not in the form that I expected")
     }
-  if(symmetr) alpha <- rep(0,d) 
-  param <- dplist2optpar(list(beta=beta, Omega=Omega, alpha=alpha))
+  alpha <- if(symmetr)  rep(0,d) else dp[[3]]
+  nu <- if(!is.null(fixed.nu)) fixed.nu else dp[[4]]
+  dp <- list(beta=dp[[1]], Omega=dp[[2]], alpha=alpha, nu=nu)
+  if (trace) cat("mst.mple: starting dp = (",
+       c(beta, Omega[!upper.tri(Omega)], alpha, nu),  ")\n")
+  param <- dplist2optpar(dp[1:3])
   if(symmetr) param <- param[-(p*d + d*(d+1)/2 + (1:d))]
   if(is.null(fixed.nu)) param <- c(param, log(nu))
   if(!is.null(penalty)) penalty <- get(penalty, inherits=TRUE)
@@ -3320,7 +3325,7 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
   opt$called.by <- "mst.mple"
   if (trace) {
       cat("Message from optimization routine:", opt$message, "\n")
-      cat("(penalized) deviance:", dev, "\n")
+      cat("(penalized) deviance:", format(dev), "\n")
   }
   par <- opt$par 
   npar0 <- (p*d + d*(d+1)/2)
@@ -3784,8 +3789,8 @@ sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE,
   boundary <- as.logical(abs(cp[p+2]) >= max.gamma1)
   if(trace) {
     cat("Message from function", opt.method, ": ", opt$message, "\n")
-    cat("estimates (cp):", cp, "\n")
-    cat("(penalized) log-likelihood:", logL, "\n")
+    cat("estimates (cp):", format(cp), "\n")
+    cat("(penalized) log-likelihood:", format(logL), "\n")
     }
   opt$method <- opt.method
   opt$called.by <- "sn.mple"  
@@ -4899,10 +4904,10 @@ mean.SECdistrMv <- function(x) dp2cp(object=x, upto=1)[[1]]
 sd.SECdistrUv <- function(x) dp2cp(object=x, upto=2)[2]
 vcov.SECdistrMv <- function(object) dp2cp(object=object, upto=2)[[2]]
 
-#---
-#
+#----------------------------
+# profile.selm updated version 1.6-0
 profile.selm <- function(fitted, param.type, param.name, param.values, npt,
-  opt.control=list(), plot.it=TRUE, log=TRUE, level, trace=FALSE, ...)
+  opt.control=list(), plot.it=TRUE, log=TRUE, levels, trace=FALSE, ...)
 { obj <- fitted
   if(class(obj) != "selm")  
     stop(gettextf("wrong object class: '%s'", class(obj)), domain = NA)
@@ -4955,10 +4960,11 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       par.val <- seqLog(par.val[1], par.val[2], length=npt, logScale)
     n.values <- length(par.val)  
     if(n.values>1 & (prod(range(par.val) - mle.full[profile.comp]) > 0)) {
-       message(gettextf("param range does not bracket the MLE/MPLE point: '%s'",
+       message(gettextf(
+         "Note: param range does not bracket the MLE/MPLE point: '%s'",
          format(mle.full[profile.comp])), domain=NA)
        bracket <- FALSE 
-       no.roots <- TRUE
+       fail.confint <- TRUE
        } else bracket <- TRUE
     logL <- numeric(n.values)
     for(k in 1:n.values) {
@@ -4986,17 +4992,18 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
        # readline("Press <Enter> to continue<cr>")
        # browser()
        }}
-    if(missing(level)) level <- 0.95
-    level <- level[1]
-    if(is.na(level) | level <= 0 | level >= 1) {
-      message("illegal level value is reset to default value")
-      level <- 0.95 }
-    if(obj.par$boundary) {
-      message("parameter estimates at the boundary, no confidence interval")
-      level <- NULL
+    if(missing(levels)) levels <- 0.95
+    levels <- levels[1]
+    if(is.na(levels) | levels <= 0 | levels >= 1) {
+      message("illegal levels value is reset to default value")
+      levels <- 0.95 }
+    if(obj.par$boundary) {message(paste(
+      "estimates at the boundary of the parameter space,", 
+      "no confidence interval"))
+      levels <- NULL
       } 
-    if(!is.null(level) & n.values>1 & bracket) {
-      q <- qchisq(level[1], 1)
+    if(!is.null(levels) & n.values>1 & bracket) {
+      q <- qchisq(levels[1], 1)
       if(deviance[1] < q | deviance[n.values] < q) warning(
         "parameter range seems short; confidence interval may be inaccurate")
       dev.fn <- splinefun(par.val, deviance - q, method="monoH.FC")
@@ -5004,9 +5011,9 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
                    upper=mle.full[profile.comp],  extendInt="downX"))
       rootH <- try(uniroot(dev.fn, lower=mle.full[profile.comp], 
                    upper=max(par.val), check.conv=TRUE, extendInt="upX")) 
-      no.roots <- (inherits(rootL, "try-error") | inherits(rootH, "try-error"))                
-      out$confint <- if(no.roots) rep(NULL,2) else c(rootL$root, rootH$root)   
-      out$level <- level                         
+      fail.confint <- (class(rootL)=="try-error" | class(rootH)=="try-error")                   
+      out$confint <- if(fail.confint) rep(NULL,2) else c(rootL$root, rootH$root)   
+      out$levels <- levels                         
       }
     if(plot.it & n.values>1) {  
       if(logScale) { 
@@ -5018,16 +5025,16 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       if(bracket) {     
       if(logScale) {
           rug(log(mle.full[profile.comp]), ticksize = 0.02)
-          if(is.null(level) | no.roots) low <- hi <- NULL else { 
+          if(is.null(levels) | fail.confint) low <- hi <- NULL else { 
             low <- log(rootL$root)
             hi <- log(rootH$root) }}
         else {
           rug(mle.full[profile.comp], ticksize = 0.02)
-          if(is.null(level)| no.roots) low <- hi <- NULL else { 
+          if(is.null(levels)| fail.confint) low <- hi <- NULL else { 
             low <- rootL$root
             hi <- rootH$root
           }}
-      if(!is.null(level) & !no.roots) { 
+      if(!is.null(levels) & !fail.confint) { 
         abline(h=q, lty=3, ...)
         lines(rep(low, 2), c(par()$usr[3], q), lty=3, ...)
         lines(rep(hi, 2), c(par()$usr[3], q), lty=3, ...)
@@ -5043,7 +5050,7 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
       if(prod(range(param1) - mle.full[profile.comp][1]) > 0 |
         prod(range(param2) - mle.full[profile.comp][2]) > 0) {
           message(gettextf(
-            "parameter range does not bracket the MLE/MPLE point: '%s'",
+            "Note: parameter range does not bracket the MLE/MPLE point: '%s'",
             paste(format(mle.full[profile.comp]), collapse=",")), domain=NA)
           bracket <- FALSE} else bracket <- TRUE    
     if(u[1] > 2) npt[1] <- u[1] else if(u[1] == 2) 
@@ -5056,57 +5063,112 @@ profile.selm <- function(fitted, param.type, param.name, param.values, npt,
        stop("param.values[[1]] not an increasing sequence")
     if(any(diff(param2) <= 0)) 
        stop("param.values[[2]] not an increasing sequence")
-    for(k1 in 1:n.values[1]) for(k2 in 1:n.values[2]){
+    mle.profile <- mle.full[profile.comp]   
+    fn.dist <- function(p1, p2, q, h=1) sqrt(h*(p1-q[1])^2 + (p2-q[2])^2)
+    dist <- matrix(0, n.values[1], n.values[2])   
+    for(k1 in 1:n.values[1]) for(k2 in 1:n.values[2])
+       dist[k1,k2] <- fn.dist(param1[k1], param2[k2], mle.profile, h=1)
+    # dist <- outer(param1, param2, fn.dist, q=mle.profile, h=1)  
+    s <- which(dist==min(dist), arr.ind=TRUE)
+    s <- matrix(s, ncol=2)[1,] 
+    spiral <- discreteSpiral(s, n.values[1], n.values[2])
+    pts <- spiral$path[spiral$feasible,]
+    logL <- matrix(NA, n.values[1], n.values[2])
+    last.estimate <- mle.full
+    for(k in 1:prod(n.values)) {
+      pt <- pts[k,]
+      k1 <- pt[1]
+      k2 <- pt[2]
       constr.values <- c(param1[k1], param2[k2], fixed.values)
-      free.values <- mle.full[-constr.comp] 
-      opt <- optim(free.values, constrained.logLik,  method="BFGS",
+      free.values <- last.estimate[-constr.comp] 
+      opt.control <- list()
+      opt <- nlminb(free.values, constrained.logLik, negative=TRUE,
         control=opt.control, param.type=param.type, x=x, y=m[[1]],
         weights=weights, family=family, constr.comp=constr.comp, 
         constr.values=constr.values, penalty=penalty, trace=trace)  
-      logL[k1,k2] <- opt$value  
+      logL[k1,k2] <- (-opt$objective) 
+      last.estimate[-constr.comp] <- opt$par 
       }
     out <- list(call=match.call(), param1=param1, param2=param2, logLik=logL)
     names(out)[2:3] <- param.name  
-    if(missing(level)) level <- c(0.25, 0.5, 0.75, 0.9, 0.95, 0.99)
-    if(anyNA(level) | any(level<=0) | any(level>=1)) {
-      message("illegal level values; vector 'level' reset to default value")
-      level <- c(0.25, 0.5, 0.75, 0.9, 0.95, 0.99) }
-    if(obj.par$boundary) {
-      message("parameter estimates at the boundary, no confidence regions")
-      level <- NULL
+    if(missing(levels)) levels <- c(0.25, 0.5, 0.75, 0.9, 0.95, 0.99)
+    if(anyNA(levels) | any(levels<=0) | any(levels>=1)) {
+      message("illegal levels values; vector 'levels' reset to default value")
+      levels <- c(0.25, 0.5, 0.75, 0.9, 0.95, 0.99) }
+    if(obj.par$boundary) {message(
+      "MLE/MPLEs at the boundary of the parameter space, no confidence regions")
+      levels <- NULL
       } 
-    q <- if(is.null(level)) c(1, 2, 5, 8, 15) else  qchisq(level, 2) 
+    q <- if(is.null(levels)) 
+         c(0.5, 1, 2, 5, 10, 20, 40, 80) else qchisq(levels, 2) 
     deviance <- 2*(slot(obj, "logL") - logL)
     if(any(deviance + sqrt(.Machine$double.eps) < 0)) message(paste(
-      "A relative maximum of the (penalized) likelihood seems to have taken as",
-      "\nthe MLE (or MPLE). Unless the global maximum is divergent, consider",
-      "\nrefitting the model with starting values suggested by the plot."))
+      "A relative maximum, or a minimum, of the (penalized) log-likelihood",
+      "seems to have been taken as the MLE/MPLE. Unless the global maximum",
+      "is divergent, consider refitting the model with starting values",
+      "suggested by the plot.", sep="\n"))
     if(all(n.values>1)) {
       cL <- contourLines(param1, param2, deviance, levels=q)
-      out$deviance.contour <- cL
-      if(!is.null(level)) for(j in 1:length(cL)) {
-        k <- which(q == cL[[j]]$level)
-        out$deviance.contour[[j]]$prob <- level[k]
-       }}
+      if(length(cL) > 0) {
+        out$deviance.contour <- cL
+        if(!is.null(levels)) for(j in 1:length(cL)) {
+          k <- which(q == cL[[j]]$levels)
+          out$deviance.contour[[j]]$prob <- levels[k]
+        }} else {
+        message(paste(
+          "There appears to be something odd with the fitted MLE/MPLE.",
+          "The contour levels denote logLik values, not confidence levels.", 
+          sep="\n"))
+        contour(param1, param2, out$logLik, xlab=param.name[1], 
+          ylab=param.name[2], ...)   
+        return(out) 
+        }}
     if(plot.it & all(n.values>1)) {
       if(logScale[1]) { 
-	    param1 <-  log(param1)
-    	param.name[1] <- paste("log(", param.name[1], ")", sep="")
-    	}		  
+            param1 <-  log(param1)
+        param.name[1] <- paste("log(", param.name[1], ")", sep="")
+        }                 
       if(logScale[2]) {
-	    param2 <-  log(param2)
-	    param.name[2] <- paste("log(", param.name[2], ")", sep="")
-	    }      
-      contour(param1, param2, deviance, levels=q, labels=level,
+            param2 <-  log(param2)
+            param.name[2] <- paste("log(", param.name[2], ")", sep="")
+            }      
+      contour(param1, param2, deviance, levels=q, labels=levels,
          xlab=param.name[1], ylab=param.name[2], ...)
       if(bracket) {     
         mark <- mle.full[profile.comp]
         mark[logScale] <- log(mark[logScale])
-        points(mark[1], mark[2], ...)  
+        points(mark[1], mark[2], pch=3, col=2)  
         }
       }
     }
   invisible(out)
+}
+
+
+#
+discreteSpiral <- function(s, maxX, maxY)
+{# spiralling around s=c(sx, sy) in rectangle (1,...,maxX) \times (1,...,maxY)
+  outside <- function(pt)
+     if(any(pt < 1) | pt[1] > maxX | pt[2] > maxY) TRUE else FALSE
+  if(outside(s)) stop("invalid starting point 's'")
+  heading <- 0  #   0=N, 1=E, 2=S, 3=W
+  h.add <- rbind(c(0,1), c(1,0), c(0,-1), c(-1,0))
+  step <- 0L
+  path <- pt <- s
+  feasible <- TRUE
+  repeat {
+    step <- step + 1L
+    for(j in 1:2) {
+      for(k in 1:step) {
+        pt <- pt + h.add[heading+1, ]
+        feasible <- c(feasible, !outside(pt))
+        path <- rbind(path, pt)
+        }
+      heading <- (heading + 1L) %% 4L
+      }
+   if(sum(feasible) == maxX*maxY) break
+   }
+  return(list(path=path, feasible=feasible))
 }
 
 constrained.logLik <- function(free.param, param.type, x, y, weights, family, 
@@ -5510,3 +5572,352 @@ plot2D.SymmModulated <- function(range, npt=rep(101,2), xi=c(0,0), Omega, f0,
   do.call(contour, c(list(x=x1, y=x2, z=pdf), dots))
   invisible(list(x=x1, y=x2, pdf=pdf))
   }
+#----
+# functions added in v.1.6-0
+
+fournum <- function(x, na.rm = TRUE, ...) 
+{
+  x <- as.vector(x)
+  if(!is.numeric(x)) stop("x must be a numeric vector") 
+  na <- is.na(x)
+  if (any(na)) {if (na.rm)  x <- x[!na]  else x <- NULL }
+  if (length(x) < 8)  m <- rep.int(NA, 4)
+  else {
+    oct <- quantile(x, probs=(1:7)/8, ...)
+    q.deviation <- (oct[6]-oct[2])/2   # terminology from ESS2, vol.10, p.6743
+    GaltonBowley <- (oct[6]-2*oct[4]+oct[2])/(oct[6]-oct[2])
+    Moors <- (oct[7]-oct[5]+oct[3]-oct[1])/(oct[6]-oct[2]) 
+    m <- c(oct[4], q.deviation, GaltonBowley, Moors)
+    }
+  names(m) <- c("median", "q.deviation", "GaltonBowley", "Moors")
+  return(m)
+}
+#---------
+galton_moors2alpha_nu <- 
+  function(galton, moors, quick=TRUE, move.in=TRUE, verbose=0, abstol=1e-4) 
+{# given (galton, moors) values, finds matching ST parameters (alpha, nu)
+  deltaV <- c(seq(0, 0.9, by=0.1), 0.95, 0.99, 1)
+  npt1 <- length(deltaV)
+  nuV <- c(0.3, 0.32, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
+           1.5, 2, 3, 4, 5, 7, 10, 15, 20, 30, 40, 50, 100, Inf)
+  npt2 <- length(nuV)     
+  log.nuV <- log(nuV)
+  moors0 <- c( # Moors values at alpha=0, from moorsM[1,]:
+    9.9456, 8.5883, 7.1096, 5.5251, 4.5430, 3.8879, 3.0876, 2.6296, 
+	2.3393, 2.1417, 2.0000, 1.6522, 1.5167, 1.4033, 1.3542, 1.3269, 
+	1.2977, 1.2771, 1.2618, 1.2544, 1.2471, 1.2436, 1.2414, 1.2372, 1.2331)
+  galtonInf <- c(# Galton values at nu=Inf, from galtonM[,npt2]
+    0, 2.4746e-05, 2.0388e-04, 7.2391e-04, 1.8496e-03, 4.0097e-03, 7.9865e-03, 
+    1.5413e-02, 3.0388e-02, 6.6491e-02, 0.10594, 0.14343, 0.144292171045)
+  moorsInf <- c(# Moors values at nu=Inf, from moorsM[,npt2]
+    1.2331, 1.2331, 1.2331, 1.2332, 1.2333, 1.2338, 1.2347, 1.2367, 
+    1.2408, 1.2462, 1.2375, 1.1889, 1.1764)  
+  approx.invNu <- splinefun(moors0, 1/nuV, method="hyman")
+  bound.GB <- c(0.84423, 0.82327, 0.79244, 0.74352, 0.69838, 0.65727, 0.58661, 
+    0.52943, 0.48311, 0.44533, 0.41421, 0.31849, 0.27109, 0.22551, 0.20376, 
+    0.19113, 0.17712, 0.16694, 0.15921, 0.15541, 0.15166, 0.14980, 0.14869, 
+    0.14648, 0.14429)
+  bound.Moors <- c(10.0810, 8.7251, 7.2457, 5.6544, 4.6611, 3.9927, 3.1645, 
+    2.6812, 2.3698, 2.1553, 2.0000, 1.6161, 1.4677, 1.3464, 1.2953, 1.2676, 
+    1.2384, 1.2182, 1.2035, 1.1964, 1.1896, 1.1862, 1.1842, 1.1803, 1.1764)
+  min.GB <- min(bound.GB)  
+  boundary1 <- splinefun(bound.GB, bound.Moors, method="hyman")
+  boundary0 <- approxfun(galtonInf, moorsInf)
+  boundary <- function(x, deriv = 0L)
+    ifelse(x < min.GB, boundary0(x),  boundary1(x, deriv))
+  eta <- matrix(c(
+       2.213831, -0.315418,  -0.007641,
+       2.022665, -0.240821,  -0.012001,
+       1.790767, -0.164193,  -0.021492,
+       1.506418, -0.090251,  -0.047034,
+       1.305070, -0.050702,  -0.087117,
+       1.156260, -0.028013,  -0.143526,
+       0.952435, -0.005513,  -0.307509,
+       0.819371,  0.004209,  -0.536039,
+       0.724816,  0.008992,  -0.818739,
+       0.653206,  0.011596,  -1.142667,
+       0.596276,  0.013136,  -1.495125,
+       0.417375,  0.015798,  -3.365100,
+       0.314104,  0.016371,  -5.011929,
+       0.192531,  0.016274,  -7.304089,
+       0.123531,  0.015682,  -8.676470,
+       0.080123,  0.014987,  -9.546498,
+       0.030605,  0.013674, -10.561206,
+      -0.003627,  0.012113, -11.335506,
+      -0.024611,  0.010334, -11.977601,
+      -0.030903,  0.009149, -12.343369,
+      -0.031385,  0.007650, -12.789281,
+      -0.027677,  0.006721, -13.074983,
+      -0.023285,  0.006079, -13.284029,
+      -0.005288,  0.004478, -13.874691
+	  ),
+      nrow=npt2-1, ncol=3, byrow=TRUE)
+  invert.GM <- function(galton, moors, alpha, log.nu, verbose=0, abstol=1e-4) {
+    # invert (galton, moors) starting from initial (alpha, log.nu)
+    if(galton*alpha < 0) stop("unfeasible initial alpha") 
+    loss.GM <- function(param, galton, moors, verbose=0) {
+      if(verbose > 2) cat("param:", param)
+      oct <- qst((1:7)/8, 0, 1, param[1], exp(param[2]), tol=abstol)
+      g <- as.numeric((oct[6]-2*oct[4]+oct[2])/(oct[6]-oct[2]))       
+      m <- as.numeric((oct[7]-oct[5]+oct[3]-oct[1])/(oct[6]-oct[2]))
+      loss <- sqrt(64*(g-galton)^2 + (m-moors)^2)
+      if(verbose > 2) cat(" loss:", loss, "\n")
+      loss
+      }
+    optim(c(alpha,log.nu), loss.GM, galton=galton, moors=moors, verbose=verbose,
+      method="Nelder-Mead", control=list(abstol=abstol, maxit=200))
+    } 
+  if(moors < 0) stop("moors < 0 is not admissible")  
+  abs.galton <- abs(galton)      
+  note <- NULL
+  feasible <- ( (moors > boundary(abs.galton)) & (abs.galton < 1) )
+  if(!feasible) { 
+    if(!move.in) return(c(NA,NA))  
+    if(verbose > 0) message("unfeasible (galton, moors) reset to feasible area") 
+    if(abs.galton >= 1) {# note: GaltonBowley=1 for alpha=Inf, nu-->0
+      galton.new <- sign(galton)*0.95
+      if(verbose > 0) message(paste("'galton' reset to:", format(galton.new)))
+      return(galton_moors2alpha_nu(galton.new, moors, quick, move.in, verbose))
+    }
+    dist <- sqrt(64*(abs.galton - bound.GB)^2 + (moors - bound.Moors)^2)
+    k <- which(dist == min(dist))
+    galton.new <- sign(galton)* 0.95 * bound.GB[k]
+    moors.new <- if(k < length(dist)) 1.05*bound.Moors[k] 
+                 else moors.new <- max(moorsInf) + 0.01
+    note <- paste("(galton,moors) reset to:", format(galton.new), ",",
+        format(moors.new))
+    if(verbose > 0) message(note)  
+    out <- galton_moors2alpha_nu(galton.new, moors.new, quick, move.in, verbose)
+    attr(out, "note") <- paste("unfeasible input values,", note)
+    return(out)
+    }
+  log.nu <- if(moors > min(moors0)) log(1/approx.invNu(moors)) else Inf
+  if(abs(galton) < (.Machine$double.eps)^(1/4) ) alpha <- 0 
+    else {
+	  pos <- (log.nu >= log.nuV)
+	  if(all(pos) | all(!pos)) {
+		 # message("all(pos) | all(!pos)")
+		 eta.f <- if(all(pos)) eta[npt2-1, ] else eta[1, ]
+		 # browser()
+		} else { 
+		 k <- max(which(pos)) 
+		 f <- (log.nu-log.nuV[k])/(log.nuV[k+1] + log.nuV[k])
+		 eta.f <- if( k < (npt2-1)) (1-f)*eta[k,] + f*eta[k+1,] else eta[k,]
+		 }
+     x <- log(abs(galton))
+	 alpha <- as.numeric(sign(galton)) * exp(sum(eta.f * c(x, x^3, 1/x^3)))
+	 }   
+  out <- c(alpha=alpha, nu=exp(log.nu))
+  attr(out, "method") <- "quick match"
+  if(quick) return(out)
+  if(verbose > 0) 
+    cat("(GaltonBowley, Moors) quick match:", format(out), "\n")
+  log.nu <- min(log.nu, 5)  # avoid huge log.nu at start, especially Inf 
+  if(verbose > 1) message("Second step of (GaltonBowley, Moors) inversion")
+  opt <- invert.GM(abs.galton, moors, abs(alpha), log.nu, verbose, abstol)
+  if(verbose > 1) { 
+    cat("opt$(message, convergence, par, value):")
+    cat(opt$message,", ")
+    cat(opt$convergence,", ")
+    cat("(", opt$par,"), ")
+    cat(opt$value,"\n")
+    # browser()
+    }
+  out <- c(alpha=as.numeric(sign(galton)*opt$par[1]), nu=exp(opt$par[2]))  
+  attr(out, "method") <- "two-step match"
+  return(out)
+  }
+
+#---------
+st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
+{ #  quick values: (NULL, TRUE, FALSE)
+  n <- length(y)
+  if(missing(x)) x <- rep(1, n)
+  x <- data.matrix(x)
+  p <- ncol(x) 
+  if(n != nrow(x)) stop("dimension mismatch of x,y")
+  if(any(x[,1] != 1)) stop("x[,1] not all 1's") 
+  if(missing(w)) w <- rep(1, n)
+  if(n != length(w)) stop("dimension mismatch of w,y")
+  if(p==1) {
+    beta <- stats::median(y, na.rm=TRUE)
+    resid <- (y-beta)
+    } else { 
+    beta.fit <- quantreg::rq.wfit(x, y, tau=0.5, weights=w, method="br")
+    beta <- coef(beta.fit)
+    resid <- residuals(beta.fit)
+    }
+  q.measures <- fournum(resid)
+  if(is.null(quick)) {
+    alpha <- 0
+    nu <- 10
+    }
+  else {
+    galton <- q.measures[3]
+    moors <- q.measures[4]
+    alpha_nu <- galton_moors2alpha_nu(galton, moors, quick=quick, move.in=TRUE,
+                 verbose=verbose, abstol=1e-4)     
+    alpha <- alpha_nu[1]
+    nu    <- min(alpha_nu[2], max.nu)  
+    }         
+  omega <- 2 * q.measures[2]/diff(qst(c(0.25, 0.75), 0, 1, alpha, nu))
+  shift <- qst(0.5, 0, omega, alpha, nu)
+  beta[1] <- beta[1] - shift
+  resid <- resid + shift
+  dp <- c(beta, omega, alpha, nu)
+  names.x <- colnames(x) 
+  if(is.null(names.x)) names.x <- paste("x", 1:p, sep=".")
+  if(p == 1)  names.x <- "xi"   
+  names(dp) <- c(names.x, "omega", "alpha", "nu")
+  logL <- sum(dst(resid, 0, omega, alpha, nu, log=TRUE))
+  return(list(dp=dp, residuals=resid, logLik=logL))
+}
+
+#-----------------------------------------------------------------------
+mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30) {
+  matchMedian <- function(omega.bar, nu, obs.median) {
+    if(any(abs(omega.bar) >= 1)) return(NA)
+    pprodt2(obs.median, omega.bar, nu) - 0.5
+    }  
+  d <- ncol(y)
+  n <- nrow(y)
+  if(missing(x)) x <- matrix(1, n, 1)
+  if(missing(w)) w <- rep(1, n)
+  p <- ncol(x)
+  dp.marg <- matrix(NA, p+3, d)
+  z <- matrix(NA, n, d)
+  for(j in 1:d)  {
+    fit <- st.prelimFit(x, y=y[,j], w, quick, verbose, max.nu)
+    dp.marg[,j] <- fit$dp
+    z[,j] <- fit$residuals/dp.marg[p+1,j]
+    } 
+  nu <- median(dp.marg[p+3,])
+  # wd <- max(5, 1000/(nu + (.Machine$double.eps)^0.25))
+  Omega.bar <- diag(d)
+  for(j in 1:(d-1)) for(k in (j+1):d) {
+    w <- as.vector(z[,j] * z[,k])
+    w. <- median(w)
+    rho.max <- 0.999999
+    nu.work <- nu
+    repeat{
+      f1 <-  matchMedian(-rho.max, nu.work, w.) 
+      f2 <-  matchMedian(rho.max, nu.work, w.) 
+      if(f1*f2 < 0) break
+      nu.work <- 0.9 *nu.work
+      }
+    r <- uniroot(matchMedian, interval=c(-rho.max, rho.max), nu=nu.work, 
+                 obs.median=w.)
+    Omega.bar[j,k] <- Omega.bar[k,j]  <- r$root  
+    }
+  lambda <- dp.marg[p+2,]
+  delta <- lambda/sqrt(1 + lambda^2)
+  Omega.star <- rbind(cbind(Omega.bar, delta), c(delta, 1))
+  k <- 0
+  repeat {
+    m <- mnormt::pd.solve(Omega.star, silent=TRUE)
+    if(!is.null(m)) break
+    k <- k+1
+    Omega.star <-  0.95 * Omega.star
+    Omega.star[cbind(1:(d+1),1:(d+1))] <- 1
+    }
+  omega <- as.vector(dp.marg[p+1,])
+  Omega <- diag(omega, d) %*% Omega.star[1:d,1:d] %*% diag(omega, d)
+  Omega <- force.symmetry(Omega)
+  delta <- as.vector(Omega.star[d+1, 1:d]) 
+  tmp <- as.vector(solve(Omega.star[1:d,1:d]) %*% delta)
+  alpha <- tmp/sqrt(1 - sum(delta*tmp))
+  beta <- dp.marg[1:p,]
+  logL <- sum(dmst(y, x %*% beta, Omega, alpha, nu, log=TRUE))
+  dp.fit <- if(p==1) list(xi=dp.marg[1,], Omega=Omega, alpha=alpha, nu=nu)
+    else list(beta=beta, Omega=Omega, alpha=alpha, nu=nu)
+  return(list(dp=dp.fit, shrink.steps=k, dp.marginals=dp.marg, logLik=logL))
+  }
+  
+#---------------------------------------------------------------------------- 
+# from ~aa/SN/ST-various/St-start_MLE/SW/cdf_prod_t2.R
+# 2019-01-07
+# Function pprodt2 computes CDF of product of components of bivariate Student's
+# (central) t variables, via Theorem 1 of Wallgren (1980, JASA, 75, 996-1000).
+#
+# For nu=2, the results have been checked agains those in Table 2 of
+# Nadarajah & Kotz (2006, Math. Proceed. Royal Irish Academy, 106A, 149-162). 
+# The results are essentially in agreement, although with some differences,
+# typically of order <1%, often around 0.1%. These differences can reasonably 
+# be attributed to rounding errors. Notice that their computations involve the
+# hypergeometric function, which is notoriously numerically hard to compute.
+#------------------  
+pprodt2 <- function(x, rho, nu)
+{# implements formulae in Theorem 1 of Wallgren (1980, JASA, 75, 996-1000)
+  if(abs(rho) >= 1) { warning("abs(rho)<1 required");  return(NaN) }
+  if(rho < 0) return(1 - pprodt2(-x, -rho, nu)) # see text following Theorem 1
+  sinA <- sqrt(1-rho^2)
+  cosA <- rho
+  alpha <- atan(-sinA/cosA)    
+  A <- atan2(sinA, cosA)
+  piQ <- function(theta, A, x, nu) { 
+    # see (2.5) of Wallgren (1980)
+    z <- nu*sin(theta)*sin(theta+A)
+    (z/(x+z))^(nu/2)
+    }
+  neg <- (x<0)  
+  p <- rep(NA, length(x))
+  if(sum(neg)>0) {
+    # see (2.4) of Wallgren (1980)
+    m <- sum(neg)
+    pneg <- rep(NA, m)
+    for(j in 1:m) pneg[j] <-
+      integrate(piQ, alpha, 0,  A=A, x=x[neg][j], nu=nu)$value/pi
+    p[neg] <- pneg 
+    }
+  if(sum(!neg)>0) { 
+    # see (2.3) of Wallgren (1980)
+    m <- sum(!neg)
+    ppos <- rep(NA, m)
+    for(j in 1:m) ppos[j] <-
+      (1 - integrate(piQ, 0, pi+alpha, A=A, x=x[!neg][j], nu=nu)$value/pi)
+    p[!neg] <- ppos
+    }
+  return(p)
+  }
+#
+qprodt2 <- function(p, rho, nu, tol=1e-5, trace=0)
+{
+  shiftedCDF <- function(x, prob, rho, nu) pprodt2(x, rho, nu) - prob
+  m <- length(p)
+  q <- rep(NA, m)
+  if(nu <= 0) stop("nu>0 required")
+  w <- max(5, 20/(nu^2 + sqrt(.Machine$double.eps)))
+  for(j in 1:m) {
+    if(p[j] == 0) q[j] <- -Inf
+    else if(p[j] == 1) q[j] <- Inf
+    else if(p[j] < 0 | p[j] >1) q[j] <- NaN
+    else if(is.na(p[j])) q[j] <- NA
+    else {
+      r <- uniroot(shiftedCDF, interval=c(-w, w), prob=p[j], rho=rho, nu=nu,
+             extendInt="yes", tol=tol, trace=trace)
+      q[j] <- r$root         
+    }}
+  return(q)    
+}  
+# 
+pprodn2 <- function(x, rho)
+{# central case of Theorem 1 of Aroian et al. (1978, Comm.Stat A, 7, 165-172)
+  if(abs(rho) >= 1) {warning("condition abs(rho)<1 fails"); return(NaN)}
+  if(rho < 0) return(1 - pprodn2(-x, -rho)) 
+  fn.Phi <- function(t, y, rho) {
+    cr2 <- 1-rho^2
+    G2 <- (1+cr2*t^2)^2 + (2*rho*t)^2
+    G <- sqrt(G2)
+    I <- 1 + cr2*t^2   
+    u <- (sqrt((G+I)/2) *sin(t*y) - sqrt((G-I)/2)*cos(t*y))
+    return(u/(t*G))
+    }
+  m <- length(x)
+  p <- numeric(m)
+  for (j in 1:m){ 
+    int <- integrate(fn.Phi, 0, Inf, y=x[j], rho=rho, subdivisions=1000)
+    p[j] <- 0.5 + int$value/pi
+    }
+  return(p)
+}
+ 

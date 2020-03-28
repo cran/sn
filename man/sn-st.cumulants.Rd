@@ -23,9 +23,9 @@
   \item{tau}{hidden mean parameter (numeric scalar).}
   \item{nu}{degrees of freedom (numeric scalar, positive); the default value
     is \code{nu=Inf} which corresponds to the skew-normal distribution.}
-  \item{dp}{a vector containing the appropriate set of parameters. If 0 
-    \code{dp} is not \code{NULL}, the individual parameters must not be
-    supplied.}
+  \item{dp}{a vector containing the appropriate set of parameters. 
+    If \code{dp} is not \code{NULL}, the individual parameters must 
+    not be supplied.}
   \item{n}{maximal order of the cumulants. For \code{st.cumulants} and
     for \code{sn.cumulants} with \code{tau!=0} (\acronym{ESN} distribution), 
     it cannot exceed 4.}

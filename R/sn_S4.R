@@ -260,7 +260,7 @@ setMethod("show", "selm",
     cat("Number of observations:", object@size["n.obs"], "\n")
     if(!is.null(slot(object,"input")$weights))
       cat("Weighted number of observations:", object@size["nw.obs"], "\n")
-    cat("Number of covariates:", object@size["p"], "(includes constant term)\n")
+    cat("Number of covariates:", object@size["p"], "(counting constant term)\n")
     cat("Number of parameters:", object@size["n.param"], "\n")
     cat("Family:", slot(object,"family"),"\n")
     fixed <- slot(object, "param")$fixed
@@ -339,7 +339,7 @@ setMethod("show", "mselm",
     if(!is.null(slot(object,"input")$weights))
       cat("Weighted number of observations:", object@size["nw.obs"], "\n")
     cat("Dimension of the response:", object@size["d"], "\n")
-    cat("Number of covariates:", object@size["p"], "(includes constant term)\n")
+    cat("Number of covariates:", object@size["p"], "(counting constant term)\n")
     cat("Number of parameters:", object@size["n.param"], "\n")
     cat("Family:", slot(object, "family"),"\n")
     fixed <- slot(object,"param")$fixed

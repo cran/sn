@@ -1,5 +1,13 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+Version 1.6-0 (2020-03-28)
+New intialization technique for numerical search of MLE when function selm is 
+called with family="ST". This is performed by the new functions st.prelimFit 
+and mst.prelimFit, with the aid of galton_moors2alpha_nu. Related new functions
+of more general interest are: fournum, pprodn2, pprodt2, qprodt2. Additional
+news: an improved version of function profile.selm; improved coding of some
+internal functions.
+
 Version 1.5-5 (2020-01-30)
 In sn.infoMv, new argument at.MLE is introduced. Arguments of selm are updated
 to match changes in R. Fix a bug in dsn when called with a non-scalar argument

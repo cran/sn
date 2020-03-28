@@ -8,6 +8,7 @@
 \alias{vech2mat}
 \alias{duplicationMatrix}
 \concept{matrix operator}
+\concept{duplication matrix}
 
 \title{vech and other matrix operators}
 
@@ -36,7 +37,7 @@ by the lower triangular portion of the matrix, including the diagonal;
 usually, this only makes sense for a symmetric matrix of numeric values. 
 If \code{v=vech(M)} where \code{M} is a symmetric numeric matrix, 
 \code{vech2mat(v)} performs the inverse operation and returns the original 
-matrix code{M}; this explain the requirement on \code{length(v)}.
+matrix \code{M}; this explain the requirement on \code{length(v)}.
 For a positive integer \code{n}, \code{D=duplicationMatrix(n)} is a matrix 
 of dimension \code{(n^2, n*(n+1)/2)} such that \code{D \%*\% vech(M)} returns 
 the \code{vec}-form of a symmetric matrix \code{M} of 
