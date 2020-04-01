@@ -364,7 +364,7 @@ can be extracted with \code{slot(obj, "opt.method")}; inspection of this
 component can be useful in problematic cases.
 Be aware that  occasionally \code{optim} and \code{nlminb} declare successful
 completion of a regular minimization problem at a point where the Hessian 
-matrix is not positive-definite. Two cases of this sort are presented in the 
+matrix is not positive-definite. An example of this sort is presented in the 
 final portion of the examples below.  
 }
 
@@ -401,7 +401,7 @@ data(ais)
 m1 <- selm(log(Fe) ~ BMI + LBM, family="SN", data=ais)
 print(m1)
 summary(m1)
-s<- summary(m1, "DP", cov=TRUE, cor=TRUE)
+s <- summary(m1, "DP", cov=TRUE, cor=TRUE)
 plot(m1)
 plot(m1, param.type="DP")
 logLik(m1)
@@ -416,8 +416,9 @@ data(barolo)
 attach(barolo)
 A75 <- (reseller=="A" & volume==75)
 logPrice <- log(price[A75],10) 
-m <- selm(logPrice ~ 1, family="ST")
+m <- selm(logPrice ~ 1, family="ST", opt.method="Nelder-Mead")
 summary(m)
+summary(m, "DP")
 plot(m, which=2, col=4, main="Barolo log10(price)")
 # cfr Figure 4.7 of Azzalini & Capitanio (2014), p.107
 detach(barolo)
@@ -443,16 +444,12 @@ m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
 print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # test for symmetry
 #
 \donttest{
-# illustrate final passage of 'Warning' section above:
+# illustrate the final passage of 'Cautionary notes' section above:
 # the execution of the next selm command is known to produce warning messages
 # although the optimizer declares successful convergence
 m31 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais)
 # Warning message...
 slot(m31, "opt.method")$convergence   # a 0 value indicates success
-# the next case is similar
-m32 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais, opt.method="BFGS")
-# Warning message...
-slot(m32, "opt.method")$convergence
 }
 }
 

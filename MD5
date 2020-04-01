@@ -1,8 +1,8 @@
-729ff99a9d16fb3a0907319c150dcb58 *DESCRIPTION
+5970695e7274ccacef799692749e3f42 *DESCRIPTION
 003ff65ad8a50f394e9d4dc777d4a978 *NAMESPACE
-b6ffe32678d313deed10648fc2c720ad *NEWS
+0075043166ec2a5199829f2e3a25786a *NEWS
 30e14cddd32133a65594c5c850473b5b *R/sn-funct.R
-bb38ea86a63499709d9ba87c6fcc651f *R/sn_S4.R
+d93bbd30b5f3a0b2ff94a27f7b0b1053 *R/sn_S4.R
 fce63a3a3fcaedc7dfb5abd59d49ff5f *R/zzz.R
 d3ed75f6831cc82d658c8ad1ea1c6d21 *data/ais.rda
 7e3b707d3089dc78416cfcf45294140b *data/barolo.rda
@@ -46,7 +46,7 @@ cbfc94c36e7e1393b566e2bcf7a9e37a *man/predict.selm.Rd
 792d26be992fcae3d65ad6d680551383 *man/residuals.selm.Rd
 cc3dc14383601c9fa0bf8d1196ed8049 *man/sd.Rd
 e5ebae18ba50e5358fc2a9ae857c9ad9 *man/selm-class.Rd
-1b5b3283ed5959eff3a358274e040325 *man/selm.Rd
+19e3304d93cd23d6051cb2be1cfdc3e7 *man/selm.Rd
 cf66c36d30f11225d8da848744b183ca *man/selm.fit.Rd
 b8a203fe4dc07234b60ccfdc8d97dcee *man/sn-package.Rd
 076f880a91b013ab11e03d60c8287ef8 *man/sn-st.cumulants.Rd
