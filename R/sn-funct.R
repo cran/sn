@@ -258,7 +258,7 @@ pmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, tau=0,
   Obig <- matrix(rbind(c(1,-delta), cbind(-delta,Ocor)), d+1, d+1)
   x <- if (is.vector(x)) matrix(x, 1, d) else data.matrix(x)
   if (is.vector(xi)) xi <- outer(rep(1, nrow(x)), as.vector(matrix(xi,1,d)))
-  z0 <- cbind(tau, t(t(x - xi))/omega) 
+  z0 <- cbind(tau, t(t(x - xi)/omega))
   mnormt::pmnorm(z0, mean=rep(0,d+1), varcov=Obig, ...)/pnorm(tau) 
 }
 
