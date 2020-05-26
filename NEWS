@@ -1,14 +1,21 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+Version 1.6-2 (2020-05-26) 
+Fixed wrong computation of standard errors when a multivariate ST model was
+fitted with the constraint alpha=0; similar fix of function confint.
+Change of the algorithm used in rsn: the additive representation is now used
+both for 0 and for non-0 values of tau. Use of the vignette builder R.rsp.
+
 Version 1.6-1 (2020-04-01)
 Some minor changes in the selm function documentation.
 
 Version 1.6-0 (2020-03-28)
-New intialization technique for numerical search of MLE when function selm is 
+New intialization technique for numerical MLE search when function selm is 
 called with family="ST". This is performed by the new functions st.prelimFit 
-and mst.prelimFit, with the aid of galton_moors2alpha_nu. Related new functions
+and mst.prelimFit, with the aid of galton_moors2alpha_nu; the package quantreg
+is employed for preliminary linear predictor estimation. Related new functions
 of more general interest are: fournum, pprodn2, pprodt2, qprodt2. Additional
-news: an improved version of function profile.selm; improved coding of some
+facts: an improved version of function profile.selm; improved coding of some
 internal functions.
 
 Version 1.5-5 (2020-01-30)
@@ -20,20 +27,21 @@ Version 1.5-4 (2019-05-09)
 On request from the CRAN group, a modification is inserted to get around
 numerical problems arising in connection with use of OpenBLAS (version 0.3.5).
 For plotting of multivariate SECdistr when 'range' is not supplied and 'data' 
-is not-NULL, calculation of plotting range has been modified. Proper handling
-of the 'name' argument of marginalSECdistr when the result is a univariate
-distribution.
+is non-NULL, calculation of the plotting range has been modified. 
+Proper handling of the 'name' argument of marginalSECdistr when the result 
+is a univariate distribution.
 
 Version 1.5-3 (2018-11-08)
-In pst, improved implementation of Method 2; slight modification of automatic
-method selection when 'method=0'. Internal function qst_bounds introduced for
-better initial bracketing of ST quantiles; improved qst coding. In profile.selm 
-the selected parameter area does no longer need to include the MLE/MPLE point.
-In sn.infoMv removed bugs in the stage of parameter parsing, which prevented 
-computing the expected information matrix. In internal functions st.pdev.gh 
-and mst.pdev.grad, improved computation of 'nu' component of logLik gradient, 
-yielding faster fitting of ST models. Improved handling of arguments of
-sn.infoMv. Improved documentation of modeSECdistr and coding of modeSECdistrMv.
+In pst, improved implementation of Method 2; slight modification of the
+automatic selection method when 'method=0'. Internal function qst_bounds
+introduced for better initial bracketing of ST quantiles; improved qst coding.
+In profile.selm the selected parameter area does no longer need to include the
+MLE/MPLE point. In sn.infoMv removed bugs in the stage of parameter parsing,
+which prevented computing the expected information matrix. In internal
+functions st.pdev.gh and mst.pdev.grad, improved computation of 'nu' component
+of logLik gradient, yielding faster fitting of ST models. Improved handling of
+arguments of sn.infoMv. Improved documentation of modeSECdistr and coding of
+modeSECdistrMv.
 
 Version 1.5-2 (2018-04-24)
 Improved checking of input arguments to lower level fitting procedures (those 

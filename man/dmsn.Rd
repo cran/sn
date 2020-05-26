@@ -55,9 +55,9 @@ rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha,  tau=0, dp=NULL)
 \item{log}{logical (default value: \code{FALSE}); 
   if \code{TRUE}, log-densities are returned.}
 
-\item{...}{
-  additional parameters passed to \code{pmnorm}.}
-}
+\item{...}{additional parameters passed to \code{\link[mnormt]{pmnorm}}.}
+
+} % end arguments
 
 \value{
 A vector of density values (\code{dmsn}) or of probabilities
@@ -110,8 +110,8 @@ The multivariate skew-normal distribution.
 
 }
 
-\seealso{\code{\link{dsn}},  \code{\link{dmst}}, \code{\link[mnormt]{dmnorm}},
-  \code{\link{op2dp}},  \code{\link{cp2dp}}}
+\seealso{\code{\link{dsn}},  \code{\link{dmst}},  \code{\link[mnormt]{pmnorm}},
+         \code{\link{op2dp}},  \code{\link{cp2dp}}}
 
 \examples{
 x <- seq(-3,3,length=15)

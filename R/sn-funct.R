@@ -168,34 +168,34 @@ qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08,
   names(q) <- names(p)
   return(q)
 }
-#
-rsn <- function(n=1, xi=0, omega=1, alpha=0, tau=0, dp=NULL)
-{
-  if(!is.null(dp)) {
-    if(!missing(alpha)) 
-      stop("You cannot set both 'dp' and component parameters")        
+  
+rsn <- function (n = 1, xi = 0, omega = 1, alpha = 0, tau = 0, dp = NULL) 
+{# since version 1.6-2 (2020): use transformation/additive method throughout
+  if (!is.null(dp)) {
+    if (!missing(alpha)) 
+        stop("You cannot set both 'dp' and the component parameters")
     xi <- dp[1]
     omega <- dp[2]
     alpha <- dp[3]
-    tau <- if(length(dp)>3) dp[4] else 0
-    }
+    tau <- if (length(dp) > 3) dp[4] else 0
+  }  
+  delta <- alpha/sqrt(1 + alpha^2)
   if(tau == 0) {
-    u1 <- rnorm(n)
-    u2 <- rnorm(n)
-    id <- (u2 > alpha*u1)
-    u1[id] <- (-u1[id])
-    z <- u1
-    }
-  else { # for ESN use transformation method
-    delta <- alpha/sqrt(1+alpha^2)
-    truncN <- qnorm(runif(n, min=pnorm(-tau), max=1))
+    tn <- matrix(rnorm(2*n), 2, n,  byrow = FALSE)
+    chi <- c(abs(tn[1,]))
+    nrv <- c(tn[2,])
+    z <- delta * chi + sqrt(1 - delta^2) * nrv
+  } else {
+    # rs <<- .Random.seed
+    truncN <- qnorm(runif(n, min= pnorm(-tau), max=1))
+    # .Random.seed <<- rs
     z <- delta * truncN + sqrt(1-delta^2) * rnorm(n)
-    }
-  y <- as.vector(xi+omega*z)
-  attr(y, "family") <- "SN"
-  attr(y, "parameters") <- c(xi,omega,alpha,tau)
-  return(y)
   }
+  y <- as.vector(xi + omega * z)
+  attr(y, "family") <- "SN"
+  attr(y, "parameters") <- c(xi, omega, alpha, tau)
+  return(y)
+}
 
 dmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha,
                  tau=0, dp=NULL, log=FALSE)
@@ -261,7 +261,7 @@ pmsn <- function(x, xi=rep(0,length(alpha)), Omega, alpha, tau=0,
   z0 <- cbind(tau, t(t(x - xi))/omega) 
   mnormt::pmnorm(z0, mean=rep(0,d+1), varcov=Obig, ...)/pnorm(tau) 
 }
-
+ 
 rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
 {# generates SN_d(..) variates using the additive (=transformation) method
   # if(!(missing(alpha) & missing(Omega) & !is.null(dp)))
@@ -276,10 +276,12 @@ rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
         } 
      }
   else dp0 <- list(xi=xi, Omega=Omega, alpha=alpha, tau=tau)
-  if(any(abs(dp0$alpha) == Inf)) stop("Inf's in alpha are not allowed")
+  if(any(is.infinite(dp0$alpha))) stop("Inf's in alpha are not allowed")
   lot <- dp2cpMv(dp=dp0, family="SN", aux=TRUE)
   d <- length(dp0$alpha)
-  y <- matrix(rnorm(n*d), n, d) %*% chol(lot$aux$Psi) # each row is N_d(0,Psi)
+  # rs <<- .Random.seed
+  y <- matrix(rnorm(n*d), n, d, byrow=TRUE) %*% chol(lot$aux$Psi) # N_d(0,Psi)
+  # .Random.seed <<- rs  
   if(dp0$tau == 0)    
     truncN <- abs(rnorm(n))  
   else 
@@ -293,7 +295,7 @@ rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
   return(y)
 }
 
-#
+#---
 
 dst <-  function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, log=FALSE)
 { 
@@ -316,25 +318,26 @@ dst <-  function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, log=FALSE)
     2 * pdf * cdf / omega
 }
 
-
 rst <- function (n=1, xi = 0, omega = 1, alpha = 0, nu=Inf, dp=NULL)
 { 
     if(!is.null(dp)) {
      if(!missing(alpha)) 
-        stop("You cannot set both component parameters and dp")
+        stop("You cannot set both 'dp' and the component parameters")
      xi <- dp[1]
      omega <- dp[2]
      alpha <- dp[3]
      nu <- dp[4]
     }
+  # rs <<- .Random.seed
   z <- rsn(n, 0, omega, alpha)
   if(nu < Inf) {  
+    # .Random.seed <<- rs  
     v <- rchisq(n,nu)/nu
     y <- z/sqrt(v) + xi
     }
     else y <- z + xi
   attr(y, "family") <- "ST"
-  attr(y, "parameters") <- c(xi,omega,alpha,nu)
+  attr(y, "parameters") <- c(xi, omega, alpha, nu)
   return(y)
 }
 
@@ -569,11 +572,11 @@ rmst <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL)
       alpha <- dp$alpha
       nu <- dp$nu
      }  
-  if(any(abs(alpha) == Inf)) stop("Inf's in alpha are not allowed")
+  if(any(is.infinite(alpha))) stop("Inf's in alpha are not allowed")
   d <- length(alpha)
-  x <- if(nu==Inf) 1 else rchisq(n,nu)/nu
-  z <- rmsn(n, rep(0,d), Omega, alpha)
-  y <- t(xi+ t(z/sqrt(x)))
+  z <- rmsn(n, rep(0, d), Omega, alpha)
+  v <- if(nu==Inf) 1 else  rchisq(n,nu)/nu 
+  y <- t(xi+ t(z/sqrt(v)))
   attr(y, "family") <- "ST"
   attr(y, "parameters") <- list(xi=xi, Omega=Omega, alpha=alpha, nu=nu)
   return(y)
@@ -710,16 +713,20 @@ qsc <- function(p, xi=0, omega=1, alpha=0, dp=NULL)
 rsc <- function(n=1, xi=0, omega=1, alpha=0, dp=NULL) {
   if(!is.null(dp)){
      if(!missing(alpha)) 
-       stop("You cannot set both 'dp' and component parameters")
+       stop("You cannot set both 'dp' and the component parameters")
     xi <- dp[1]
     omega <- dp[2]
     alpha <- dp[3]
   }
-  y <- xi + rsn(n, 0, omega, alpha)/abs(rnorm(n))
+  # rs <<- .Random.seed
+  z <- rsn(n, 0, omega, alpha)
+  #.Random.seed <<- rs  
+  y <- xi + z/abs(rnorm(n))
   attr(y, "family") <- "SC"
   attr(y, "parameters") <- c(xi, omega, alpha)
   return(y) 
 }
+
 
 sn.cumulants <- function(xi = 0, omega = 1, alpha = 0, tau=0,  dp=NULL, n=4)                        
 {
@@ -946,18 +953,19 @@ summary.SECdistrUv <- function(object, cp.type="auto", probs)
 {
   cp.type <- match.arg(tolower(cp.type), c("proper", "pseudo", "auto"))
   family <- slot(object,"family")
-  lc.family <- tolower(family)
+  lc.family <- lc.family0 <- tolower(family)
   name <- slot(object,"name")
-  dp  <- slot(object,"dp") 
+  dp <- dp0 <- slot(object,"dp") 
   # op <- dp2op(dp, family)
   if(family=="ST" || family=="SC") { if(cp.type=="auto") 
-    cp.type <- if(family == "SC" | dp[4] <= 4) "pseudo" else "proper" }  
-  if(family=="SN" || family=="ESN") cp.type <- "proper"  
-  cp <- dp2cpUv(dp, family, cp.type)
+    cp.type <- if(family == "SC" | dp[4] <= 4) "pseudo" else "proper" 
+    if(family=="SC") {dp <- c(dp, 1); lc.family <- "st" }  }
+  if(family=="SN" || family=="ESN") cp.type <- "proper" 
+  cp <- dp2cpUv(dp, lc.family, cp.type)
   if(is.null(cp)) stop('Stop. Consider using cp.type=="pseudo"')
   if(missing(probs)) probs <- c(0.05, 0.25, 0.50, 0.75, 0.95)
   if(lc.family == "esn") lc.family <- "sn"
-  q.fn <- get(paste("q",lc.family, sep=""), inherits = TRUE)
+  q.fn <- get(paste("q", lc.family, sep=""), inherits = TRUE)
   q <- q.fn(probs, dp=dp)
   names(q) <- format(probs)
   cum <- switch(lc.family,
@@ -967,13 +975,15 @@ summary.SECdistrUv <- function(object, cp.type="auto", probs)
            )
   std.cum <- c(gamma1=cum[3]/cum[2]^1.5, gamma2=cum[4]/cum[2]^2)
   oct <- q.fn(p=(1:7)/8, dp=dp)
-  mode <- modeSECdistrUv(dp, family)
-  alpha<- as.numeric(dp[3])
+  mode <- modeSECdistrUv(dp, lc.family)
+  alpha <- as.numeric(dp[3])
   delta <- delta.etc(alpha)
   q.measures <- c(bowley=(oct[6]-2*oct[4]+oct[2])/(oct[6]-oct[2]),
                   moors=(oct[7]-oct[5]+oct[3]-oct[1])/(oct[6]-oct[2]))
+  if(family== "SC" & lc.family=="st") cp <- cp[-length(cp)]
+  if(family== "SC" & lc.family=="st") dp <- dp[-length(dp)]
   aux <- list(delta=delta, mode=mode, quantiles=q, 
-              std.cum=std.cum, q.measures=q.measures)
+              std.cum=std.cum, q.measures=q.measures)                                         
   new("summary.SECdistrUv", dp=dp, family=family, name=name,   
       cp=cp, cp.type=cp.type, aux=aux)
 }
@@ -1218,7 +1228,6 @@ mst.dp2cp <- function(dp, cp.type="proper", fixed.nu=NULL, symmetr=FALSE,
   delta <- lot$delta
   delta.star <- lot$delta.star
   alpha.star <- lot$alpha.star
-  comp.names <- colnames(dp$Omega)
   names(delta) <- comp.names  
   mu0 <- b(nu+a[1]) * delta * omega
   names(mu0) <- comp.names
@@ -1371,8 +1380,8 @@ msn.cp2dp <- function(cp, silent=FALSE) {
   return(dp)
   }
 
-st.dp2cp <- 
-function(dp, cp.type="proper", fixed.nu=NULL, jacobian=FALSE, upto=NULL) 
+st.dp2cp <- function(dp, cp.type="proper", fixed.nu=NULL, symmetr=FALSE, 
+              jacobian=FALSE, upto=NULL) 
 {
   if(any(is.na(dp))) stop("NA's in argument 'dp'")
   if(!(cp.type %in% c("proper", "pseudo"))) stop("invalid cp.type") 
@@ -1389,34 +1398,39 @@ function(dp, cp.type="proper", fixed.nu=NULL, jacobian=FALSE, upto=NULL)
   delta <- delta.etc(alpha)
   mu.z <- function(delta, nu) delta*b(nu)
   mu <- dp[1] + dp[2]* mu.z(delta, nu+a[1])
+  rv.comp <- c(rep(TRUE, upto-1), rep(FALSE, 4-upto))
+  param.type <- switch(cp.type, proper="CP", pseudo="pseudo-CP")
+  cp.names <- param.names(param.type, "ST", p, names(beta1), rv.comp)
   cp <- c(mu, beta1)
+  names(cp) <- cp.names[1:p]
   if(upto > 1) {
     kappa2 <- function(delta,nu) nu/(nu-2) - mu.z(delta,nu)^2
     sigma <- omega * sqrt(kappa2(delta, nu+a[2]))
     cp <- c(cp, sigma)
+    names(cp) <- cp.names[1:(p+1)]
     }
-  if(upto > 2) {
+  if(upto > 2 & ! symmetr) {
     g1 <- st.gamma1(delta, nu+a[3])
     cp <- c(cp, g1)
+    names(cp) <- cp.names[1:(p+2)]
     }
-  if(upto > 3) { 
+  if(upto > 3 & is.null(fixed.nu)) { 
     g2 <- st.gamma2(delta, nu+a[4])
-    cp <- c(cp, g2)}
-  rv.comp <- c(rep(TRUE,upto-1), rep(FALSE, 4-upto))
-  param.type <- switch(cp.type, proper="CP", pseudo="pseudo-CP")
-  names(cp) <- param.names(param.type, "ST", p, x.names=names(beta1), rv.comp)
+    cp <- c(cp, g2)
+    names(cp) <- cp.names
+    }
   if(!is.null(fixed.nu) && upto==4) cp <- cp[-length(cp)]
   if(jacobian && (nu+a[3] > 3)) {
     u <- function(nu) 0.5*(1/nu + digamma((nu-1)/2) - digamma(nu/2)) 
     Ddelta <- 1/(1+alpha^2)^1.5
     Dkappa2.nu <- function(delta,nu) 
       (-2)*(1/(nu-2)^2 + mu.z(delta,nu)^2 * u(nu))
-    Dg1.delta <- function(delta,nu) { # derivative di gamma1 wrt delta
+    Dg1.delta <- function(delta,nu) { # derivative of gamma1 wrt delta
       k2 <- kappa2(delta,nu)
       tmp <- nu/(nu-2)-delta^2*(nu-2*b(nu)^2*(nu-2))    
       (3*b(nu) *nu *tmp)/(k2^2.5 * (nu-2)*(nu-3))
       }
-    Dg1.nu <-  function(delta,nu) {# derivative di gamma1 wrt nu
+    Dg1.nu <-  function(delta,nu) {# derivative of gamma1 wrt nu
       k1 <- mu.z(delta,nu)
       k2 <- kappa2(delta,nu)
       Dk2.nu <- Dkappa2.nu(delta,nu)
@@ -1424,13 +1438,13 @@ function(dp, cp.type="proper", fixed.nu=NULL, jacobian=FALSE, upto=NULL)
        + k1/k2^1.5*(-3*(3-delta^2)/(nu-3)^2 + 6/(nu-2)^2 + 4*k1^2*u(nu))
        -3*g1*Dk2.nu/(2*k2))
        }
-    Dg2.delta <- function(delta,nu) {# derivative di gamma2 wrt delta
+    Dg2.delta <- function(delta,nu) {# derivative of gamma2 wrt delta
       k1 <- mu.z(delta, nu)
       k2 <- kappa2(delta,nu)
       4*b(nu)^2*delta/k2 * (g2 + 3 -(2*(3-2*delta^2)*nu/(nu-3)
                  -3*nu/(nu-2)+3*k1^2)/k2)
       }
-    Dg2.nu <- function (delta, nu) {# derivative di gamma2 wrt nu
+    Dg2.nu <- function (delta, nu) {# derivative of gamma2 wrt nu
       k1 <- mu.z(delta, nu)
       k2 <- kappa2(delta,nu)
       b. <- b(nu)
@@ -1460,7 +1474,7 @@ function(dp, cp.type="proper", fixed.nu=NULL, jacobian=FALSE, upto=NULL)
       Dcp.dp[p+3,p+3] <- Dg2.nu(delta, nu+a[4])
       }
     attr(cp, "jacobian") <- Dcp.dp
-    }
+    }    
   return(cp)
 }
 
@@ -1483,6 +1497,7 @@ st.gamma1 <- function(delta, nu)
   if(length(nu) > 1) stop("'nu' must be a single value")
   if(nu <= 0) stop("'nu' must be positive")
   out <- rep(NaN, length(delta)) 
+  names(out) <- names(delta)
   ok <- (abs(delta) <= 1) 
   if((nu >= 3) & (sum(ok) > 0)) {
     alpha <- delta[ok]/sqrt(1 - delta[ok]^2)
@@ -1497,6 +1512,7 @@ st.gamma2 <- function(delta, nu)
   if(length(nu) > 1) stop("'nu' must be a single value")
   if(nu <= 0) stop("'nu' must be positive")
   out <- rep(NaN, length(delta)) 
+  names(out) <- names(delta)
   ok <- (abs(delta) <= 1)
   if((nu >= 4) & (sum(ok) > 0)) {
     alpha <- delta[ok]/sqrt(1 - delta[ok]^2)
@@ -1822,7 +1838,7 @@ function(object, fixed.comp, fixed.values, name, drop=TRUE)
 delta.etc <- function(alpha, Omega=NULL) 
 { 
   inf <- which(abs(alpha) == Inf)
-  if(is.null(Omega)){ # case d=1
+  if(is.null(Omega) | length(Omega) == 1){ # case d=1
     delta <- alpha/sqrt(1+alpha^2)
     delta[inf] <- sign(alpha[inf])
     return(delta)
@@ -1833,9 +1849,9 @@ delta.etc <- function(alpha, Omega=NULL)
     if(length(inf) == 0) { # d>1, standard case
       Ocor.alpha <- as.vector(Ocor %*% alpha)
       alpha.sq <- sum(alpha * Ocor.alpha)
-      delta <- Ocor.alpha/sqrt(1+alpha.sq)
+      delta <- Ocor.alpha/sqrt(1 + alpha.sq)
       alpha. <- sqrt(alpha.sq)
-      delta. <- sqrt(alpha.sq/(1+alpha.sq))
+      delta. <- sqrt(alpha.sq/(1 + alpha.sq))
       }
      else { # d>1, case with some abs(alpha)=Inf
        if(length(inf) > 1) 
@@ -2004,11 +2020,14 @@ selm.fit <- function(x, y, family="SN", start=NULL, w, fixed.param=list(),
       y <- as.vector(y) 
       if(family == "SN") {
         npar <- p + 2 - as.numeric(symmetr)
-        if(symmetr) { # SN with alpha=0 is Gaussian case
+        if(symmetr) { # SN with alpha=0 is the Gaussian distribution
           ls <- lm.wfit(x, y, w) # note: offset already subtracted if any
           res <- residuals(ls)
           s2 <- sum(w*res^2)/nw
-          param <- c(coef(ls), sqrt(s2))
+          dp <- cp <- param <- c(coef(ls), sqrt(s2))
+          x.names <- if(p==1) NULL else colnames(x)[-1]
+          names(dp) <- param.names("DP", "SN", p, x.names)[1:npar]
+          names(cp) <- param.names("CP", "SN", p, x.names)[1:npar]
           j <- rbind(cbind(t(x) %*% (w*x)/s2, 0), c(rep(0,p), 2*nw/s2))
           j.inv <- pd.solve(j)
           se <- sqrt(diag(j.inv))
@@ -2016,11 +2035,13 @@ selm.fit <- function(x, y, family="SN", start=NULL, w, fixed.param=list(),
                    asyvar.dp=j.inv, asyvar.cp=j.inv, se.dp=se, se.cp=se,
                    aux=NULL)
           logL <- (-0.5*nw)*(log(2*pi*s2) +1)
-          fit <- list(cp=param, dp=param, dp.complete=c(param,0), 
+          fit <- list(cp=cp, dp=dp, dp.complete=c(dp,0), 
                       opt.method=list(ls$qr), logL=logL)  
           boundary <- FALSE
           fit$opt.method <- list(method="least_squares", called.by= "lm.wfit")
           mu0 <- 0
+          fixed.comp <- p + 2
+          fixed.value <- 0
           }
         else { # proper SN case 
         cp <- if(is.null(start)) NULL else dp2cpUv(start, "SN")
@@ -2032,39 +2053,35 @@ selm.fit <- function(x, y, family="SN", start=NULL, w, fixed.param=list(),
         info <- if(boundary) NULL else 
           sn.infoUv(dp=fit$dp, x=x, y=yInfo, w=w, penalty=penalty)
         }}
-      if(family == "ST") {
+      if(family == "ST" | family == "SC") {
         fixed.nu <- fixed.param$nu  
-        npar <- p + 2 + as.numeric(is.null(fixed.nu)) - as.numeric(symmetr)
+        if(family == "SC") fixed.nu <- 1
+        fixed.comp <- fixed.value <- NULL
+        if(symmetr) {
+          fixed.comp <- p+2 
+          fixed.value <- 0
+          } 
+        if(!is.null(fixed.nu)) {
+          fixed.comp <- c(fixed.comp, p+3)
+          fixed.value <- c(fixed.value, fixed.nu)
+          }
+        # free: the free components of (full) DP, those not in fixed.comp
+        free <- setdiff(1:(p+3), fixed.comp)
+        npar <- length(free)
         fit <- st.mple(x, y, dp=start, w, fixed.nu, symmetr, penalty, trace,
            contr$opt.method, contr$control)
-        dp <- fit$dp
-        cp <- st.dp2cp(dp, cp.type="proper", fixed.nu=fixed.nu, 
-                 upto=4-as.numeric(!is.null(fixed.nu)))
-        p_cp <- st.dp2cp(dp, cp.type="pseudo", fixed.nu=fixed.nu, jacobian=TRUE)
-        fit$cp <- cp[1:npar]     
-        fit$p_cp <- p_cp[1:npar]
-        Dpcp.dp <- attr(p_cp, "jacobian")[1:npar, 1:npar]
-        attr(p_cp, "jacobian") <- NULL
+        dp <- fit$dp   
+        dp.complete <- fit$dp.complete
+        fit$cp <- cp <- st.dp2cp(dp.complete, cp.type="proper")[free]
+        pseudo_cp <- st.dp2cp(dp.complete, cp.type="pseudo", jacobian=TRUE)
+        fit$p_cp <- p_cp <- pseudo_cp[free]
+        Dpcp.dp <- attr(pseudo_cp, "jacobian")[free, free] 
         boundary <- fit$boundary
         nu <- if(is.null(fixed.nu)) dp[npar] else fixed.nu
-        mu0 <- if(nu <= 1) NA else 
-          st.dp2cp(dp, fixed.nu=fixed.nu, upto=1)[1] - dp[1] 
+        mu0 <- if(nu <= 1) NA else { if(symmetr) 0 else
+                  st.dp2cp(dp.complete, upto=1)[1] - dp[1] }
         info <- if(boundary)  NULL  else 
-          st.infoUv(dp=fit$dp, NULL, x, yInfo, w, fixed.nu, symmetr, penalty) 
-        }
-      if(family == "SC") {
-        npar <- p + 2  - as.numeric(symmetr)
-        fit <- st.mple(x, y, dp=start, w, fixed.nu=1, symmetr, penalty, trace,
-                       contr$opt.method, contr$control)
-        fit$cp <- NULL
-        p_cp0 <- st.dp2cp(fit$dp, cp.type="pseudo", fixed.nu=1, jacobian=TRUE) 
-        fit$p_cp <- p_cp0[1:npar]
-        Dpcp.dp <- attr(p_cp0, "jacobian")[1:npar, 1:npar]
-        attr(p_cp0, "jacobian") <- NULL
-        boundary <- fit$boundary
-        mu0 <- NA
-        info <- if(boundary) NULL  else
-          st.infoUv(dp=fit$dp, x=x, y=yInfo, w=w, fixed.nu=1, symmetr=symmetr) 
+          st.infoUv(dp=fit$dp, NULL, x, yInfo, w, fixed.nu, symmetr, penalty)                
         }
       if(!boundary && family %in% c("ST","SC"))  {
         # 2018-04-24
@@ -2137,8 +2154,9 @@ selm.fit <- function(x, y, family="SN", start=NULL, w, fixed.param=list(),
         boundary <- fit$boundary
         dp <- fit$dp
         nu <- if(is.null(fixed.nu)) dp$nu else fixed.nu
-        mu0 <- if(nu <= 1) NA else as.vector(mst.dp2cp(dp, fixed.nu=fixed.nu,
-          symmetr=symmetr, upto=1)[[1]][1,] - dp[[1]][1,])
+        mu0 <- if(nu <= 1) NA else { if(symmetr) rep(0,d) else
+                  c(mst.dp2cp(dp, fixed.nu=fixed.nu, symmetr=symmetr, 
+                      upto=1)[[1]][1,] - dp[[1]][1,])}
         fit$cp <- mst.dp2cp(dp, cp.type="proper", fixed.nu, symmetr)
         fit$p_cp <- mst.dp2cp(dp, cp.type="pseudo", fixed.nu, symmetr)
         if(!boundary) info <- 
@@ -2202,33 +2220,36 @@ selm.fit <- function(x, y, family="SN", start=NULL, w, fixed.param=list(),
         z$fitted.dp <- save.f
         z$weights <- save.w
     }
-    if(!is.null(offset)) {
+  if(!is.null(offset)) {
       z$fitted.dp <- z$fitted.dp + offset
       r1 <- r1 + offset
       }
     # z$fitted.dp <- r1
-    if(length(fixed.param) > 0)  {
-        z$param$fixed <- fixed.param 
-        z$param$dp.complete <- fit$dp.complete } 
-      else z$param$fixed <- z$param$dp.complete<- list() 
-    return(z)
+  if(length(fixed.param) > 0)  {
+    z$param$fixed <- fixed.param 
+    if(d==1) 
+      z$param$fixed.terms <- list(fixed.comp=fixed.comp, fixed.value=fixed.value)
+    } else  z$param$fixed <- list()       
+  z$param$dp.complete <- fit$dp.complete 
+  return(z)
 }
 
 #---------------------------------------------------
 
 summary.selm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
 {
+  family <- slot(object,"family")
   fixed <- slot(object, "param")$fixed
-  if(length(fixed$alpha==0)>0 && fixed$alpha==0) {
+  if(length(fixed$alpha==0)>0 && fixed$alpha==0 & family=="ST") {
     param.type <- "DP"
-    note <- "param.type=DP has been set because of constraint alpha=0"
-    } else note <- ""
+    note <- "ST model with alpha=0 is summarized with param.type=DP"} 
+  else note <- ""
   lc.param.type <- tolower(param.type) 
   if(!(lc.param.type %in% c("cp", "op", "dp", "pseudo-cp")))
      stop(gettextf("unknown param.type '%s'", param.type), domain = NA)     
   param.type <- switch(lc.param.type, 
      "dp"="DP", "op"="OP", "cp"="CP", "pseudo-cp"="pseudo-CP")
-  family <- slot(object,"family")
+
   if(param.type=="pseudo-CP" && !(family %in% c("ST", "SC"))) 
     stop("pseudo-CP makes sense only for ST and SC families")
   if (!(family %in% c("SN","ST","SC"))) 
@@ -2244,12 +2265,12 @@ summary.selm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
   z <- param/se
   param.table <- cbind(param, se, z, 2*pnorm(-abs(z)))
   dimnames(param.table) <- list(names(param), 
-    c("estimate","std.err","z-ratio", "Pr{>|z|}"))
+    c("estimate", "std.err","z-ratio", "Pr{>|z|}"))
   resid <- residuals(object, lc.param.type)
   aux <- list()
   aux$param.cov <- if(cov) param.var else NULL
   aux$param.cor <- if(cor) cov2cor(param.var) else NULL
-  out <- new("summary.selm", call=slot(object,"call"), 
+  new("summary.selm", call=slot(object,"call"), 
            family = slot(object, "family"), 
            logL = slot(object, "logL"),
            method=slot(object, "method"),
@@ -2261,8 +2282,7 @@ summary.selm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
            aux = aux,
            boundary=slot(object, "param")$boundary,
            size=object@size,
-           note=note)
-   out        
+           note=note)      
 }
 
 
@@ -2319,7 +2339,7 @@ summary.mselm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
      stop(gettextf("unknown param.type '%s'", param.type), domain = NA)
   param.type <- switch(lc.param.type, 
      "dp"="DP", "op"="DP", "cp"="CP", "pseudo-cp"="pseudo-CP")
-  # OP not yet implemented, so far re-directed to DP     
+  # OP not yet implemented, currently re-directed to DP     
   family <- slot(object, "family")
   method <- slot(object, "method")
   if(param.type=="pseudo-CP" & !(family %in% c("ST","SC"))) 
@@ -2376,7 +2396,8 @@ summary.mselm <- function(object, param.type="CP", cov=FALSE, cor=FALSE)
            control = slot(object, "control"),
            aux = aux,
            boundary=slot(object, "param")$boundary,
-           size=slot(object, "size"))
+           size=slot(object, "size"),
+           note=note)
    out        
 }
 
@@ -3226,9 +3247,11 @@ st.infoUv <- function(dp=NULL, cp=NULL, x=NULL, y, w, fixed.nu=NULL,
 
 param.names <- function(param.type, family="SN", p=1, x.names=NULL, rv.comp)
 {# NB: x.names= names of covariates except intercept, having length (p-1); 
- # rv.comp=random variable components (those not part of the linear predictor)
-  if(!(param.type %in% c("DP","CP","pseudo-CP"))) stop("invalid param.type")
-  if(!(family %in% c("SN", "ESN", "ST", "SC")))  stop("unknown family")
+ # rv.comp = random variable components, those not in the linear predictor.
+  param.type <- toupper(param.type)
+  family <- toupper(family)
+  if(!(param.type %in% c("DP","CP","PSEUDO-CP"))) stop("invalid param.type")
+  if(!(family %in% c("SN", "ESN", "ST", "SC"))) stop("unknown family")
   if(p > 1  && (length(x.names) < (p-1)))
     x.names <- outer("x", as.character(1L:(p-1)), paste, sep=".")
   if(param.type == "DP"){
@@ -3243,7 +3266,7 @@ param.names <- function(param.type, family="SN", p=1, x.names=NULL, rv.comp)
     if(family == "ESN") par.names <- c(par.names, "tau")
     if(family == "ST") par.names <- c(par.names, "gamma2")
     }
-  if(param.type == "pseudo-CP"){
+  if(param.type == toupper("pseudo-CP")){
     if(!(family %in% c("ST", "SC"))) 
       stop("pseudo-CP makes sense only for ST and SC families")
     name0 <-  if(p > 1) "(Intercept.CP~)" else "mean~"
@@ -3672,18 +3695,22 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
   alpha <- if(symmetr) rep(0,d) else dp$alpha
   eta   <- alpha/omega
   nu <- if(is.null(fixed.nu)) dp$nu else fixed.nu 
-  dp1 <- list(beta=beta, Omega=Omega, alpha=alpha, nu=nu)
+  dp.full <- dp1  <- list(beta=beta, Omega=Omega, alpha=alpha, nu=nu)
   Obar <- cov2cor(Omega)
   Obar.alpha <-  as.vector(Obar %*% alpha)
   alpha.star <- sqrt(sum(alpha * Obar.alpha)) # =\sqrt{\eta\T\Omega\eta}
   theta <- as.numeric(c(beta, vech(Omega), eta, nu))
-  vdp <- as.numeric(c(beta, vech(Omega), alpha, nu))
+  vdp <- as.numeric(c(beta, vech(Omega), alpha, nu))  # include fixed param
   penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
   H <- numDeriv::hessian(mst.logL, vdp, X=x, y=y, dp=TRUE, penalty=penalty.fn)
   J <- mst.theta.jacobian(theta, p=NCOL(x), d=NCOL(y))
-  s <- 1:(length(theta) - as.numeric(!is.null(fixed.nu)))
-  I.dp <- force.symmetry(-H[s,s])
-  J1 <- solve(J$Dtheta.dp[s,s])
+  # identify fixed components of parameter vector
+  fixed.comp <- if(symmetr) d*p+d2+(1:d) else NULL
+  if(!is.null(fixed.nu)) fixed.comp <- c(fixed.comp, length(vdp))
+  # free: the free components of vdp, i.e. those not in fixed.param
+  free <- setdiff(1:length(vdp), fixed.comp)
+  I.dp <- force.symmetry(-H[free ,free])
+  J1 <- solve(J$Dtheta.dp[free, free])
   I.theta <- force.symmetry(t(J1) %*% I.dp %*% J1)
   asyvar.dp <- pd.solve(I.dp, silent=TRUE)
   if(is.null(asyvar.dp)) { 
@@ -3694,13 +3721,14 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
     diags.dp <- sqrt(diag(asyvar.dp))
     se.beta <- matrix(diags.dp[1:(p*d)], p, d)
     se.diagOmega <- diags.dp[p*d + d2 +1 - rev(cumsum(1:d))]
-    se.alpha <- diags.dp[p*d +d2 +(1:d)]
-    se.dp <- list(beta=se.beta, diagOmega=se.diagOmega, alpha=se.alpha)
-    if(is.null(fixed.nu)) se.dp$nu<- diags.dp[p*d +d2 + d +1] 
+    se.dp <- list(beta=se.beta, diagOmega=se.diagOmega)
+    se.dp$alpha <- if(!symmetr) diags.dp[p*d +d2 +(1:d)] else NULL
+    se.dp$nu <- if(is.null(fixed.nu)) diags.dp[length(vdp)] else NULL
     }
   if(nu>4) {
     cp <- mst.dp2cp(dp, cp.type="proper", fixed.nu=fixed.nu, symmetr=symmetr)
-    I.cp <- force.symmetry(t(J$Dtheta.cp[s,s]) %*% I.theta %*% J$Dtheta.cp[s,s])
+    I.cp <- t(J$Dtheta.cp[free,free]) %*% I.theta %*% J$Dtheta.cp[free,free]
+    I.cp <- force.symmetry(I.cp)
     asyvar.cp <- pd.solve(I.cp, silent=TRUE)
     if(is.null(asyvar.cp)) { 
       se.cp <- list(NULL)  
@@ -3712,7 +3740,7 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
       # se.sigma <- se.Sigma/(2*sigma)
       se.gamma1 <- if(!symmetr)  diags.cp[p*d + d2 +(1:d)] else NULL
       se.cp <- list(beta=se.beta, var=se.diagSigma, gamma1=se.gamma1)
-      if(is.null(fixed.nu)) se.cp$gamma2 <- diags.cp[p*d +d2 + d +1] 
+      if(is.null(fixed.nu)) se.cp$gamma2 <- diags.cp[length(vdp)] 
       }} 
   else 
     I.cp <- asyvar.cp <- se.cp <- cp <- NULL  
@@ -3722,19 +3750,18 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
     Jp <- NULL
     }
   else {
-    vdp1 <- as.numeric(c(dp1[[1]], vech(dp1[[2]]), dp1[[3]], dp1[[4]]))
-    Jp <- numDeriv::jacobian(mst.vdp2vcp, vdp1, p=ncol(x), d=ncol(y), 
+    Jp <- numDeriv::jacobian(mst.vdp2vcp, vdp, p=ncol(x), d=ncol(y), 
             cp.type="pseudo")
-    asyvar.pcp <- (Jp[s,s]) %*% asyvar.dp %*% t(Jp[s,s])
+    asyvar.pcp <- (Jp[free,free]) %*% asyvar.dp %*% t(Jp[free,free])
     diags.pcp <- sqrt(diag(asyvar.pcp))
     se.beta <- matrix(diags.pcp[1:(p*d)], p, d)
     se.diagSigma <- diags.pcp[p*d + d2 +1 - rev(cumsum(1:d))]
     # se.sigma <- se.Sigma/(2*sigma)
     se.gamma1 <- if(!symmetr) diags.pcp[p*d + d2 +(1:d)] else NULL
     se.pcp <- list(beta=se.beta, var=se.diagSigma, gamma1=se.gamma1)
-    if(is.null(fixed.nu)) se.pcp$gamma2 <- diags.pcp[p*d +d2 + d +1] 
+    if(is.null(fixed.nu)) se.pcp$gamma2 <- diags.pcp[length(vdp)] 
     }
-  aux <- list(Dpseudocp.dp=Jp[s,s]) 
+  aux <- list(Info.theta=I.theta, Dpseudocp.dp=Jp[free,free]) 
   list(dp=dp, cp=cp, type=type, info.dp=I.dp, info.cp=I.cp, 
     asyvar.dp=asyvar.dp, asyvar.cp=asyvar.cp, asyvar.p_cp=asyvar.pcp,
     se.dp=se.dp, se.cp=se.cp, se.p_cp=se.pcp,  aux=aux)
@@ -4564,7 +4591,7 @@ print.summary.selm <- function(object)
       cat("\n", param.type, " residuals:\n", sep="")
       print(rq, digits = digits)
     }
-    param <- slot(obj,"param.table")
+    param <- slot(obj, "param.table")
     p <- obj@size["p"]
     cat("\nRegression coefficients\n")
     printCoefmat(param[1:p, ,drop=FALSE], digits = digits,  
@@ -4581,7 +4608,7 @@ print.summary.selm <- function(object)
       print(obj@aux$param.cov)
       } 
   invisible(object)
-  }
+}
 
 
 plot.mselm <- function (x, param.type="CP", which, caption, 
@@ -4745,6 +4772,7 @@ print.summary.mselm <-  function(object)
       cat("Fixed parameters:", fixed.char, "\n") }
     cat("Log-likelihood:", format(slot(obj,"logL"), nsmall=2), "\n")
     cat("Parameter type:", obj@param.type,"\n") 
+    if((note <- slot(object, "note")) != "") cat(paste("Note:", note, "\n"))
     if(obj@boundary) 
       cat("Estimates on/near the boundary of the parameter space\n")
     names <- dimnames(obj@scatter$matrix)[[1]]
@@ -5322,12 +5350,20 @@ confint.selm <- function(object, parm, level=0.95, param.type, tol=1e-3, ...)
   family <- slot(object, "family")
   object.name <- as.character(deparse(substitute(object)))
   if(missing(param.type)) {
-    if(family=="ST") ptype <- 
-      if(slot(object,"param")$dp["nu"]>4) "CP" else "pseudo-CP"
+    if(family=="ST") {
+      nu <- slot(object,"param")$dp["nu"]
+      if(is.na(nu) | is.null(nu)) nu <- slot(object, "param")$fixed$nu
+      ptype <- if(nu>4) "CP" else "pseudo-CP"
+      }
     param.type <- switch(family, "SN" = "CP", "ST"=ptype, "SC"="pseudo-CP")
     }
+  p <- slot(object, "size")["p"] 
   param <- coef(object, param.type)
   npar <- length(param)
+  x.names <- if(p>1)  names(param)[2:p] else NULL
+  par.names <- param.names(param.type, family, p, x.names)  
+  fixed.comp <- slot(object, "param")$fixed.terms$fixed.comp
+  names(param) <- if(is.null(fixed.comp)) par.names else par.names[-fixed.comp] 
   pnames <- names(param)
   if(missing(parm)) 
     {par.comp <- (1:npar); parm <- pnames}
@@ -5337,6 +5373,7 @@ confint.selm <- function(object, parm, level=0.95, param.type, tol=1e-3, ...)
     stop("parameter estimates on the boundary of the parameter space")
   namesCP <- c("(Intercept.CP)", "s.d.", "gamma1", "gamma2")
   namesDP <- c("(Intercept.DP)", "omega", "alpha", "nu")
+ 
   if(param.type=="DP" & length(intersect(parm, namesCP))>0 )
     stop("incompatible 'parm' and 'param.type'")
   if(param.type=="CP" & length(intersect(parm, namesDP))>0 )
@@ -5350,8 +5387,8 @@ confint.selm <- function(object, parm, level=0.95, param.type, tol=1e-3, ...)
   max.logL <- slot(object, "logL")
   if(family=="SN") {
     slant <- intersect(c("alpha", "gamma1"), parm)
-    check.alpha <- (length(slant) > 0 | param.type=="DP" & (1 %in% par.comp)) 
-    if(check.alpha) {
+    # check.alpha <- (length(slant) > 0 | param.type=="DP" & (1 %in% par.comp)) 
+    if(length(slant) > 0) {
       alpha.interv <- slot(object, "param")$alpha.interv
       if(is.null(alpha.interv) | length(which(alpha.interv[,1]==level))==0) {
         q <- qchisq(level, 1)
@@ -5386,28 +5423,36 @@ confint.selm <- function(object, parm, level=0.95, param.type, tol=1e-3, ...)
         c(alpha.sx, alpha.dx) else c(gamma1.sx, gamma1.dx)
       }   
     e <- rep(1, npar)
-    e[npar-1] <- 1/param[npar-1]
-    v <- diag(e) %*% vcov(object, param.type) %*% diag(e)
-    drop.last <- 1:(npar-1)
+    e[p+1] <- 1/param[p+1]
+    # v <- diag(e) %*% vcov(object, param.type) %*% diag(e)
+    vcov <- slot(object, "param.var")[[tolower(param.type)]]
+    v <- diag(e) %*% vcov %*% diag(e)              # avoid vcov() method
+    drop.last <- 1:(p+1)
     se <- sqrt(diag(v))[drop.last]
     if(param.type=="DP" & (prod(intervals[slant,]) < 0)) se[1]<- NA
     par0 <- param[drop.last]
-    par0[npar-1] <- log(par0[npar-1])
+    par0[p+1] <- log(par0[p+1])
     interv <- par0 + outer(se[drop.last], qnorm(lev2))
-    interv[npar-1,] <- exp(interv[npar-1,])
+    interv[p+1,] <- exp(interv[p+1,])
     if(length(slant) == 0) intervals[1:length(parm),] <- interv[par.comp,] 
-    else if(length(par.comp) > 1)
-    intervals[1:(length(parm)-1),] <- interv[par.comp[-length(par.comp)],]
+      else { if(length(par.comp) > 1)
+       intervals[1:(length(parm)-1),] <- interv[par.comp[-length(par.comp)],]}
     }
   if(family %in% c("ST", "SC")) {
     par0 <- param
-    par0[npar - c(0,2)] <- log(par0[npar - c(0,2)]) # log scale & tailweight
-    e <- rep(1, npar)
-    e[npar-c(0,2)] <- 1/param[npar-c(0,2)]
-    v <- diag(e) %*% vcov(object, param.type) %*% diag(e)
+    fixed.comp <- slot(object, "param")$fixed.terms$fixed.comp
+    free.comp <- setdiff(1:(p+3), fixed.comp)
+    positive.comp <- intersect(p + c(1,3) , free.comp)
+    free.pos <- which(free.comp %in% positive.comp)
+    par0[free.pos] <- log(par0[free.pos]) # log scale & tailweight
+    e <- rep(1, length(param))
+    e[free.pos] <- 1/param[free.pos]
+    # v <- diag(e) %*% vcov(object, param.type) %*% diag(e)   
+    vcov <- slot(object, "param.var")[[tolower(param.type)]]
+    v <- diag(e) %*% vcov  %*% diag(e)              # avoid vcov() method
     se <- sqrt(diag(v))
     interv <- par0 + outer(se, qnorm(lev2))
-    interv[npar-c(0,2),] <- exp(interv[npar-c(0,2),])
+    interv[free.pos,] <- exp(interv[free.pos,])
     intervals[,] <- interv[par.comp,]
     }
   intervals[,,drop=FALSE]

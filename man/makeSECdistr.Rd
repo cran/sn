@@ -81,9 +81,11 @@
   in the multivariate case), the distribution is of classical elliptical 
   type.
   
-  Among the admissible families, the \acronym{ESN} distribution is not,
-  strictly speaking, of \acronym{SEC} type, but it is nevertheless included 
-  because of its strong connection.
+  The \acronym{ESN} distribution is included here  as a members of the
+  \acronym{SEC} class, with a very slight extension of the original definition
+  of this class, since the only difference is the non-zero truncation point
+  of the unobserved component of the \code{(d+1)}-dimensional \acronym{EC} 
+  variable.
   }
   
 \value{In the univariate case, an object of class \code{SECdistrUv};

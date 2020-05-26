@@ -108,6 +108,15 @@ Capitanio (2014); the \acronym{ESN} variant is presented Section 2.2.
 See Section 2.3 for an historical account.   
 A multivariate version of the distribution is examined in Chapter 5.}
 
+\section{Details}{In version 1.6-2, the random number generation method 
+for \code{rsn} has changed;  the so-called transformation method 
+(also referred to as the \sQuote{additive representation}) has beeb adopted
+for all values of \code{tau}.
+Also, the code has been modified so that there is this form of consistency:
+provided \code{set.seed()} is reset similarly before calls, code like
+\code{rsn(5, dp=1:3)} and \code{rsn(10, dp=1:3)}, for instance, will start with 
+the same initial values in the longer sequence as in the shorter sequence.}
+
 \references{
 Azzalini, A. (1985).
   A class of distributions which includes the normal ones.

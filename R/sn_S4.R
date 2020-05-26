@@ -219,7 +219,7 @@ setMethod("show","summary.SECdistrMv",
 setClass("selm",
    representation(call="call", family="character",  logL="numeric", 
      method="character",
-     param="list", param.var="list",  size="vector", fixed.param="vector",
+     param="list", param.var="list",  size="vector",  
      residuals.dp="numeric", fitted.values.dp="numeric", control="list", 
      input="list", opt.method="list"),
    validity=function(object){
@@ -365,7 +365,8 @@ setClass("summary.mselm",
      method="character",
      param.type="character",  param.fixed="list",  resid="matrix",
      coef.tables="list", scatter="list", slant="list", tail="list",
-     control="list", aux="list", size="vector", boundary="logical"),
+     control="list", aux="list", size="vector", boundary="logical",
+     note="character"),
    validity=function(object) {
      if(!(object@family %in% c("SN","ST","SC","ESN"))) return(FALSE)
      TRUE
