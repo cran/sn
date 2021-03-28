@@ -14,9 +14,9 @@
       
 \description{Given a pair of (Galton-Bowley, Moors) measures of skewness and 
 kurtosis for a given sample, a pair of values  (\eqn{alpha}, \eqn{nu}) are
-found such that a skew-\emph{t} (ST) distribution with these slant and 
-tail-weight  parameter has  (Galton-Bowley, Moors) measures equal to the
-input values.
+found such that a skew-\emph{t} (\acronym{ST}) distribution with these slant 
+and tail-weight  parameter has its (Galton-Bowley, Moors) measures equal to 
+the input values.
 This function is mainly intended for internal package usage.
 }
 \usage{
@@ -29,7 +29,8 @@ galton_moors2alpha_nu(galton, moors, quick = TRUE, move.in = TRUE, verbose = 0,
   \item{moors}{a numeric value, representing a Moors measure}
   \item{quick}{a logical value; if \code{TRUE}, a quick mapping is performed}
   \item{move.in}{if the input values \code{(galton, moors)} are outside the 
-     feasible ST region, a suitable point within the feasible area is returned}
+     feasible \acronym{ST} region, a suitable point within the feasible area 
+     is returned}
   \item{verbose}{a numeric value which regulates the amount of printed detail}
   \item{abstol}{the tolerance value of the mapping, only relevant is
       \code{quick=FALSE}}
@@ -39,6 +40,7 @@ the Moors measures, see the documentation of \code{\link[sn]{fournum}}.
 The working of the mapping by described in Azzalini and Salehi (2020).
 }
 \value{a named vector of length two, with one or more descriptive attributes}
+
 \references{
 Azzalini, A. and Salehi, M. (2020).
 Some computational aspects of maximum likelihood estimation of the 

@@ -4,7 +4,7 @@
 %---------------------
 \name{zeta}
 \alias{zeta}
-\concept{Mills ratio}
+
 
 \title{Function \eqn{\log(2\,\Phi(x))}{log(2*Phi(x))} and its derivatives}
 
@@ -55,7 +55,7 @@ Abramowitz, M. and Stegun, I. A., editors (1964).
 Azzalini, A. and Capitanio, A. (1999).
   Statistical applications of the multivariate skew normal distribution.
   \emph{J.Roy.Statist.Soc. B} \bold{61}, 579--602. Full-length version 
-  available at \url{http://arXiv.org/abs/0911.2093}
+  available at \url{https://arXiv.org/abs/0911.2093}
      
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 
  \emph{The Skew-Normal and Related Families}. 
@@ -67,4 +67,6 @@ y <- zeta(2,seq(-20,20,by=0.5))
 for(k in 0:5) curve(zeta(k,x), from=-1.5, to=5, col = k+2, add = k > 0)
 legend(3.5, -0.5, legend=as.character(0:5), col=2:7, lty=1)
 }
+
 \keyword{math}
+\concept{Mills ratio}

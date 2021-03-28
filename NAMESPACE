@@ -15,7 +15,8 @@ importFrom("graphics", "plot", "Axis", "abline", "axis", "box", "boxplot",
 importFrom("grDevices", "dev.interactive", "devAskNewPage", "extendrange",
   "contourLines")
 importFrom("utils", "packageDescription")
-importFrom("mnormt", dmnorm, pmnorm, rmnorm, dmt, pmt, rmt, pd.solve)
+importFrom("mnormt", dmnorm, pmnorm, rmnorm, dmt, pmt, rmt, pd.solve, 
+  biv.nt.prob, mom.mtruncnorm)
 importFrom("numDeriv", grad, hessian)
 import("methods") 
 import("stats4")
@@ -57,11 +58,18 @@ export(
   dSymmModulated, rSymmModulated, dmSymmModulated, rmSymmModulated,
   plot2D.SymmModulated,
   fournum, st.prelimFit, mst.prelimFit, galton_moors2alpha_nu, 
-  pprodt2, pprodn2, qprodt2
+  pprodt2, pprodn2, qprodt2,
+  tr, blockDiag,
+  dsun, psun, rsun, sunMean, sunVcov, sunMardia,
+  makeSUNdistr, #  plot.SUNdistr, summary.SUNdistr,
+  affineTransSUNdistr, marginalSUNdistr,  conditionalSUNdistr, 
+  joinSUNdistr, convolutionSUNdistr,
+  convertSN2SUNdistr, convertCSN2SUNpar
   )
  
 exportMethods("show", "plot", "summary", "coef",  "logLik", "residuals",
    "fitted", "mean", "vcov", "sd", "profile", "confint", "predict")
 
 exportClasses("SECdistrUv", "SECdistrMv", "summary.SECdistrUv", 
-  "summary.SECdistrMv", "selm", "mselm", "summary.selm", "summary.mselm")
+  "summary.SECdistrMv", "selm", "mselm", "summary.selm", "summary.mselm",
+  "SUNdistr", "summary.SUNdistr")

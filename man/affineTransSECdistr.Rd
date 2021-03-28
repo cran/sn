@@ -3,6 +3,8 @@
 %  copyright (C) 2013 Adelchi Azzalini
 %---------------------
 \name{affineTransSECdistr}
+\encoding{UTF-8}
+
 \alias{marginalSECdistr}
 \alias{affineTransSECdistr}
 \title{Affine transformations and marginals of a skew-elliptical distribution}

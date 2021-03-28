@@ -107,7 +107,7 @@ For the \acronym{SN} family and \acronym{DP} parameterization, the asymptotic
 theory is actually non-standard near the important point \eqn{\alpha=0}, 
 but the correspondence with the regular case of the \acronym{CP} 
 parameterization, still allows to derive confidence regions using standard
-procedures; for more information on this point, see Section 3.1.6 of
+procedures; for additional information, see Section 3.1.6 of
 Azzalini and Capitanio (2014).
 When the \acronym{MLE} occurs on the frontier of the parameter space, 
 a message is issued and no confidence interval is produced, while in the
@@ -164,8 +164,8 @@ pll <- profile(m1, "dp", param.name="alpha", param.val=c(-3,2))
 
 profile(m1, "cp", param.name="gamma1", param.val=seq(-0.7, 0.4, by=0.1))
 
-# in the next example, we reduce grid points to save execution time
+# in the next example, we reduce the grid points to save execution time
 pll <- profile(m1, "cp", param.name=c("(Intercept.CP)", "gamma1"),
-           param.val = list(c(1.5, 4), c(-0.8, 0.5)), npt=c(11,16) )
+           param.val = list(c(1.5, 4), c(-0.8, 0.5)), npt=c(11,11) )
 }
 

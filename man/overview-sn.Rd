@@ -1,34 +1,34 @@
-%  file sn/man/overview.Rd  
+%  file sn/man/overview-sn.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2017 Adelchi Azzalini
+%  copyright (C) 2017-2021 Adelchi Azzalini
 %---------------------
-%  skipped: R CMD Rdconv overview.Rd --type=html -o sn-pkg-overview.html
+% HTML version: R CMD Rdconv overview.Rd --type=html -o overview.html
 %
-\name{overview}
+\name{overview-sn}
 \docType{package}
 \encoding{UTF-8}
-\alias{overview}
 \alias{overview-sn}
-\alias{pkg-overview}
-
 
 \title{Package \pkg{sn}: overview of the package structure and commands}
 
 \description{ 
-  The package provides facilities to build and manipulate probability 
-  distributions of the skew-normal  and some related families, 
-  notably the skew-\eqn{t} family, and  makes available related
-  statistical methods for data fitting and model diagnostics, 
-  in the univariate and  the multivariate case.
+The package provides facilities to build and manipulate probability 
+distributions of the skew-normal  and some related families, 
+notably the skew-\eqn{t} and the and the `unified skew-normal' (\acronym{SUN})
+families. 
+For the skew-normal, the skew-\eqn{t}  and the skew-Cauchy families,
+it also makes available statistical methods for data fitting and model 
+diagnostics,  in the univariate and  the multivariate case.
+}
 
-The package comprises two main sides; one side provides  facilities for the 
-pertaining probability distributions, the other one makes available 
-statistical methods dealing with these distributions.
-
+\section{Two main sides}{ 
+The package comprises two main sides: one side provides  facilities for the 
+pertaining probability distributions; the other one deals with related
+statistical methods.
 Underlying formulation, parameterizations of distributions and terminology 
 are in agreement with the monograph of Azzalini and Capitanio (2014).
-
-%% The present document refers to version 1.5-0 of the package (2017-02-09).
+%
+%% The present document refers to version 2.0.0 of the package (March 2021).
 }
  
 \section{Probability side}{%
@@ -38,7 +38,9 @@ At the basic level, there exist functions which follow the classical \R
 scheme for distributions.
 In addition, there exists facilities to build an object which incapsulates 
 a probability distribution and then certain operations can be be performed 
-on such an object.  These two schemes are described next.
+on such an object;
+these probability objects operate according to the S4 protocol. 
+The two schemes are described next.
 
 \describe{
 \item{Classical \R scheme}{%
@@ -68,6 +70,14 @@ Conversion from the \code{dp} parameter set to the corresponding Centred
 Parameters (\acronym{CP}) can be accomplished using the function \code{dp2cp},
 while function \code{cp2dp} performs the inverse transformation.
 
+The \acronym{SUN} family is mainly targeted to the multivariate context, 
+and this is reflected in the organization of the pertaining functions, 
+although univariate \acronym{SUN} distributions are supported.
+Density, distribution function and random numbers are handled by
+\code{{d,p,r}sun}. Mean value, variance matrix and Mardia's measures
+of multivariate skewness and kurtosis are computed by
+\code{sun{Mean,Vcov,Mardia}}.
+
 In addition, one can introduce a user-specified density function using
 \code{dSymmModulated} and \code{dmSymmModulated}, in the univariate and the
 multivariate case, respectively. These densities are of the
@@ -78,7 +88,7 @@ flexibility.  Random numbers can be sampled using the corresponding functions
 a dedicated plotting function exists.
 }
 
-\item{SEC distribution objects}{%
+\item{Probability distribution objects: \acronym{SEC} families}{%
 Function \code{makeSECdistr} can be used to build a \sQuote{\acronym{SEC}
 distribution} object representing a member of a specified parametric family
 (among the types \acronym{SN, ESN, ST, SC}) with a given \code{dp} parameter
@@ -93,9 +103,24 @@ namely \code{marginalSECdistr} and \code{affineTransSECdistr}
 for marginalization and affine trasformations. 
 For the multivariate \acronym{SN} family only (but including \acronym{ESN}), 
 \code{conditionalSECdistr} performs a conditioning on the values taken 
-on by some components of the multivariate variable.
-}
-}} % end of Section `Probability side'
+on by some components of the multivariate variable.}
+
+\item{Probability distribution objects: the \acronym{SUN} family}{%
+Function \code{makeSUNdistr} can be used to build a \acronym{SUN}
+distribution object representing a member of the \acronym{SUN} 
+parametric family.
+This object can be used for various operations such as plotting  or
+extraction of moments and other summary quantities.
+
+Moreover there are several trasformation operations which can be performed
+on a \acronym{SUN} distribution object, or two such objects in some cases:
+computing a (multivariate) marginal distribution,  a conditional distribution
+(on given values of some components or on one-sided intervals), an affine
+trasformation, a convolution (that is, the distribution of the sum of two
+independent variables), and joining two distributions under assumption of
+independence.
+}}
+} % end of Section `Probability side'
 
 
 \section{Statistics side}{%
@@ -132,6 +157,8 @@ information matrix are available, in the expected and the observed form
 The \code{extractSECdistr} function extracts the fitted \acronym{SEC} 
 distribution from  \dfn{selm}-class and \dfn{mselm}-class objects, hence
 providing a bridge with the probability side of the package.
+
+The facilities for statistical work do not support the \acronym{SUN} family.
 }
  
 \section{Additional material}{

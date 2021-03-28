@@ -5,7 +5,7 @@
 \name{extractSECdistr}
 \alias{extractSECdistr}
 \concept{skew-elliptical distribution}
-\title{Extract the SEC error term from an object created by \code{selm}}
+\title{Extract the SEC error distribution from an object created by \code{selm}}
 
 \description{
   Given an object created by a call to \code{selm}, the function delivers

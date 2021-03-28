@@ -69,6 +69,8 @@
   
   In the univariate case \code{alpha=Inf} is allowed, but in the multivariate
   case all components of the vector \code{alpha} must be finite.
+  
+  An object built by this function operates according to the S4 protocol.
 }
 
 \section{Background}{

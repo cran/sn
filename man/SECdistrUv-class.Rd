@@ -13,7 +13,8 @@
 
 \title{Class \code{"SECdistrUv"}}
 
-\description{Univariate skew-elliptically contoured distributions}
+\description{A class of objects representing univariate skew-elliptically
+  contoured (\acronym{SEC}) distributions.}
 
 \section{Objects from the class}{
 Objects can be created by a call to function \code{\link{makeSECdistr}} 

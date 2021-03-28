@@ -18,7 +18,7 @@
 
 \title{Plotting methods for classes \code{SECdistrUv} and \code{SECdistrMv}}
 
-\description{Methods for classes \code{SECdistrUv} and \code{SECdistrMv}}
+\description{Plotting methods for classes \code{SECdistrUv} and \code{SECdistrMv}}
 
 \usage{
 \S4method{plot}{SECdistrUv}(x, range, probs, main, npt = 251, \dots)

@@ -301,7 +301,7 @@ Arellano-Valle, R. B., and Azzalini, A. (2013, available online 12 June 2011).
 Azzalini, A. and Capitanio, A. (1999).
   Statistical applications of the multivariate skew normal distribution.
   \emph{J.Roy.Statist.Soc. B} \bold{61}, 579--602. 
-  Full-length version available at \url{http://arXiv.org/abs/0911.2093}
+  Full-length version available at \url{https://arXiv.org/abs/0911.2093}
 
 Azzalini, A. and Arellano-Valle, R. B. (2013, available online 30 June 2012). 
   Maximum penalized likelihood estimation for skew-normal and skew-\emph{t} 

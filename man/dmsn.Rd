@@ -98,7 +98,7 @@ parameterization, but notice that, at variance from the \acronym{OP}, not all
 Azzalini, A. and Capitanio, A. (1999).
 Statistical applications of the multivariate skew normal distribution.
 \emph{J.Roy.Statist.Soc. B} \bold{61}, 579--602. Full-length version 
-available at \url{http://arXiv.org/abs/0911.2093}
+available at \url{https://arXiv.org/abs/0911.2093}
 
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 
 \emph{The Skew-Normal and Related Families}. 

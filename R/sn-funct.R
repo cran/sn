@@ -4219,26 +4219,32 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
 {# plot density of object of class "SECdistrMv"  
   obj <- x
   if(slot(obj, "class") != "SECdistrMv") stop("object of wrong class")
-  compNames <- slot(obj, "compNames")
-  d <- length(compNames)
+  dp <- slot(obj, "dp")
+  d <- length(dp$xi)
+  if(missing(comp)) comp <- seq(1, d) 
+  if(!all(comp %in% seq(1,d))) stop("illegal 'comp' value(s)")
+  pd <- length(comp) # actual plotting dimension
+  pobj <- if(pd == d) obj else marginalSECdistr(obj, comp=comp, drop=FALSE)
+  name.pobj <- slot(obj, "name")
+  if(pd < d) name.pobj <- paste(name.pobj,"[", paste(comp, collapse=","), "]", sep="")
   if(missing(probs)) probs <- c(0.25, 0.50, 0.75, 0.95)    
   if(any(probs <= 0) | any(probs >= 1)) stop("probs must be within (0,1)") 
-  if(missing(npt)) npt <- rep(101, d)
-  if(missing(main))  { main <- if(d==2) 
-      paste("Density function of", slot(obj, "name")) else
-      paste("Bivariate densities of", slot(obj, "name")) }
-  if(missing(comp)) comp <- seq(1,d)      
+  if(missing(npt)) npt <- rep(101, pd)
+  if(missing(main))  { main <- if(pd == 1 | pd == 2)
+      paste("Density function of", name.pobj) else
+      paste("Bivariate densities of", name.pobj) 
+      }
+  compNames <- slot(pobj, "compNames")
   if(missing(compLabs)) compLabs <- compNames
-  if(length(compLabs) != d) stop("wrong length of 'compLabs' or 'comp' vector")
+  if(length(compLabs) != pd) stop("wrong length of 'compLabs' vector")
   family <- toupper(obj@family)
   lc.family <- tolower(family)
   if(lc.family == "esn") lc.family <- "sn"
-  dp <- slot(obj, "dp")
   if(missing(range)) {
-    range <- matrix(NA,2,d)
+    range <- matrix(NA, 2, pd)
     q.fn <- get(paste("q", lc.family, sep=""), inherits=TRUE)
-    for(j in 1:d) {
-      marg <- marginalSECdistr(obj, comp=j, drop=TRUE)
+    for(j in 1:pd) {
+      marg <- marginalSECdistr(pobj, comp=j, drop=TRUE)
       q <- q.fn(c(0.05, 0.25, 0.75, 0.95), dp=marg@dp)
       dq <- diff(q)
       range[,j] <- c(q[1] - 1.5*dq[1], q[length(q)] + 1.5*dq[length(dq)])
@@ -4253,16 +4259,17 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
     }
   dots <- list(...)
   nmdots <- names(dots)  
-  if(d == 1) {  
+  if(pd == 1) {  
     message("Since dimension=1, plot as a univariate distribution")
-    objUv <- marginalSECdistr(obj, comp=1, drop=TRUE)
+    objUv <- marginalSECdistr(pobj, comp=comp, drop=TRUE)
     out <- plot(objUv, data=data, ...)
     }
-  if(d == 2) 
-      out <- list(object=obj,
-                  plot=plot.SECdistrBv(x, range, probs, npt, compNames,  
-                           compLabs, landmarks, data, data.par, main, ...))
-  if(d > 2) {
+  if(pd == 2) {
+    p <- plot.SECdistrBv(pobj, range, probs, npt, compNames,  
+                           compLabs, landmarks, data, data.par, main, ...)
+    out <- list(object=pobj, plot=p)
+    } 
+  if(pd > 2) {
     textPanel <- function(x = 0.5, y = 0.5, txt, cex, font) 
       text(x, y, txt, cex = cex, font = font)
     localAxis <- function(side, x, y, xpd, bg, main,  oma, ...) {
@@ -4279,7 +4286,7 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
     opar <- par(mfrow = c(length(comp), length(comp)), 
                 mar = rep(c(gap,gap/2), each=2), oma=oma)
     on.exit(par(opar))
-    out <- list(object=obj)
+    out <- list(object=pobj)
     count <- 1
     for (i in comp) 
       for (j in comp) {
@@ -4292,7 +4299,7 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
           names(out)[count] <- paste("diagonal component", compNames[i])
         } else {
         ji <- c(j,i) 
-        marg <- marginalSECdistr(obj, comp=ji) 
+        marg <- marginalSECdistr(pobj, comp=ji) 
         out[[count]] <- localPlot(x=marg, range=range[,ji], probs=probs,
              npt=npt[ji], compNames= compNames[ji], compLabs=compLabs[ji], 
              landmarks=landmarks, data=data[,ji],  data.par=data.par, 
@@ -4317,7 +4324,7 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
 }
 
 plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,   
-            compLabs, landmarks, data=NULL, data.par, main, ...)
+                            compLabs, landmarks, data=NULL, data.par, main, ...)
 {# plot BiVariate SEC distribution
   obj <- x
   dp <- slot(obj, "dp")

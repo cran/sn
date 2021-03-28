@@ -1,5 +1,17 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+
+Version 2.0.0 (2021-03-28)
+Support for the SUN distribution is introduced, as for probability distribution
+operations. Two modes of working are envisaged: (i) using classic-style
+functions for probability distributions, plus some functions of similar style;
+(ii) using S4 objects of the new class SUNdist. For mode (i), the functions
+{d,p,r}sun, sun{Mean,Vcov,Mardia} are provided. For mode (ii), there are 
+{make, marginal, conditional, affineTrans, join, convolution, summary}SUNdistr, 
+and related S4 methods. Additional facilities include convertSN2SUNdistr, 
+convertCSN2SUNpar and two matrix operations (tr and blockDiag).
+Fixed a bug in plot.SECdistr affecting the plot of a subset of the variables.
+
 Version 1.6-2 (2020-05-26) 
 Fixed wrong computation of standard errors when a multivariate ST model was
 fitted with the constraint alpha=0; similar fix of function confint.

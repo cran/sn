@@ -12,7 +12,8 @@
 
 \title{Class \code{"SECdistrMv"}}
 
-\description{Multivariate skew-elliptically contoured distributions}
+\description{A class of objects representing multivariate skew-elliptically 
+  contoured (\acronym{SEC}) distributions.}
 
 \section{Objects from the Class}{
   Objects can be created by a call to function \code{\link{makeSECdistr}},
