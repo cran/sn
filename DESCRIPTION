@@ -1,6 +1,6 @@
 Package: sn
-Version: 2.0.0
-Date: 2021-03-28
+Version: 2.0.1
+Date: 2021-11-26
 Title: The Skew-Normal and Related Distributions Such as the Skew-t and
         the SUN
 Authors@R: person(given = "Adelchi", family = "Azzalini", 
@@ -20,7 +20,7 @@ License: GPL-2 | GPL-3
 URL: http://azzalini.stat.unipd.it/SN/
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2021-03-28 10:57:25 UTC; aa
+Packaged: 2021-11-26 09:06:14 UTC; aa
 Author: Adelchi Azzalini [aut, cre] (<https://orcid.org/0000-0002-7583-1269>)
 Repository: CRAN
-Date/Publication: 2021-03-28 11:40:02 UTC
+Date/Publication: 2021-11-26 16:10:44 UTC

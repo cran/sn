@@ -62,8 +62,8 @@
 \author{Adelchi Azzalini}
 
 \seealso{
-  \code{\link{plot,SUNdistr-method}}, 
-  \code{\link{summary,SUNdistr-method}},
+  \code{\link{plot,SUNdistr-method}}, \eqn{\quad}{}
+  \code{\link{summary,SUNdistr-method}}, \eqn{\quad}{}
   \code{\link{affineTransSUNdistr}},  \code{\link{marginalSUNdistr}}
   
   \code{\link{convertSN2SUNdistr}} to convert a \code{SECdistr} object with
@@ -84,4 +84,14 @@
   vcov(sun3)  # the variance-covariance matrix of the probability distribution
   summary(sun3)  # a more detailed summary
 }
+%----------------
 \keyword{classes}
+\keyword{distribution}
+\keyword{multivariate}
+%
+\concept{SUN distribution}
+\concept{Unified Skew-Normal distribution}
+\concept{CSN distribution}
+\concept{Closed Skew-Normal distribution}
+\concept{FUSN distribution}
+\concept{Fundamental Skew-Normal distribution}

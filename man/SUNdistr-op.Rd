@@ -16,8 +16,8 @@
 \title{Operations on SUNdistr-class objects}
 
 \description{
-Given an object of \code{SUNdistr-class} or possibly two such things, 
-in some cases, the functions described perform various operations,
+Given an object of \code{SUNdistr-class}, or possibly two such things
+in some cases, the functions   perform various operations,
 and produce a new object of the same class.}
 
 \usage{
@@ -46,14 +46,14 @@ marginalSUNdistr(object, comp, name, drop=TRUE)
   \item{comp}{a vector of integers representing the selected components}
   \item{values}{a numeric vector which identifies the conditioning event}
   \item{eventType}{a single character value which indicates the type of the
-     conditioning event, as described in \sQuote{Details};
+     conditioning event, as described in the \sQuote{Details} section;
      possible values are \code{"="} (default) and \code{">"}}
 }
 
 \details{
 For  an \code{object} which represents the distribution of a multivariate 
 \acronym{SUN} random variable \eqn{Y} of dimension \code{d}, say, a number of
-oeprations are possible, producing a new object of the same class.
+operations are possible, producing a new object of the same class.
 This \code{object} could have been created by \code{\link{makeSUNdistr}} 
 or it could be the outcome from some previous call to one of the functions
 described here.
@@ -68,37 +68,38 @@ from the components selected by the \code{comp} vector.
 
 A conditional distribution can be computed using \code{conditionalSUNdistr} 
 for two type of events, selected by \code{eventType}. 
-The \code{"="} case corresponds to the
-event \eqn{Y_1=y_1} where \eqn{Y_1} is the subset of components identified
-by  the \code{comp} argument, \eqn{y_1} is vector specified by the 
+The \code{"="} case corresponds to the event \eqn{Y_1=y_1}{Y₁=y₁} where 
+\eqn{Y_1}{Y₁} is the subset of components identified
+by  the \code{comp} argument, \eqn{y_1}{y₁} is vector specified by the 
 \code{values} argument and the equality sign must hold for each component.
 See equation (7.6) of Azzalini & Capitanio (2014).
 
 If \code{conditionalSUNdistr} is used with \code{eventType=">"},
-the conditiong refers to the event \eqn{Y_1>y_1}, where the inequality
-must be interpreted components-wise;
-see Arellano-Valle & Azzalini (2020) for the underlying mathematical result.
+the conditiong refers to the event \eqn{Y_1>y_1}{Y₁>y₁}, 
+where the inequality must be interpreted components-wise;
+see Arellano-Valle & Azzalini (2021) for the underlying mathematical result.
 If the conditional distribution is required for the reverse inequality 
-condition,  \code{"<"} say, this correspods to the event \eqn{-Y_1>-y_1}, 
-which can be  accomplished in two steps: 
+condition, \code{"<"} say, 
+this is equivalent to consideration of the event \eqn{-Y_1>-y_1}{-Y₁>-y₁}. 
+The corresponding distribution can be obtained in two steps: 
 first a new variable is constructed reversing the sign of the required
 components using \code{affineTransSUNdistr};
 then \code{conditionalSUNdistr} is applied to this new variable with
-the \code{">"} condition and values \eqn{-y_1}. 
+the \code{">"} condition and values \eqn{-y_1}{-y₁}. 
 More complex conditions, where the \code{"<"} and \code{">"} signs 
 are mixed for different component varables, can be handled similarly, 
 by introducing a square matrix \code{A} for \code{affineTransSUNdistr} 
 having an appropriate combination of \code{1}s' and \code{-1}'s on its main
 diagonal, and 0's elsewhere, and  matching changes of sign to the components  
-of \eqn{y_1}.
+of \eqn{y_1}{y₁}.
 
 Functions \code{convolutionSUNdistr} and \code{joinSUNdistr} operate under 
 the assumptions that \code{object1} and \code{object2} refer to independent 
 variables. 
 Specifically, \code{convolutionSUNdistr} computes the convolution of the
 two objects (i.e. the distribution of the sum of two independent variables),
-which must have the same dimension \code{d}; 
-\code{joinSUNdistr} combines two objects into a joint distribution.
+which must have the same dimension \code{d}. 
+Function \code{joinSUNdistr} combines two objects into a joint distribution.
 
 If the arguments \code{name}, \code{compNames} and \code{HcompNames}
 are missing, they are composed from the supplied arguments.
@@ -107,9 +108,11 @@ are missing, they are composed from the supplied arguments.
 \value{an object of \code{SUNdistr-class}}
 
 \references{
-Arellano-Valle, R. B. and Azzalini, A. (2020).
-  Some properties of the unified skew-normal distribution.
-  \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
+Arellano-Valle, R. B. and Azzalini, A. (2021).
+Some properties of the unified skew-normal distribution.
+\emph{Statistical Papers}, 
+\doi{https://doi.org/10.1007/s00362-021-01235-2}
+and \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}  
   
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 
 \emph{The Skew-Normal and Related Families}. 

@@ -65,7 +65,8 @@ selm(formula, family = "SN", data, weights, subset, na.action,
    multivariate case) of initial \acronym{DP} values for searching the 
    parameter estimates. See \sQuote{Details} about a choice of
    \kbd{start} to be avoided.  If \code{start=NULL} (default), 
-   initial values are  selected by the procedure.}
+   initial values are  selected by the procedure.
+   If \code{family="ST"}, an additional option exists; see \sQuote{Details}.}
 
   \item{fixed.param}{a list of assignments of parameter values which must
    be kept fixed in the estimation process. 
@@ -213,6 +214,16 @@ selm(formula, family = "SN", data, weights, subset, na.action,
   Recall that, if one needs to fit a model forcing 0 asymmetry, typically to
   compare two log-likelihood functions with/without asymmetry, then the option
   to use is \kbd{fixed.param=list(alpha=0)}.
+  
+  Since version 1.6.0, a new initialization procedure has been introduced
+  for the case \kbd{family="ST"}, which adopts the method proposed by 
+  Azzalini & Salehi (2020), implemented in functions \kbd{st.prelimFit} 
+  and \kbd{mst.prelimFit}.
+  Correspondingly, the \kbd{start} argument can now be of different type,
+  namely a character with possible values \kbd{"M0"}, \kbd{"M2"} (detault in 
+  the univariate case) and \kbd{"M3"} (detault in the multivariate case).
+  The choice \kbd{"M0"} selects the older method, in use prior to version
+  1.6.0. For more information, see Azzalini &  Salehi (2020).
 
   In some cases, especially for small sample size, the \acronym{MLE} occurs on
   the frontier of the parameter space, leading to \acronym{DP} estimates with
@@ -311,7 +322,14 @@ Azzalini, A. with the collaboration of Capitanio, A. (2014).
  \emph{The Skew-Normal and Related Families}. 
  Cambridge University Press, IMS Monographs series.
 
+Azzalini, A. and Salehi, M. (2020).
+  Some computational aspects of maximum likelihood estimation 
+  of the skew-\emph{t} distribution. In \emph{Computational and Methodological 
+  Statistics and Biostatistics}, edited by A. Bekker, Ding-Geng Chen and 
+  Johannes T. Ferreira, pp.3-28.  Springer Nature Switzerland.
+
 % Magnus and Neudecker
+  
 }
 
 \author{Adelchi Azzalini}

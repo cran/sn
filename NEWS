@@ -1,5 +1,11 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+Version 2.0.1 (2021-11-26)
+Change of the tuning arguments when numDeriv::hessian is called, to improve
+computation of the information matrix following a ST model fitting. 
+Fixed bug which in some cases prevented the use of the 'start' argument. 
+Re-organization of some internal functions computing SUN summary quantities.
+Improved documentstion for selm, selm.fit and SUNdistr-base.
 
 Version 2.0.0 (2021-03-28)
 Support for the SUN distribution is introduced, as for probability distribution
@@ -38,7 +44,7 @@ alpha. Changed internal checks on 'try' output, to accomplish R changes.
 Version 1.5-4 (2019-05-09) 
 On request from the CRAN group, a modification is inserted to get around
 numerical problems arising in connection with use of OpenBLAS (version 0.3.5).
-For plotting of multivariate SECdistr when 'range' is not supplied and 'data' 
+For plotting of a multivariate SECdistr when 'range' is not supplied and 'data' 
 is non-NULL, calculation of the plotting range has been modified. 
 Proper handling of the 'name' argument of marginalSECdistr when the result 
 is a univariate distribution.

@@ -253,60 +253,25 @@ array2mat <- function(x, d)
 
 sunMardia <- function(xi, Omega, Delta, tau, Gamma, dp=NULL, silent=FALSE, ...) 
 {# Mardia measures of multivariate skewness and kurtosis for SUN distributions 
-  if (!(missing(Delta) & missing(Omega)) && !is.null(dp)) 
-        stop("You cannot set both component parameters and 'dp'")
-    if (!is.null(dp)) {
-        if (length(dp) != 5)  stop("wrong length of non-null 'dp'")
-        xi <- drop(dp[[1]])
-        Omega <- dp[[2]]
-        Delta <- dp[[3]]
-        tau <-  dp[[4]]
-        Gamma <- dp[[5]]
+  if(!(missing(Delta) & missing(Omega)) && !is.null(dp)) 
+     stop("You cannot set both component parameters and 'dp'")
+  if(!is.null(dp)) {
+    if (length(dp) != 5)  stop("wrong length of non-null 'dp'")
+    xi <- drop(dp[[1]])
+    Omega <- dp[[2]]
+    Delta <- dp[[3]]
+    tau <-  dp[[4]]
+    Gamma <- dp[[5]]
     }
-  if(!all.numeric(xi, Omega, Delta, tau, Gamma)) stop("non-numeric argument(s)")   
-  d <- length(xi)  
+  if(!all.numeric(xi, Omega, Delta, tau, Gamma)) stop("non-numeric argument(s)")
+  d <- length(xi)
   m <- length(tau)  
-  mom.U <- mnormt::mom.mtruncnorm(4, mean=rep(0,m), Gamma, lower=-tau, ...)
-  omega <- sqrt(diag(Omega))
-  omega.Delta <- omega * Delta
-  Gamma.inv <- solve(Gamma)
-  A <- omega.Delta %*%  Gamma.inv
-  B.BT <- Omega - omega.Delta %*% Gamma.inv %*% t(omega.Delta)
-  E.U <- if(m==1) mom.U$cum[1] else mom.U$cum1
-  E.U2 <- if(m==1) mom.U$mom[3] else mom.U$order2$m2
-  var.U <- if(m==1) mom.U$cum[2] else mom.U$order2$cum2
-  mu1.X <- drop(A %*% E.U) 
-  var.X <-  Omega - A %*% (Gamma- var.U) %*% t(A)  
-  Sigma <- var.X
-  Sigma.inv <- solve(Sigma)  
-  #---
-  # beta_1; use Proposition 2 of RAV&AA-2020
-  AA <- Gamma.inv %*% t(omega.Delta) %*% Sigma.inv %*% omega.Delta %*% Gamma.inv
-  vec.mu3 <- if(m==1) mom.U$centr.mom[3] else c(mom.U$order3$cum3)
-  beta1M <- if(m==1) drop(vec.mu3^2 *AA^3) else
-                     drop(t(vec.mu3) %*% (AA %x% AA %x% AA) %*% vec.mu3)
-  gamma1M <- beta1M
-  #---
-  # beta_2; use Proposition 2 of RAV&AA-2020
-  mu4.U <- if(m==1) mom.U$centr.mom[4] else 
-   { cum4 <- array2mat(mom.U$order4$cum4, m) # conversione cum4 in matrice
-    # Usiamo (2.8)-(2.9) di Kollo & Srivastava (2005, Comms.Stat-TM) per
-    # passare da cumulanti a momenti centrali del quarto ordine. Per questa
-    # operazione teniamo conto di eqn.4 e 7 a p.57 di Magnus & Neudecker 
-    # (2007, 3^ ed) per calcolare (I_{p^2}+Kpp).
-    D <- duplicationMatrix(m)
-    Dplus <- solve(t(D) %*% D) %*% t(D)
-    cmom4N <- (2*D %*% Dplus) %*% (var.U %x% var.U) + c(var.U) %*% t(c(var.U))  
-    cum4 + cmom4N  # matrice dei quarti momenti centrali
-    }
-  tmp <- Gamma.inv %*% t(omega.Delta) %*% Sigma.inv
-  beta2M <- ( tr((AA %x% AA) %*% mu4.U)  
-    + 2* tr(var.U %*%  AA) * tr(B.BT %*% Sigma.inv) 
-    + tr(B.BT %*% Sigma.inv)^2
-    + 4 * tr(var.U %*%  tmp %*% B.BT %*% t(tmp))
-    + 2 * tr(B.BT %*% Sigma.inv %*% B.BT %*% Sigma.inv))
-  gamma2M <- beta2M - d*(d+2)
-  return(c(gamma1M=gamma1M, gamma2M=gamma2M))
+  compNames <- rownames(Omega)
+  HcompNames <- rownames(Gamma)
+  if(is.null(compNames)) compNames <- paste("V", 1:d, sep="")
+  if(is.null(HcompNames)) HcompNames <- paste("H", 1:m, sep="")
+  u <- sunValues(dp=dp, compNames, HcompNames, ...)
+  return(u$mardia)
 }
 
 makeSUNdistr <- function(dp, name, compNames, HcompNames, drop=TRUE) 
@@ -609,22 +574,36 @@ convertCSN2SUNpar <- function(mu, Sigma, D, nu, Delta)
 
 #----------------
 summary.SUNdistr <- function(object, ...) 
-{ # Computations are based on Proposition 1 and 2 of RAV&AA-2020
+{# 
   dp <- slot(object, "dp")
   name <- slot(object, "name")
   compNames <- slot(object, "compNames")
   HcompNames <- slot(object, "HcompNames")
-  Omega <- dp$Omega
-  Delta <- dp$Delta
-  Gamma <- dp$Gamma
-  tau <- dp$tau
-  d <- length(dp$xi)
+  u <- sunValues(dp=dp, compNames, HcompNames, ...)
+  new("summary.SUNdistr", dp=dp, name=name, compNames=compNames,
+    HcompNames=HcompNames, mean=u$mean, var.cov=u$vcov, gamma1=u$gamma1, 
+    cum3=u$cum3,  mardia=u$mardia)
+}
+
+sunValues <- function(dp, compNames, HcompNames, ...) 
+{# Some moments and other characteristics values of a SUN distribution. 
+ # Computations are based on Proposition 1 and 2 of RAV&AA-2020
+  if (length(dp) != 5)  stop("wrong length of non-null 'dp'")
+  xi <- drop(dp[[1]])
+  Omega <- dp[[2]]
+  Delta <- dp[[3]]
+  tau <-  dp[[4]]
+  Gamma <- dp[[5]]
+  if(!all.numeric(xi, Omega, Delta, tau, Gamma)) stop("non-numeric argument(s)")   
+  d <- length(xi)
   m <- length(tau)
+  if(missing(compNames)) compNames <- paste("V", 1:d, sep="")
+  if(missing(HcompNames)) HcompNames <- paste("H", 1:m, sep="")
   omega <- sqrt(diag(Omega))
   omega.Delta <- omega * Delta
   Gamma.inv <- solve(Gamma)
   A <- omega.Delta %*% Gamma.inv            # A=\Lambda in (17) of RAV&AA-2020
-  mom.U <- mom.mtruncnorm(4, mean=rep(0,m), Gamma, lower=-tau, ...)
+  mom.U <- mnormt::mom.mtruncnorm(4, mean=rep(0,m), Gamma, lower=-tau, ...)
   E.U <- if(m==1) mom.U$cum[1] else mom.U$cum1
   mu1.X <- A %*% E.U                        # see \mu_1(X) in Proposition 1
   Esun <- dp$xi + drop(mu1.X)           
@@ -678,12 +657,8 @@ summary.SUNdistr <- function(object, ...)
     + tr(tmp2)^2 + 4 * tr(var.U %*%  tmp1 %*% B.BT %*% t(tmp1))
     + 2 * tr(tmp2 %*% tmp2) )
   mardia <- c(gamma1M=gamma1M, gamma2M=(beta2M-d*(d+2)))
-  #-------------
-  new("summary.SUNdistr", dp=dp, name=name, compNames=compNames,
-    HcompNames=HcompNames, mean=Esun, var.cov=Vsun, gamma1=gamma1, cum3=cum3, 
-    mardia=mardia)
-}
-
+  list(mean=Esun, vcov=Vsun, gamma1=gamma1, cum3=cum3, mardia=mardia)
+}  
 #----------------
 # plotting SUN densities
 #      

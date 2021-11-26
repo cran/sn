@@ -77,45 +77,14 @@ sunMardia(xi, Omega, Delta, tau, Gamma, dp = NULL, silent=FALSE, ...)
     }
 }
 
-\details{A member of the \acronym{SUN} family is characterized by two
-dimensionality indices, denoted \eqn{d} and \eqn{m}, and a set of five
-parameters.  The value \eqn{d} represents the number of observable
-components; the value \eqn{m} represents the number of latent (or hidden)
-variables notionally involved in the construction of the distribution.
-The parameters and their corresponding \R variables are as follows:
- \tabular{rcl}{
- \eqn{\xi}    \tab \code{xi}    \tab a vector of length \eqn{d}, \cr
- \eqn{\Omega} \tab \code{Omega} \tab a matrix of size \eqn{(d,d)}, \cr
- \eqn{\Delta} \tab \code{Delta} \tab a matrix of size \eqn{(d,m)}, \cr
- \eqn{\tau}   \tab \code{tau}   \tab a vector of length \eqn{m}, \cr
- \eqn{\Gamma} \tab \code{Gamma} \tab a matrix of size \eqn{(m,m)},  
- }
-and must satisfy the following  conditions:  
-\enumerate{
-\item \eqn{\Omega} is a symmetric positive definite matrix;
-\item \eqn{\Gamma} is a symmetric positive definite matrix with 1's 
-    on the main diagonal, hence a correlation matrix;
-\item if \eqn{\bar\Omega}{\Omega°} denotes the correlation matrix 
-  associated to \eqn{\Omega},  the matrix of size \eqn{((d+m), (d+m))}
-  \if{html}{formed by the \eqn{2 x 2} blocks}
-  \deqn{\left(\begin{array}{cc} 
-            \bar\Omega  & \Delta \\
-            \Delta^\top & \Gamma
-            \end{array} \right)
-         }{  \Omega°   \Delta <newline>
-             \Delta'   \Gamma
-           %   \tabular{cc}{
-           %   \eqn{\Omega°}  \tab  \eqn{\Delta} \cr
-           %   \eqn{\Delta'}  \tab  \eqn{\Gamma} \cr  }
-         }
-  must be a positive definite correlation matrix.
- 
+\details{
+A member of the \acronym{SUN} family of distributions is identified by five 
+parameters, which are described  in the \sQuote{Background} section.  
 The five parameters can be supplied by combining them in a list, denoted
 \code{dp}, in which case the individual parameters must \emph{not} be
 supplied. The elements of \code{dp} must appear in the above-indicated order
 and must be named.
-}
- 
+
 The optional arguments in \code{...} passed to \code{\link[mnormt]{pmnorm}},
 which uses \code{\link[mnormt]{ptriv.nt}} when \code{d=3}, 
 \code{\link[mnormt]{biv.nt.prob}} when \code{d=2} and 
@@ -161,27 +130,64 @@ The structure of the returned value depends on the called function, as follows:
 }
 
 \section{Background}{
+A member of the \acronym{SUN} family is characterized by two
+dimensionality indices, denoted \eqn{d} and \eqn{m}, and a set of five
+parameters blocks (vector and matrices, as explained soon).  
+The value \eqn{d} represents the number of observable
+components; the value \eqn{m} represents the number of latent (or hidden)
+variables notionally involved in the construction of the distribution.
+The parameters and their corresponding \R variables are as follows:
+ \tabular{rcl}{
+ \eqn{\xi}    \tab \code{xi}    \tab a vector of length \eqn{d}, \cr
+ \eqn{\Omega} \tab \code{Omega} \tab a matrix of size \eqn{(d,d)}, \cr
+ \eqn{\Delta} \tab \code{Delta} \tab a matrix of size \eqn{(d,m)}, \cr
+ \eqn{\tau}   \tab \code{tau}   \tab a vector of length \eqn{m}, \cr
+ \eqn{\Gamma} \tab \code{Gamma} \tab a matrix of size \eqn{(m,m)},  
+ }
+and must satisfy the following  conditions:  
+\enumerate{
+\item \eqn{\Omega} is a symmetric positive definite matrix;
+\item \eqn{\Gamma} is a symmetric positive definite matrix with 1's 
+    on the main diagonal, hence a correlation matrix;
+\item if \eqn{\bar\Omega}{\Omega°} denotes the correlation matrix 
+  associated to \eqn{\Omega},  
+  the matrix of size \eqn{(d+m)\times(d+m)}{((d+m), (d+m))}
+  \if{html}{formed by the \eqn{2 x 2} blocks}
+  \ifelse{latex}{
+         \deqn{\left(\begin{array}{cc} 
+            \bar\Omega  & \Delta \\
+            \Delta^\top & \Gamma
+            \end{array} \right)} 
+       }{ % non-LaTeX
+        \tabular{rrcc}{
+            \tab  \tab \eqn{\Omega°}  \tab  \eqn{\Delta} \cr
+            \tab  \tab \eqn{\Delta'}  \tab  \eqn{\Gamma}  }
+       }
+  must be a positive definite correlation matrix.}
+ 
+The formulation adopted here has arisen as the evolution of earlier 
+constructions, which are recalled very briefly next.
 A number of extensions of the multivariate skew-normal distributions, 
 all involving a number \code{m} (with \eqn{m\ge1}) of latent variables 
 (instead of \code{m=1} like the skew-normal distribution), 
 have been put-forward in close succession in the years 2003-2005. 
-Special attention has been drawn by the \sQuote{closed skew-normal 
-distribution} developed by González-Farías \emph{et alii} (2004a, 2004b)
-and the \sQuote{fundamental skew-normal distribution} proposed by
-Arellano-Valle and Genton (2005),
-but various other formulations have been considered as well.
+Special attention has been drawn by the \sQuote{closed skew-normal (CSN)}
+distribution  developed by González-Farías \emph{et alii} (2004a, 2004b)
+and the \sQuote{fundamental skew-normal  (FUSN)} distribution
+developed by Arellano-Valle and Genton (2005),
+but other formulations have been considered too.
 
 Arellano Valle and Azzalini (2006) have shown the essential equivalence
 of these apparently alternative constructions, after appropriate
 reparameterizations, and underlined the necessity of removing 
-over-parameterizations in various cases, to avoid lack of
-identifiability. This elaboration has led to the \acronym{SUN} formulation. 
+over-parameterizations in some cases, to avoid lack of identifiability. 
+This elaboration has led to the \acronym{SUN} formulation. 
 A relatively less technical account of their development is provided 
 in Section 7.1 of Azzalini and Capitanio (2014), using very slightly 
 modified notation and parameterization, which are the ones adopted here.  
 
-Various additional results have been presented by Arellano-Valle 
-and Azzalini (2020), such as expressions for the variance matrix
+Additional results have been presented by Arellano-Valle 
+and Azzalini (2021), such as expressions for the variance matrix
 and higher order moments, the Mardia's measures of multivariate  skewness
 and kurtosis, which are implemented here. Another result is the
 conditional distribution when the conditioning event is represented
@@ -194,9 +200,11 @@ Arellano-Valle, R. B., and Azzalini, A. (2006).
 On the unification of families of skew-normal distributions.
 \emph{Scand. J. Stat.} \bold{33}. 561-574. 
 
-Arellano-Valle, R. B. and Azzalini, A. (2020).
+Arellano-Valle, R. B. and Azzalini, A. (2021).
 Some properties of the unified skew-normal distribution.
-\href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
+\emph{Statistical Papers}, 
+\doi{https://doi.org/10.1007/s00362-021-01235-2}
+and \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
   
 Arellano-Valle, R. B. and Genton, M. G. (2005). 
 On fundamental skew distributions. 

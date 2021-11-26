@@ -49,8 +49,8 @@ input for the functions in \code{\link{SUNdistr-base}} or for
 \code{\link{makeSUNdistr}}.
 }
 
-\value{a list representing the \code{dp} parameter set of the equivalent 
-     \acronym{SUN} distribution}
+\value{a list representing the \code{dp} parameter set of the
+       corresponding \acronym{SUN} distribution}
 
 \references{
 González-Farías, G., Domínguez-Molina, J. A., & Gupta, A. K. (2004a). 

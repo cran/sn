@@ -3301,20 +3301,21 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
   opt.method <- match.arg(opt.method)
   if(is.null(start) | mode(start)=="character") {
     Mx <- if(mode(start) == "character") start[1] else "M3" 
-    if(!(Mx %in% c("M0", "M2", "M3"))) stop("invalid 'dp' initialization")
-    if(Mx == 0) { # old method, not recommended
+    if(!(Mx %in% c("M0", "M2", "M3"))) stop("invalid 'start'")
+    if(Mx == "M0") { # old method, superseded since version 1.6-0
       ls <- lm.wfit(x, y, w, singular.ok=FALSE)
       beta <- coef(ls)
 	  Omega <-  var(resid(ls))
 	  omega <- sqrt(diag(Omega))
 	  alpha <- rep(0, d)
       nu <- if(is.null(fixed.nu)) 8 else fixed.nu
+      dp <- list(beta=beta, Omega=Omega, alpha=alpha, nu=nu)
       }
     if(Mx == "M2") dp <- mst.prelimFit(x, y, quick=TRUE)$dp
     if(Mx == "M3") dp <- mst.prelimFit(x, y, quick=NULL)$dp  
   }
   else {
-    if (all(dim(start[[2]]) == c(d,d), length(start[3]) == dp))  dp <- start
+    if (all(dim(start[[2]]) == c(d,d), length(start[[3]]) == d))  dp <- start
     else stop("argument 'start' is not in the form that I expected")
     }
   alpha <- if(symmetr)  rep(0,d) else dp[[3]]
@@ -3702,19 +3703,29 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
   theta <- as.numeric(c(beta, vech(Omega), eta, nu))
   vdp <- as.numeric(c(beta, vech(Omega), alpha, nu))  # include fixed param
   penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
-  H <- numDeriv::hessian(mst.logL, vdp, X=x, y=y, dp=TRUE, penalty=penalty.fn)
+  args <- list(eps=1e-4, d=0.01, zero.tol=sqrt(.Machine$double.eps/7e-7), 
+               r=4, v=2, show.details=TRUE) # inserted 2021-11-23 for v.2.0.1
+  H <- numDeriv::hessian(mst.logL, vdp, method.args=args, X=x, y=y, dp=TRUE, penalty=penalty.fn)
   J <- mst.theta.jacobian(theta, p=NCOL(x), d=NCOL(y))
   # identify fixed components of parameter vector
   fixed.comp <- if(symmetr) d*p+d2+(1:d) else NULL
   if(!is.null(fixed.nu)) fixed.comp <- c(fixed.comp, length(vdp))
   # free: the free components of vdp, i.e. those not in fixed.param
   free <- setdiff(1:length(vdp), fixed.comp)
-  I.dp <- force.symmetry(-H[free ,free])
-  J1 <- solve(J$Dtheta.dp[free, free])
-  I.theta <- force.symmetry(t(J1) %*% I.dp %*% J1)
-  asyvar.dp <- pd.solve(I.dp, silent=TRUE)
+  tmp <- try(force.symmetry(-H[free ,free]), silent=TRUE)
+  if(inherits(tmp, "try-error")) {
+    warning("Problems occurred with numerical differentian of the log-likelihood")
+    message(attr(tmp,"condition")$message)
+    message("The returned object does not include standard errors")
+    asyvar.dp <- I.theta <- I.dp <- NULL
+  } else {    
+    I.dp <- tmp
+    J1 <- solve(J$Dtheta.dp[free, free])
+    I.theta <- force.symmetry(t(J1) %*% I.dp %*% J1)
+    asyvar.dp <- pd.solve(I.dp, silent=TRUE)
+  }  
   if(is.null(asyvar.dp)) { 
-    warning("Condition 'information_matrix > 0' fails, DP seems not at MLE")
+    warning("Condition 'information_matrix > 0' fails, no standard errors")
     se.dp <- list(NULL)  
     }
   else {
@@ -3725,7 +3736,7 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
     se.dp$alpha <- if(!symmetr) diags.dp[p*d +d2 +(1:d)] else NULL
     se.dp$nu <- if(is.null(fixed.nu)) diags.dp[length(vdp)] else NULL
     }
-  if(nu>4) {
+  if(!is.null(asyvar.dp) & nu>4) {
     cp <- mst.dp2cp(dp, cp.type="proper", fixed.nu=fixed.nu, symmetr=symmetr)
     I.cp <- t(J$Dtheta.cp[free,free]) %*% I.theta %*% J$Dtheta.cp[free,free]
     I.cp <- force.symmetry(I.cp)
@@ -4252,8 +4263,8 @@ plot.SECdistrMv <- function(x, range, probs, npt, landmarks="auto",
       if(!is.null(data)) {
         q <- quantile(data[,j], probs=c(0.05, 0.25, 0.75, 0.95))
         dq <- diff(q)
-        range[1,j] <- min(range[1,j], q[1] - 1.5*dq[1])
-        range[2,j] <- max(range[2,j], q[length(q)] + 1.5*dq[length(dq)])
+        range[1,j] <- min(range[1,j], q[1] - 2.5*dq[1])
+        range[2,j] <- max(range[2,j], q[length(q)] + 2.5*dq[length(dq)])
         }
       }
     }

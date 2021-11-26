@@ -60,7 +60,10 @@ mst.mple(x, y, start = NULL, w, fixed.nu = NULL, symmetr=FALSE,
   \item{start, dp, cp}{a vector or a list of initial parameter values,
     depeding whether \code{y} is a vector or a matrix. It is assumed that 
     \code{cp} is given in the \acronym{CP} parameterization, \code{dp} and
-    \code{start} in the \acronym{DP} parameterization. }
+    \code{start} in the \acronym{DP} parameterization. 
+    For \code{st.mple} and \code{mst.mple}, see also the paragraph about  
+    \code{start} in the documentation \sQuote{Details} of \code{selm}.
+    }
 
   \item{w}{a vector of non-negative integer weights of length equal to 
     \code{NROW(y)}; if missing, a vector of all 1's is generated.}
