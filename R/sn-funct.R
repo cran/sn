@@ -51,7 +51,16 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
     alpha <- dp[3]
     tau <- if(length(dp)>3) dp[4] else 0L
    }
-  z <- as.numeric((x-xi)/omega)
+  prob <- numeric(length(x))
+  names(prob) <- names(x)
+  ok <- is.finite(x) & (omega > 0)
+  if(any(!ok)) {
+    prob <- replace(prob, x==-Inf, 0)
+    prob <- replace(prob, x==Inf, 1) 
+    prob <- replace(prob, is.na(x) | (omega <= 0), NA)
+    } 
+  if(sum(ok) == 0) return(prob)  
+  z <- as.numeric((x[ok] - xi)/omega)
   nz <- length(z)
   na <- length(alpha)
   if(missing(engine)) engine <- 
@@ -74,7 +83,7 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
        p[k] <- if(alpha[k] > 0)
              (pnorm(pmax(z[k],-tau)) - pnorm(-tau))/p.tau
            else
-             1- (pnorm(tau) - pnorm(pmin(z[k], tau)))/p.tau
+             1 - (pnorm(tau) - pnorm(pmin(z[k], tau)))/p.tau
       }
     else { # SNbook: (2.48), p.40
       R <- matrix(c(1, -delta[k], -delta[k], 1), 2, 2)
@@ -82,7 +91,7 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
       }}
     }}
   p <- pmin(1, pmax(0, as.numeric(p)))
-  replace(p, omega <= 0, NaN)
+  replace(prob, ok, p)
 }
 
 #
@@ -96,17 +105,25 @@ qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08,
       alpha <- dp[3]
       tau <- if(length(dp) > 3) dp[4] else 0
       }
-  p <- as.vector(p)    
+  if(omega <= 0) stop("argument 'omega' (or dp[2]) must be positive")    
+  # p <- as.vector(p)    
   max.q <- sqrt(qchisq(p, 1)) + tau
   min.q <- -sqrt(qchisq(1-p, 1)) + tau
   if(tau == 0) {
-    if(alpha == Inf)  return(as.numeric(xi + omega * max.q))
-    if(alpha == -Inf) return(as.numeric(xi + omega * min.q))
+    if(alpha == Inf)  return(xi + omega * max.q)
+    if(alpha == -Inf) return(xi + omega * min.q)
     }
   na <- is.na(p) | (p < 0) | (p > 1)
   zero <- (p == 0)
   one <- (p == 1)
-  p <- replace(p, (na | zero | one), 0.5)
+  ok <- !(na | zero | one)
+  q.all <- numeric(length(p))
+  names(q.all) <- names(p)
+  q.all <- replace(q.all, na, NA)
+  q.all <- replace(q.all, zero, -Inf)
+  q.all <- replace(q.all, one, Inf)
+  if(sum(ok) == 0) return(q.all)
+  p <- p[ok]                                            # can drop cases not-OK
   dp0 <- c(0, 1, alpha, tau)
   if(solver == "NR") {
     dp0 <- c(0, 1, alpha, tau)
@@ -128,17 +145,14 @@ qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08,
       px <- psn(x, dp=dp0, ...)
       max.err <- max(abs(px-p))
       if(is.na(max.err)) stop('failed convergence, try with solver="RFB"')
-    }
-    x <- replace(x, na, NA)
-    x <- replace(x, zero, -Inf)
-    x <- replace(x, one, Inf)
+    }  
     q <- as.numeric(xi + omega * x)
   } else { if(solver == "RFB") {
 	  abs.alpha <- abs(alpha)
 	  if(alpha < 0) p <- (1-p)
 	  x <- xa <- xb <- xc <- fa <- fb <- fc <- rep(NA, length(p))
-	  nc <- rep(TRUE, length(p)) # not converged (yet)
-	  nc[(na| zero| one)] <- FALSE
+	  nc <- rep(TRUE, length(p))                        # not converged (yet)
+	  # nc[(na| zero| one)] <- FALSE
 	  fc[!nc] <- 0
 	  xa[nc] <- qnorm(p[nc])
 	  xb[nc] <- sqrt(qchisq(p[nc], 1)) + abs(tau) 
@@ -158,15 +172,12 @@ qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08,
 		x[nc] <- xc[nc]
 		nc[(abs(fc) < tol)] <- FALSE
 		regula.falsi <- !regula.falsi 
-		}
-	  # x <- replace(x, na, NA)
-	  x <- replace(x, zero, -Inf)
-	  x <- replace(x, one, Inf)
-	  Sign <- function(x) sign(x) + as.numeric(x==0)
-	  q <- as.numeric(xi + omega * Sign(alpha)* x)
+		}	 
+    Sign <- function(x) sign(x) + as.numeric(x==0)
+    q <- as.numeric(xi + omega * Sign(alpha)* x)		
   } else stop("unknown solver")}
-  names(q) <- names(p)
-  return(q)
+  q.all[ok] <- q
+  return(q.all)
 }
   
 rsn <- function (n = 1, xi = 0, omega = 1, alpha = 0, tau = 0, dp = NULL) 
@@ -277,19 +288,23 @@ rmsn <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, tau=0, dp=NULL)
      }
   else dp0 <- list(xi=xi, Omega=Omega, alpha=alpha, tau=tau)
   if(any(is.infinite(dp0$alpha))) stop("Inf's in alpha are not allowed")
-  lot <- dp2cpMv(dp=dp0, family="SN", aux=TRUE)
   d <- length(dp0$alpha)
-  # rs <<- .Random.seed
-  y <- matrix(rnorm(n*d), n, d, byrow=TRUE) %*% chol(lot$aux$Psi) # N_d(0,Psi)
-  # .Random.seed <<- rs  
-  if(dp0$tau == 0)    
-    truncN <- abs(rnorm(n))  
-  else 
-    truncN <- qnorm(runif(n, min=pnorm(-dp0$tau), max=1))
-  truncN <- matrix(rep(truncN, d), ncol=d)
-  delta  <- lot$aux$delta
-  z <- delta * t(truncN) + sqrt(1-delta^2) * t(y)
-  y <- t(dp0$xi + lot$aux$omega * z)
+  if(d == 1) {
+    dp1 <- unlist(dp0)
+    dp1[2] <- sqrt(dp1[2])
+    y <- matrix(rsn(n, dp=dp1), ncol=1)
+  } else { 
+    lot <- dp2cpMv(dp=dp0, family="SN", aux=TRUE)
+    y <- matrix(rnorm(n*d), n, d) %*% chol(lot$aux$Psi) # N_d(0,Psi)
+    if(dp0$tau == 0)    
+      truncN <- abs(rnorm(n))  
+    else 
+      truncN <- qnorm(runif(n, min=pnorm(-dp0$tau), max=1))
+    truncN <- matrix(rep(truncN, d), ncol=d)
+    delta  <- lot$aux$delta
+    z <- delta * t(truncN) + sqrt(1-delta^2) * t(y)
+    y <- t(dp0$xi + lot$aux$omega * z)
+  }
   attr(y, "family") <- "SN"
   attr(y, "parameters") <- dp0
   return(y)
@@ -574,9 +589,13 @@ rmst <- function(n=1, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL)
      }  
   if(any(is.infinite(alpha))) stop("Inf's in alpha are not allowed")
   d <- length(alpha)
-  z <- rmsn(n, rep(0, d), Omega, alpha)
-  v <- if(nu==Inf) 1 else  rchisq(n,nu)/nu 
-  y <- t(xi+ t(z/sqrt(v)))
+  if(d == 1) 
+    y <- matrix(rst(n, xi, sqrt(Omega), alpha, nu), ncol=1)
+  else {  
+    z <- rmsn(n, rep(0, d), Omega, alpha)
+    v <- if(nu==Inf) 1 else  rchisq(n,nu)/nu 
+    y <- t(xi+ t(z/sqrt(v)))
+    }
   attr(y, "family") <- "ST"
   attr(y, "parameters") <- list(xi=xi, Omega=Omega, alpha=alpha, nu=nu)
   return(y)
@@ -5793,7 +5812,8 @@ galton_moors2alpha_nu <-
 
 #---------
 st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
-{ #  quick values: (NULL, TRUE, FALSE)
+{# inserted in version 1.6-0 (2020-03-28); quick values: (NULL, TRUE, FALSE)
+  y <- c(y)
   n <- length(y)
   if(missing(x)) x <- rep(1, n)
   x <- data.matrix(x)
@@ -5808,7 +5828,7 @@ st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
     } else { 
     beta.fit <- quantreg::rq.wfit(x, y, tau=0.5, weights=w, method="br")
     beta <- coef(beta.fit)
-    resid <- residuals(beta.fit)
+    resid <- c(residuals(beta.fit))
     }
   q.measures <- fournum(resid)
   if(is.null(quick)) {
@@ -5835,13 +5855,14 @@ st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
   logL <- sum(dst(resid, 0, omega, alpha, nu, log=TRUE))
   return(list(dp=dp, residuals=resid, logLik=logL))
 }
-
-#-----------------------------------------------------------------------
-mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30) {
+#----
+mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30) 
+{# inserted in version 1.6-0 (2020-03-28)
   matchMedian <- function(omega.bar, nu, obs.median) {
     if(any(abs(omega.bar) >= 1)) return(NA)
     pprodt2(obs.median, omega.bar, nu) - 0.5
     }  
+  y <- data.matrix(y)  
   d <- ncol(y)
   n <- nrow(y)
   if(missing(x)) x <- matrix(1, n, 1)
@@ -5854,38 +5875,44 @@ mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30) {
     dp.marg[,j] <- fit$dp
     z[,j] <- fit$residuals/dp.marg[p+1,j]
     } 
+  omega <- as.vector(dp.marg[p+1,])  
+  lambda <- c(dp.marg[p+2,])
+  delta <- lambda/sqrt(1 + lambda^2)  
   nu <- median(dp.marg[p+3,])
   # wd <- max(5, 1000/(nu + (.Machine$double.eps)^0.25))
-  Omega.bar <- diag(d)
-  for(j in 1:(d-1)) for(k in (j+1):d) {
-    w <- as.vector(z[,j] * z[,k])
-    w. <- median(w)
-    rho.max <- 0.999999
-    nu.work <- nu
-    repeat{
-      f1 <-  matchMedian(-rho.max, nu.work, w.) 
-      f2 <-  matchMedian(rho.max, nu.work, w.) 
-      if(f1*f2 < 0) break
-      nu.work <- 0.9 *nu.work
-      }
-    r <- uniroot(matchMedian, interval=c(-rho.max, rho.max), nu=nu.work, 
-                 obs.median=w.)
-    Omega.bar[j,k] <- Omega.bar[k,j]  <- r$root  
+  if(d > 1) { 
+    Omega.bar <- diag(d)
+    for(j in 1:(d-1)) for(k in (j+1):d) {
+	  w <- as.vector(z[,j] * z[,k])
+	  w. <- median(w)
+	  rho.max <- 0.999999
+	  nu.work <- nu
+	  repeat{
+	    f1 <-  matchMedian(-rho.max, nu.work, w.) 
+	    f2 <-  matchMedian(rho.max, nu.work, w.) 
+	    if(f1*f2 < 0) break
+	    nu.work <- 0.9 *nu.work
+	    }
+	  r <- uniroot(matchMedian, interval=c(-rho.max, rho.max), nu=nu.work,
+				 obs.median=w.)
+	  Omega.bar[j,k] <- Omega.bar[k,j]  <- r$root  
     }
-  lambda <- dp.marg[p+2,]
-  delta <- lambda/sqrt(1 + lambda^2)
-  Omega.star <- rbind(cbind(Omega.bar, delta), c(delta, 1))
-  k <- 0
-  repeat {
-    m <- mnormt::pd.solve(Omega.star, silent=TRUE)
-    if(!is.null(m)) break
-    k <- k+1
-    Omega.star <-  0.95 * Omega.star
-    Omega.star[cbind(1:(d+1),1:(d+1))] <- 1
-    }
-  omega <- as.vector(dp.marg[p+1,])
-  Omega <- diag(omega, d) %*% Omega.star[1:d,1:d] %*% diag(omega, d)
-  Omega <- force.symmetry(Omega)
+    Omega.star <- rbind(cbind(Omega.bar, delta), c(delta, 1))
+    k <- 0
+    repeat {
+	  m <- mnormt::pd.solve(Omega.star, silent=TRUE)
+	  if(!is.null(m)) break
+	  k <- k+1
+	  Omega.star <-  0.95 * Omega.star
+	  Omega.star[cbind(1:(d+1),1:(d+1))] <- 1
+	  }
+    Omega <- diag(omega, d) %*% Omega.star[1:d,1:d] %*% diag(omega, d)
+    Omega <- force.symmetry(Omega)
+  } else {# case d=1
+    Omega.star <- rbind(c(1, delta), c(delta,1))
+    Omega <- matrix(omega^2, 1, 1)
+    k <- NA
+  }  
   delta <- as.vector(Omega.star[d+1, 1:d]) 
   tmp <- as.vector(solve(Omega.star[1:d,1:d]) %*% delta)
   alpha <- tmp/sqrt(1 - sum(delta*tmp))
@@ -5894,7 +5921,7 @@ mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30) {
   dp.fit <- if(p==1) list(xi=dp.marg[1,], Omega=Omega, alpha=alpha, nu=nu)
     else list(beta=beta, Omega=Omega, alpha=alpha, nu=nu)
   return(list(dp=dp.fit, shrink.steps=k, dp.marginals=dp.marg, logLik=logL))
-  }
+}
   
 #---------------------------------------------------------------------------- 
 # from ~aa/SN/ST-various/St-start_MLE/SW/cdf_prod_t2.R

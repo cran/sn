@@ -1,5 +1,12 @@
 R package 'sn' - NEWS (ChangeLog) file
 --------------------------------------
+Version 2.0.2 (2022-03-07)
+Calling rmsn, rmst, rmsc with parameters for distributions with dimension 1 now
+works; the same feature applies to mst.prelimFit with a single column matrix y.
+In psn, improved handling of non-finite x values (NA, NaN, Inf's), which led
+to crashes; also, streamlined coding of qsn. Minor fixes in the documentation 
+of zeta and qsn, and improved wording elsewhere.
+
 Version 2.0.1 (2021-11-26)
 Change of the tuning arguments when numDeriv::hessian is called, to improve
 computation of the information matrix following a ST model fitting. 

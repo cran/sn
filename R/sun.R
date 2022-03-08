@@ -339,18 +339,18 @@ makeSUNdistr <- function(dp, name, compNames, HcompNames, drop=TRUE)
   dp0 <- list(xi=xi, Omega=Omega, Delta=Delta, tau=tau, Gamma=Gamma)         
   obj <- new("SUNdistr", dp = dp0, name = name, compNames=compNames, 
              HcompNames=HcompNames)
-  if(class(obj) != "SUNdistr" & drop==FALSE) 
+  if(!is(obj, "SUNdistr") & drop==FALSE) 
     stop("Error. No SUNdistr object created")
   obj
 }
 
 marginalSUNdistr <- function(object, comp, name, drop=TRUE) 
 {# builds from 'obj' the SUN marginal distribution identified by 'comp' 
-  class.obj <- class(object)
-  if(!(class.obj %in% c("SUNdistr", "SECdistrMv"))) stop("object of wrong class")
-  if(class(object) == "SECdistrMv") { 
+  # class.obj <- class(object)
+  if(!is(object, "SUNdistr") & !is(object, "SECdistrMv")) stop("object of wrong class")
+  if(is(object, "SECdistrMv")) { 
      if(slot(object, "family") == "ESN") {
-        message("This object is ESN distribution, passed on to 'SECdistrMv'")
+        message("This object is an ESN distribution, passed on to 'SECdistrMv'")
         return(marginalSECdistr(object, comp, name, drop)) }
         else stop("wrong 'family' type of 'SECdistrMv' object")
         } 
@@ -373,7 +373,7 @@ marginalSUNdistr <- function(object, comp, name, drop=TRUE)
 
 affineTransSUNdistr <- function(object, a, A, name, compNames, HcompNames, drop=TRUE)
 {# distribution of affine transformation X=a+t(A)Y; see SN book, top of p.199 
-  if(class(object) != "SUNdistr") stop("wrong object class")
+  if(!is(object, "SUNdistr")) stop("wrong object class")
   dp <- slot(object, "dp")
   d <- length(dp$xi)
   if(!is.matrix(A) || nrow(A) != d) stop("A is not a matrix or wrong nrow(A)")
@@ -401,8 +401,8 @@ affineTransSUNdistr <- function(object, a, A, name, compNames, HcompNames, drop=
 # 
 convolutionSUNdistr <- function(object1, object2,  name, compNames, HcompNames)
 {# convolution of two SUN distributions; see SN book eq.(7.8) on p.199
-  if(class(object1) != "SUNdistr" | class(object2) != "SUNdistr" ) 
-     stop("wrong object class")
+  if(!is(object1, "SUNdistr") | !is(object2, "SUNdistr")) 
+    stop("wrong object class")
   dp1 <- slot(object1, "dp")
   dp2 <- slot(object2, "dp")
   m1 <- length(dp1$tau)
@@ -440,7 +440,7 @@ convolutionSUNdistr <- function(object1, object2,  name, compNames, HcompNames)
 conditionalSUNdistr <- function(object, comp, values, eventType="=", name, drop=TRUE) 
 {# Conditional distribution for the "=" case as given by eq.(7.7) of SN book, and
  # later amendment; the distribution for the ">" case is given by RAV&AA (2020).
-  if(class(object) != "SUNdistr") stop("wrong object class")
+  if(!is(object, "SUNdistr")) stop("wrong object class")
   type <- match.arg(eventType, c("=", ">"))
   if(!is.numeric(values)) stop("non-numeric 'values'")
   dp <- slot(object, "dp")
@@ -503,9 +503,9 @@ joinSUNdistr <- function(object1, object2, name, compNames, HcompNames)
 {# join two SUN distributions assuming independence
   obj1 <- object1
   obj2 <- object2
-  if(class(obj1) != "SUNdistr") obj1 <- convertSN2SUNdistr(obj1, silent=TRUE)
+  if(!is(obj1, "SUNdistr")) obj1 <- convertSN2SUNdistr(obj1, silent=TRUE)
   if(is.null(obj1)) stop("object1 is neither a SUNdistr object nor adjustable") 
-  if(class(obj2) != "SUNdistr") obj2 <- convertSN2SUNdistr(obj2, silent=TRUE)
+  if(!is(obj2, "SUNdistr")) obj2 <- convertSN2SUNdistr(obj2, silent=TRUE)
   if(is.null(obj2)) stop("object2 is neither a SUNdistr object nor adjustable") 
   dp1 <- slot(obj1, "dp")
   dp2 <- slot(obj2, "dp")
@@ -526,14 +526,14 @@ joinSUNdistr <- function(object1, object2, name, compNames, HcompNames)
 
 convertSN2SUNdistr <- function(object, HcompNames="h", silent=FALSE)
 {# converts SN/ESN into a SUN distribution 
-  obj.cl <- class(object)
-  if(!(obj.cl %in% c("SECdistrUv", "SECdistrMv"))) 
+  # obj.cl <- class(object)
+  if(!is(object, "SECdistrUv") & !is(object, "SECdistrMv"))
     if(silent) return(NULL) else stop("wrong class object")
   obj.fm <- slot(object, "family")    
   if(!(obj.fm %in% c("SN", "ESN"))) 
     if(silent) return(NULL) else stop("wrong family of distributions")
   dp <- slot(object, "dp")   
-  if(obj.cl == "SECdistrUv") {
+  if(is(object, "SECdistrUv")) {
     xi <- dp[1]
     Omega <- matrix(dp[2]^2, 1, 1)
     alpha <- dp[3]
@@ -541,7 +541,7 @@ convertSN2SUNdistr <- function(object, HcompNames="h", silent=FALSE)
     tau <- if(length(dp)>3) dp[4] else 0
     names <- slot(object, "name")
     }
-  if(obj.cl == "SECdistrMv") {  
+  if(is(object, "SECdistrMv")) {  
     xi <- dp[[1]]
     Omega <- dp[[2]]
     alpha <- dp[[3]]
@@ -833,7 +833,7 @@ setClass("SUNdistr",
 
 setMethod("show", "SUNdistr",
   function(object){
-    if(class(object) != "SUNdistr") stop("wrong object class")
+    if(!is(object, "SUNdistr")) stop("wrong object class")
     if(object@name != "")  
       cat("Probability distribution of variable '", object@name, "'\n", sep="")
     dp <- slot(object, "dp")

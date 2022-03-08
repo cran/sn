@@ -85,7 +85,9 @@ pmsc(x, dp=, ...)
 rmsc(n=1, xi=rep(0,length(alpha)), Omega, alpha)
 rmsc(n=1, dp=)
 }
-
+For efficiency reasons, \code{rmst, rmsc} make very limited checks on the 
+validity of the arguments. For instance, failure to positive definiteness 
+of \code{Omega} would not be detected, and an uncontrolled crash occurs.
 Function \code{pmst} requires \code{\link[mnormt]{dmt}} from package 
 \pkg{mnormt}; the accuracy of its computation can be controlled via 
 argument \code{\dots}.}

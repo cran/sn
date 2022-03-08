@@ -6,7 +6,7 @@
 \alias{zeta}
 
 
-\title{Function \eqn{\log(2\,\Phi(x))}{log(2*Phi(x))} and its derivatives}
+\title{Function \eqn{\log(2\,\Phi(x))}{log(2 Phi(x))} and its derivatives}
 
 \description{The function \code{log(2*pnorm(x))} and its derivatives, 
   including inverse Mills ratio.}
@@ -28,8 +28,7 @@
   \eqn{\log(2\,\Phi(x))}{log(2\Phi(x))} is  evaluated, where \eqn{\Phi(x)} 
   denotes the \eqn{N(0,1)} cumulative distribution function.
   The derivative of order \code{k=0} refers to the function itself.
-  If \code{k} is not integer, it is converted to integer and a warning
-  message is generated.  If \code{k<0} or \code{k>5}, \code{NULL} is returned.
+  If \code{k} is not an integer within \code{0,..., 5}, \code{NULL} is returned.
 }
 
 \section{Background}{

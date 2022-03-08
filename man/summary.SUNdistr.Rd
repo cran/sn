@@ -52,9 +52,11 @@
  
  
 \references{
-Arellano-Valle, R. B. and Azzalini, A. (2020).
-  Some properties of the unified skew-normal distribution.
-  \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
+Arellano-Valle, R. B. and Azzalini, A. (2021).
+Some properties of the unified skew-normal distribution.
+\emph{Statistical Papers}, 
+\doi{https://doi.org/10.1007/s00362-021-01235-2}
+and \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}    
 
 Azzalini, A. with the collaboration of Capitanio, A. (2014). 
   \emph{The Skew-Normal and Related Families}. 

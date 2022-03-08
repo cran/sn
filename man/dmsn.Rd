@@ -72,8 +72,11 @@ pmsn(x, dp=)
 rmsn(n=1, xi=rep(0,length(alpha)), Omega, alpha)
 rmsn(n=1, dp=)
 }
-  Function \code{pmsn} makes use of \code{pmnorm} from package \pkg{mnormt};
-  the accuracy of its computation can be controlled via \code{...}
+For efficiency reasons, \code{rmsn} makes very limited checks on the 
+validity of the arguments. For instance, failure to positive definiteness 
+of \code{Omega} would not be detected, and an uncontrolled crash occurs. 
+Function \code{pmsn} makes use of \code{pmnorm} from package \pkg{mnormt};
+the accuracy of its computation can be controlled via \code{...}
 }
 
 \section{Background}{
