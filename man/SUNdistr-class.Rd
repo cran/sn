@@ -62,8 +62,8 @@
 \author{Adelchi Azzalini}
 
 \seealso{
-  \code{\link{plot,SUNdistr-method}}, \eqn{\quad}{}
-  \code{\link{summary,SUNdistr-method}}, \eqn{\quad}{}
+  \code{\link{plot,SUNdistr-method}}, \eqn{\quad}
+  \code{\link{summary,SUNdistr-method}}, \eqn{\quad}
   \code{\link{affineTransSUNdistr}},  \code{\link{marginalSUNdistr}}
   
   \code{\link{convertSN2SUNdistr}} to convert a \code{SECdistr} object with

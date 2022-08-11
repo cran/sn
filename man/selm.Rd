@@ -380,10 +380,9 @@ of \eqn{\nu} values; function \code{\link{profile.selm}} can be useful here.
 Details on the numerical optimization which has produced object \code{obj} 
 can be extracted with \code{slot(obj, "opt.method")}; inspection of this
 component can be useful in problematic cases.
-Be aware that  occasionally \code{optim} and \code{nlminb} declare successful
-completion of a regular minimization problem at a point where the Hessian 
-matrix is not positive-definite. An example of this sort is presented in the 
-final portion of the examples below.  
+# Be aware that  occasionally \code{optim} and \code{nlminb} declare successful
+# completion of a regular minimization problem at a point where the Hessian 
+# matrix is not positive-definite. 
 }
 
 
@@ -460,15 +459,6 @@ plot(m28)
 m4 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines)
 m5 <- selm(cbind(alcohol,sugar)~1, family="ST", data=wines, fixed=list(alpha=0))
 print(1 - pchisq(2*as.numeric(logLik(m4)-logLik(m5)), 2)) # test for symmetry
-#
-\donttest{
-# illustrate the final passage of 'Cautionary notes' section above:
-# the execution of the next selm command is known to produce warning messages
-# although the optimizer declares successful convergence
-m31 <- selm(cbind(BMI, LBM)~ Ht + Wt, family="ST", data=ais)
-# Warning message...
-slot(m31, "opt.method")$convergence   # a 0 value indicates success
-}
 }
 
 \keyword{regression}

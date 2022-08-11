@@ -19,7 +19,7 @@ Returns a quantile-based four-number summary of the input data
 fournum(x, na.rm = TRUE, ...)
 }
 \arguments{
-  \item{x}{a numeric vector,  maybe including \code{NA}s and \code{+/n Inf}s.
+  \item{x}{a numeric vector,  maybe including \code{NA}s and \code{+/-Inf}'s.
      At least 8 not-\code{NA} values are required.
      It works with objects which can be coerced to vector.}
   \item{na.rm}{	 logical; 
@@ -42,26 +42,29 @@ fournum(x, na.rm = TRUE, ...)
        \code{(oct[7] - oct[5] + oct[3] - oct[1])/(oct[6] - oct[2])}
   }
   The term \sQuote{coefficient of quartile deviation} is adopted from the
-  Encyclopedia of Statistical Sciences; see the reference below.
+  Encyclopedia of Statistical Sciences; see the references below.
   What is called Galton-Bowley measure here is often named 
   \sQuote{Bowley's measure}, but some sources attribute it to Francis Galton. 
-  For the Moors measure, see the reference  below.
+  For the Moors measure, see Moors (1988).
 }
 
 \value{a vector of length four containing the median, the quartile deviation, 
-  the Galton-Bowley measure and the Moors measure}
+  the Galton-Bowley measure and the Moors measure. However,
+  if \code{x} does not contain at least 8 values (after removing \code{NA}s),
+  \code{rep(NA,4)} is returned.}
+  
 
 \references{
 
 \sQuote{Quartile deviation, coefficient of}, in:
   \emph{Encyclopedia of Statistical Sciences}, 2nd edition (2006). 
   Editors: Samuel Kotz (Editor-in-Chief), Campbell B. Read, N. Balakrishnan, 
-  Brani Vidakovic.  Vol. 10, p.6743.
+  Brani Vidakovic. Volume 10, p.6743.
   
 \sQuote{Skewness, Bowleys's measures of}, in:
   \emph{Encyclopedia of Statistical Sciences}, 2nd edition (2006). 
   Editors: Samuel Kotz (Editor-in-Chief), Campbell B. Read, N. Balakrishnan, 
-  Brani Vidakovic.   Vol. 12, p.7771-7773.
+  Brani Vidakovic.   Volume 12, p.7771-7773.
 
 
 Moors, J.J.A. (1988). 
@@ -70,14 +73,12 @@ Moors, J.J.A. (1988).
   Series D (The Statistician)}, Vol. 37, pp. 25-32
 
 }
-\author{
-Adelchi Azzalini
-}
+\author{Adelchi Azzalini}
+
 \note{
  Computation of octiles makes real sense only if \code{length(x)} is
- substantially larger than 8. If \code{x} does not contain at least 8 values
- (excluding \code{NA}s), the function returns \code{rep(NA,4)}.}
- 
+ substantially larger than 8. }
+  
 \seealso{\code{\link[stats]{quantile}}, \code{\link[stats]{fivenum}},
    \code{\link[stats]{IQR}}  }
 

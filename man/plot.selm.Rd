@@ -7,7 +7,7 @@
 \alias{plot.mselm}
 \alias{plot,selm-method}
 \alias{plot,mselm-method}
-\concept{QQ-plot}
+
 
 \title{Diagnostic plots for \code{selm} fits}
 
@@ -162,3 +162,4 @@ plot(m30, col=2, which=2)
 \author{Adelchi Azzalini}
 
 \keyword{hplot}
+\concept{QQ-plot}

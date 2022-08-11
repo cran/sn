@@ -1,26 +1,37 @@
 
-importFrom("stats",  ".getXlevels", "approxfun", "as.formula", 
-  "contrasts", "cov2cor", 
-  "dcauchy", "dchisq", "dnorm", "dt", "integrate", "is.empty.model", 
-  "lm.wfit", "model.matrix", "model.offset", "model.response", "model.weights",
-  "optimize", "pf", "pnorm", "printCoefmat", "pt", "qchisq", "qf", "qnorm", 
-  "qt", "quantile", "rchisq", "resid", "rnorm", "runif", "uniroot", "var",
-  "residuals", "fitted", "weights", "optim", "nlminb", "splinefun",
-  "delete.response", "model.frame", "na.pass", "terms", "median",
-  "dbeta", "dlogis", "dunif", "pbeta", "pcauchy",
-  "plogis", "punif", "rbeta", "rcauchy", "rlogis", "rt")
-importFrom("graphics", "plot", "Axis", "abline", "axis", "box", "boxplot", 
-  "contour", "hist", "lines", "mtext", "panel.smooth", "par", "points", "rug", 
-  "strheight", "text", "title")
-importFrom("grDevices", "dev.interactive", "devAskNewPage", "extendrange",
-  "contourLines")
-importFrom("utils", "packageDescription")
-importFrom("mnormt", dmnorm, pmnorm, rmnorm, dmt, pmt, rmt, pd.solve, 
-  biv.nt.prob, mom.mtruncnorm)
-importFrom("numDeriv", grad, hessian)
-import("methods") 
-import("stats4")
+importFrom(stats,  
+  dnorm, dt, dcauchy,  dbeta, dlogis, dunif, dchisq, dmultinom,
+  pnorm, pt, pcauchy, pbeta, plogis, punif, pf, pgamma, pweibull,
+  qnorm, qchisq, qt, qf, qcauchy,
+  rnorm, runif, rbeta, rcauchy, rlogis, rt, rchisq,
+  is.empty.model, .getXlevels, as.formula, contrasts, 
+  approxfun, uniroot, integrate, optim, nlminb, splinefun,  optimize,
+  model.matrix, model.offset, model.response, model.weights,
+  lm.wfit,  terms, model.frame, printCoefmat,  delete.response,  resid, 
+  weighted.mean, median, quantile, var, cov2cor, 
+  residuals, fitted, weights, na.pass
+  )
   
+importFrom(graphics, 
+  plot, Axis, abline, axis, box, boxplot, contour, 
+  hist, lines, mtext, panel.smooth, par, points, rug, 
+  strheight, text, title)
+  
+importFrom(grDevices, 
+  dev.interactive, devAskNewPage, extendrange, contourLines)
+  
+importFrom(utils, packageDescription)
+
+importFrom(mnormt, 
+  dmnorm, pmnorm, rmnorm, dmt, pmt, rmt, pd.solve, biv.nt.prob, mom.mtruncnorm)
+
+importFrom(numDeriv, grad, hessian)
+
+import(methods) 
+
+import(stats4)
+
+#-----------------------------  
 S3method(weights, selm)
 S3method(weights, mselm)
 S3method(coef, selm)
@@ -35,7 +46,15 @@ S3method(profile, selm)
 S3method(confint, selm)
 S3method(predict, selm)
 S3method(sd, default)
+S3method(logLik, fitdistr.grouped)
+S3method(plot, fitdistr.grouped, plot.fitdistr.grouped)
+S3method(summary, fitdistr.grouped, summary.fitdistr.grouped)
+S3method(print, fitdistr.grouped, print.fitdistr.grouped)
+S3method(coef, fitdistr.grouped)
+S3method(vcov, fitdistr.grouped)
+S3method(fitted, fitdistr.grouped, fitted.fitdistr.grouped)
 
+#-----------------------------  
 export(
   T.Owen, zeta, sn.cumulants, st.cumulants,
   dsn, psn, qsn, rsn,
@@ -64,12 +83,13 @@ export(
   makeSUNdistr, #  plot.SUNdistr, summary.SUNdistr,
   affineTransSUNdistr, marginalSUNdistr,  conditionalSUNdistr, 
   joinSUNdistr, convolutionSUNdistr,
-  convertSN2SUNdistr, convertCSN2SUNpar
+  convertSN2SUNdistr, convertCSN2SUNpar,
+  fitdistr.grouped, plot.fitdistr.grouped, spread.grouped
   )
  
-exportMethods("show", "plot", "summary", "coef",  "logLik", "residuals",
-   "fitted", "mean", "vcov", "sd", "profile", "confint", "predict")
+exportMethods(show, plot, summary, coef,  logLik, residuals,
+   fitted, mean, vcov, sd, profile, confint, predict)
 
-exportClasses("SECdistrUv", "SECdistrMv", "summary.SECdistrUv", 
-  "summary.SECdistrMv", "selm", "mselm", "summary.selm", "summary.mselm",
-  "SUNdistr", "summary.SUNdistr")
+exportClasses(SECdistrUv, SECdistrMv, summary.SECdistrUv, 
+  summary.SECdistrMv, selm, mselm, summary.selm, summary.mselm,
+  SUNdistr, summary.SUNdistr)

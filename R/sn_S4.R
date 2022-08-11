@@ -223,7 +223,7 @@ setClass("selm",
      residuals.dp="numeric", fitted.values.dp="numeric", control="list", 
      input="list", opt.method="list"),
    validity=function(object){
-     if(class(object) != "selm") return(FALSE)
+     if(!is(object, "selm")) return(FALSE)
      if(!is.numeric(object@logL)) return(FALSE)
      if(!(object@family %in% c("SN","ST","SC","ESN"))) return(FALSE)
      if(!is.vector(object@param$dp)) return(FALSE)
@@ -303,7 +303,7 @@ setClass("mselm",
      residuals.dp="matrix", fitted.values.dp="matrix", control="list",
      input="list", opt.method="list"),
    validity=function(object){
-     if(class(object) != "mselm") return(FALSE)
+     if(!is(object, "mselm")) return(FALSE)
      if(!is.numeric(object@logL)) return(FALSE)
      if(!(object@family %in% c("SN","ST","SC","ESN"))) return(FALSE)
      if(!is.list(object@param$dp)) return(FALSE)

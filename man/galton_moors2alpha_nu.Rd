@@ -4,6 +4,7 @@
 %---------------------
 \name{galton_moors2alpha_nu}
 \alias{galton_moors2alpha_nu}
+\alias{galton2alpha}
 \concept{quantile}
 \concept{asymmetry}
 \concept{skewness}
@@ -13,15 +14,18 @@
       (\eqn{alpha}, \eqn{nu}) parameters of a ST distribution}
       
 \description{Given a pair of (Galton-Bowley, Moors) measures of skewness and 
-kurtosis for a given sample, a pair of values  (\eqn{alpha}, \eqn{nu}) are
-found such that a skew-\emph{t} (\acronym{ST}) distribution with these slant 
-and tail-weight  parameter has its (Galton-Bowley, Moors) measures equal to 
-the input values.
-This function is mainly intended for internal package usage.
+kurtosis for a given sample, \code{galton_moors2alpha_nu} delivers values  
+(\eqn{alpha}, \eqn{nu})  such that a skew-\emph{t} (\acronym{ST}) distribution 
+with these slant  and tail-weight  parameter has its (Galton-Bowley, Moors) 
+measures equal to  the input values.
+Its simplified version \code{galton2alpha} uses only a Galton-Bowley measure
+to deliver a \eqn{alpha} value, assuming a \acronym{SN} distribution.
+These functions are mainly intended for internal package usage.
 }
 \usage{
 galton_moors2alpha_nu(galton, moors, quick = TRUE, move.in = TRUE, verbose = 0, 
   abstol = 1e-04)
+galton2alpha(galton, move.in = TRUE)  
 }
 
 \arguments{
@@ -35,11 +39,15 @@ galton_moors2alpha_nu(galton, moors, quick = TRUE, move.in = TRUE, verbose = 0,
   \item{abstol}{the tolerance value of the mapping, only relevant is
       \code{quick=FALSE}}
 }
-\details{For background information about the  Galton-Bowley's and 
+
+\details{For background information about the Galton-Bowley's and 
 the Moors measures, see the documentation of \code{\link[sn]{fournum}}.
 The working of the mapping by described in Azzalini and Salehi (2020).
 }
-\value{a named vector of length two, with one or more descriptive attributes}
+
+\value{for \code{galton_moors2alpha_nu}, named vector of length two, 
+with one or more descriptive attributes; 
+for \code{galton2alpha}, a single \code{alpha} value.}
 
 \references{
 Azzalini, A. and Salehi, M. (2020).
@@ -53,8 +61,8 @@ Springer. DOI: 10.1007/978-3-030-42196-0
 
 \author{Adelchi Azzalini}
 
-\note{This function is mainly intended for internal package usage.
-Specifically it is used by \code{\link{st.prelimFit}}.}
+\note{These functions are mainly intended for internal package usage.
+Specifically they are used by \code{\link{st.prelimFit}}.}
 
 
 \seealso{\code{\link[sn]{fournum}}, \code{\link{st.prelimFit}} }

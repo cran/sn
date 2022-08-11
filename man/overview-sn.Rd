@@ -1,6 +1,6 @@
 %  file sn/man/overview-sn.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2017-2021 Adelchi Azzalini
+%  copyright (C) 2017-2022 Adelchi Azzalini
 %---------------------
 % HTML version: R CMD Rdconv overview.Rd --type=html -o overview.html
 %
@@ -8,17 +8,18 @@
 \docType{package}
 \encoding{UTF-8}
 \alias{overview-sn}
+% \alias(overview}
 
-\title{Package \pkg{sn}: overview of the package structure and commands}
+\title{Package \pkg{sn}: overview of the structure and main commands}
 
 \description{ 
 The package provides facilities to build and manipulate probability 
-distributions of the skew-normal  and some related families, 
-notably the skew-\eqn{t} and the and the `unified skew-normal' (\acronym{SUN})
-families. 
-For the skew-normal, the skew-\eqn{t}  and the skew-Cauchy families,
-it also makes available statistical methods for data fitting and model 
-diagnostics,  in the univariate and  the multivariate case.
+distributions of the skew-normal (\acronym{SN})  and some related families, 
+notably the skew-\eqn{t} (\acronym{ST}) and the \sQuote{unified skew-normal} 
+(\acronym{SUN}) families. 
+For the \acronym{SN}, \acronym{ST} and skew-Cauchy (\acronym{SC}) families,
+statistical methods are made available for data fitting and model diagnostics,  
+in the univariate and  the multivariate case.
 }
 
 \section{Two main sides}{ 
@@ -66,8 +67,11 @@ individual components, a parameter set can be specified as a single \code{dp}
 entity, namely a vector in the univariate case, a list in the multivariate
 case; \code{dp} stands for \sQuote{Direct Parameters} (\acronym{DP}).
 
-Conversion from the \code{dp} parameter set to the corresponding Centred 
-Parameters (\acronym{CP}) can be accomplished using the function \code{dp2cp},
+Another set of parameters is in use, denoted Centred Parameters (\acronym{CP}),
+which are more convenient for interpretability, since they correspond to
+familiar quantifies, such as the mean and the standard deviation. 
+Conversion from the \code{dp} parameter set to the corresponding \acronym{CP}
+parameters can be accomplished using the function \code{dp2cp},
 while function \code{cp2dp} performs the inverse transformation.
 
 The \acronym{SUN} family is mainly targeted to the multivariate context, 
@@ -126,7 +130,8 @@ independence.
 \section{Statistics side}{%
 The main function for data fitting is represented by \code{selm}, which allows
 to specify a linear regression model for the location parameter, similarly 
-to function \code{lm}, but assuming a \dfn{skew-elliptical} distribution;
+to function \code{lm}, but assuming a \dfn{skew-elliptical} distribution
+of the random component;
 this explains the name \dfn{selm=(se+lm)}. Allowed types of distributions
 are  \acronym{SN} (but not \acronym{ESN}), \acronym{ST} and \acronym{SC}.
 The fitted distribution is univariate or multivariate, depending on the nature

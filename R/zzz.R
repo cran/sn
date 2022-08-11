@@ -8,9 +8,10 @@
   {
     # pkg <- Package("sn")
     meta <- packageDescription("sn")
+    overview <- 'help("overview-sn")'
     packageStartupMessage(
-      "Package 'sn', ", meta$Version, " (", meta$Date, "). ",
-      "Type 'help(SN)' and 'help(overview-sn)' for basic information.\n",
+      "Package 'sn', ", meta$Version, " (", meta$Date, "). \n",
+      "Type 'help(SN)' and '", overview, "' for basic information.\n",
       "The package redefines function 'sd' but its usual working is unchanged.")
   }
   invisible()

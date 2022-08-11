@@ -395,14 +395,13 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
   else  {
     p <- numeric(length(z))
     for (i in seq_len(length(z))) {
-     if(abs(z[i]) == Inf)
-       p[i] <- (1 + sign(z[i]))/2
-    else {      
-      if(method==1 || (method==0  && int.nu &&  (nu > nu0))) { # method 1
+      if(abs(z[i]) == Inf)  p[i] <- (1 + sign(z[i]))/2
+      else {      
+        if(method==1 || (method==0  && int.nu &&  (nu > nu0))) { # method 1
         out <- try(pmst(z[i], 0, matrix(1,1,1), alpha, nu, ...), silent=TRUE) 
         p[i] <- if(inherits(out, "try-error"))  NA else  p[i] <- out
         }
-    else {
+      else {
       # upper <- if(absalpha> 1) 5/absalpha + 25/(absalpha*nu) else 5+25/nu
       upper <- 10 + 50/nu
       if(method==2 || (method==0 & (z[i] < upper) )) 
@@ -424,7 +423,7 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
 
 pst_int <- function (x, xi=0, omega=1, alpha=0, nu=Inf) 
 {# Jamalizadeh, Khosravi and Balakrishnan (2009, CSDA)
-  if(nu != round(nu) | nu < 1) stop("'nu' not a positive integer")
+  if(nu != round(nu) | nu < 1) stop("'nu' is not a positive integer")
   if(omega <= 0) return(NaN)
   z <- (x-xi)/omega
   if(nu == 1) 
@@ -516,7 +515,7 @@ qst_bounds <- function(p, alpha, nu)
   lower <- qt(p, nu)           # quantiles for alpha=0
   upper <- sqrt(qf(p, 1, nu))  # quantiles for alpha=Inf
   wide <- (upper-lower) > 5
-  if(any(wide)) {
+  if(any(wide)) { # improves 'lower' when is too low, moving down from 'upper' 
     for(k in 1:sum(wide)) {
       kk <- which(wide)[k]
       step <- 5
@@ -1608,7 +1607,7 @@ function(cp, cp.type="proper", start=NULL, silent=FALSE, tol=1e-8, trace=FALSE)
     new <- c(delta, nu)
     step <- abs(old-new)[1] + abs(log(old[2])- log(new[2]))
     if(trace) 
-      cat("delta, nu, log(step):", format(c(delta, nu, log(step))),"\n")
+      cat("[st.cp2dp] delta, nu, log(step):", format(c(delta, nu, log(step))),"\n")
     old <- new
     }
   if(anyNA(out)) return(out)
@@ -1647,7 +1646,7 @@ mst.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
        {if(silent) return(NULL) else stop("no CP could be found")}
      dp.marg[j,] <- dp
   }
-  if(trace) {cat("starting dp:\n"); print(dp.marg)}
+  if(trace) cat("[mst.cp2dp] starting dp values:", dp.marg, "\n")
   fn <- function(par, Sigma, gamma1, gamma2M, trace=FALSE){
     if(trace)  cat("[mst.cp2dp[fn]] par:", format(par), "\n")
     nu <- exp(par[1])+4
@@ -1670,15 +1669,18 @@ mst.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
   if(trace) cat("[mst.cp2dp] par:", format(par), "\n")
   opt <- nlminb(par, fn, Sigma=Sigma, gamma1=gamma1, gamma2M=gamma2M,
                 trace=trace)
-  if(trace) cat("[mst.cp2dp]\nopt$convergence:", opt$convergence, 
-                "\nopt$message", opt$message, "\n")
+  if(trace) {
+    cat("[mst.cp2dp] outcome from optimization step\n")
+    cat("opt$convergence:", opt$convergence, "\n")
+    cat("nopt$message", opt$message, "\n")
+    }
   if(opt$convergence != 0) 
     { if(silent) return(NULL) else stop ("no CP could be found") }
   par <- opt$par
   nu <- exp(par[1])+4
   delta <- par[-1]/sqrt(1+par[-1]^2)
   if(trace) {
-    cat("[mst.cp2dp]min opt$fn:", format(opt$obj),"\n")
+    cat("[mst.cp2dp] min opt$fn:", format(opt$obj),"\n")
     print(c(nu,delta))
     }
   mu.z <- delta*b(nu)
@@ -1700,7 +1702,7 @@ mst.cp2dp <- function(cp, silent=FALSE, tol=1e-8, trace=FALSE)
 affineTransSECdistr <- function(object, a, A, name, compNames, drop=TRUE)
 {# object is of class SECdistrMv
  # computes distribution of affine transformation of SEC variable T=a+t(A)Y
-  if(class(object) != "SECdistrMv") stop("wrong object class")
+  if(!is(object, "SECdistrMv")) stop("wrong object class")
   dp <- slot(object, "dp")
   alpha <- dp$alpha
   d <- length(alpha)
@@ -2833,6 +2835,7 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
                 opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG",  "SANN"),
                 control=list() )
 {
+  if(trace) cat("[msn.mle] function is starting\n")
   y <- data.matrix(y)
   n <- nrow(y)
   if(missing(x)) x <- rep(1, n)
@@ -2847,6 +2850,7 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
   y.names <- dimnames(y)[[2]] 
   x.names <- dimnames(x)[[2]]
   opt.method <- match.arg(opt.method)
+
   if(is.null(start)) {
      fit0  <- lm.wfit(x, y, w, method="qr")
      beta  <- as.matrix(coef(fit0))
@@ -2866,7 +2870,7 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
     }
   eta <-alpha/omega
   if(trace){ 
-    cat("Initial parameters:\n")
+    cat("initial parameters:\n")
     print(cbind(t(beta),eta,Omega))
     }
   param <- c(beta,eta)
@@ -2878,10 +2882,6 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
     }
   else opt <- optim(param, fn=msn.dev, gr=msn.dev.grad, method=opt.method,
                   control=control, x=x, y=y, w=w, trace=trace)    
-  if(trace) {
-    cat("Message from function", opt.method, ":", opt$message,"\n")
-    cat("Output parameters: " , format(opt$par), "\n")
-    }
   logL <- opt$value/(-2) 
   beta <- matrix(opt$par[1:(p*d)],p,d)
   dimnames(beta)[2] <- list(y.names)
@@ -2901,6 +2901,12 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
   opt$method <- opt.method
   opt$called.by <- "msn.mle"
   aux <- list(alpha.star=sqrt(alpha2), delta.star=delta.star)
+    if(trace) {
+    cat("[msn.mle] function is completing\n")
+    cat("message from ", opt.method, "(maybe empty):", opt$message,"\n")
+    cat("final working parameters: " , format(opt$par), "\n")
+    cat("log-likelihood:", format(logL, nsmall=2), "\n")
+    }
   list(call=match.call(), dp=dp, logL=logL, aux=aux, opt.method=opt)
 }
 
@@ -2919,7 +2925,7 @@ msn.dev <- function(param, x, y, w, trace=FALSE)
   logDet <- sum(log(abs(D)))
   dev <- n*logDet - 2*sum(zeta(0, y0 %*% eta) * w) + n*d
   if(trace) { 
-    cat("\nmsn.dev:",dev,"\n","parameters:"); 
+    cat("\nmsn.dev:",dev,"\n","working parameters:\n"); 
     print(rbind(beta,eta))
     }
   dev
@@ -2941,7 +2947,7 @@ msn.dev.grad <- function(param, x, y, w, trace=FALSE)
   Dbeta <- (t(x) %*% (y0*w) %*% Omega.inv - outer(as.vector(t(x) %*% p1), eta))
   Deta <- as.vector(t(y0) %*% p1)
   if(trace){
-    cat("gradient:\n")
+    cat("[msn.dev.grad] gradient:\n")
     print(rbind(Dbeta,Deta))}
   -2*c(Dbeta,Deta)
 }
@@ -2978,6 +2984,7 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   penalty=NULL, trace=FALSE, 
   opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), control=list())
 { # MLE of DP for univariate ST distribution, allowing case symmetr[ic]=TRUE
+  if(trace) cat("[st.mple] function is starting\n")
   if(missing(y)) stop("required argument y is missing")
   y.name <- deparse(substitute(y))
   if(!is.vector(y)) y <- as.vector(y)
@@ -2993,6 +3000,8 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   if(missing(w)) w <- rep(1, n)
   if(length(w) != n) stop("incompatible dimensions")
   nw <- sum(w)
+  verbose <- as.numeric(trace)*2
+  if(trace) cat("st.mple running...")
   if(is.null(dp) | mode(dp)=="character") {
     Mx <- if(mode(dp) == "character") dp[1] else "M2" 
     if(!(Mx %in% c("M0", "M2", "M3"))) stop("invalid 'dp' initialization")
@@ -3007,15 +3016,16 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
       if(is.null(dp)) dp <- rep(NA,length(cp))
       if(any(is.na(dp))) dp <- c(cp[1:(p+1)], 0, 10)
       }
-    if(Mx == "M2") dp <- st.prelimFit(x, y, w, quick=TRUE)$dp
-    if(Mx == "M3") dp <- st.prelimFit(x, y, w, quick=NULL)$dp
+    if(Mx == "M2") dp <- st.prelimFit(x, y, w, quick=TRUE, verbose=verbose)$dp
+    if(Mx == "M3") dp <- st.prelimFit(x, y, w, quick=NULL, verbose=verbose)$dp
     if(!is.null(fixed.nu)) dp <- dp[-length(dp)]
     if(symmetr) dp <- dp[-length(dp)]
+    if(trace) cat("starting dp values obtained from st.prelimFit\n")
     }
   else{ 
     if(length(dp) != (p+2-as.numeric(symmetr)+as.numeric(is.null(fixed.nu))))
        stop("arg 'dp' has wrong length")}
-  if(trace) cat("dp (starting values) =", format(dp), "\n")
+  if(trace) cat("[st.mple] dp (starting values):", format(dp), "\n")
   tiny <- (.Machine$double.eps)^(0.25) 
   low.dp <- c(rep(-Inf, p), tiny, if(symmetr) NULL else -Inf,   
               if(is.null(fixed.nu)) tiny)
@@ -3024,7 +3034,7 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   penalty.fn <- if(is.null(penalty)) NULL else get(penalty, inherits=TRUE) 
   if(opt.method == "nlminb") {
     opt <- nlminb(dp, objective=st.pdev, gradient=st.pdev.gh, 
-           # Note: do NOT set 'hessian=st.dev.hessian', much time-comsuming 
+           # Note: do NOT set 'hessian=st.dev.hessian', much time-consuming 
            lower=low.dp, upper=high.dp, control=control,
            x=x, y=y, w=w, fixed.nu=fixed.nu, symmetr=symmetr, 
            penalty=penalty.fn, trace=trace)
@@ -3051,9 +3061,10 @@ st.mple <- function(x, y, dp=NULL, w, fixed.nu=NULL, symmetr=FALSE,
   if(is.null(fixed.nu)) boundary <- (boundary | dp[length(dp)] > 1e3)
   # AA, must improve this rule
   if(trace) {
-     cat("Message from function", opt.method, ": ", opt$message, "\n")
-     cat("estimates (dp):", dp, "\n")
-     cat("log-likelihood:", logL, "\n")
+     cat("[st.mple] function is completing")
+     cat("message from", opt.method, "(maybe none):", opt$message, "\n")
+     cat("estimates (dp):", format(dp), "\n")
+     cat("log-likelihood:", format(logL, nsmall=2), "\n")
      }
   list(call=match.call(), dp=dp, fixed.nu=fixed.nu, logL=logL, 
       dp.complete=dp., boundary=boundary, opt.method=opt)
@@ -3302,6 +3313,7 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
                 opt.method = c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"),
                 control = list()) 
 {
+  if(trace) cat("[mst.mple] function is starting\n")
   if(missing(y)) stop("required argument y is missing")
   y.name <- deparse(substitute(y))
   y <- data.matrix(y)
@@ -3318,6 +3330,7 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
   d <- ncol(y)
   p <- ncol(x)
   opt.method <- match.arg(opt.method)
+  verbose <- as.numeric(trace)*2
   if(is.null(start) | mode(start)=="character") {
     Mx <- if(mode(start) == "character") start[1] else "M3" 
     if(!(Mx %in% c("M0", "M2", "M3"))) stop("invalid 'start'")
@@ -3330,18 +3343,21 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
       nu <- if(is.null(fixed.nu)) 8 else fixed.nu
       dp <- list(beta=beta, Omega=Omega, alpha=alpha, nu=nu)
       }
-    if(Mx == "M2") dp <- mst.prelimFit(x, y, quick=TRUE)$dp
-    if(Mx == "M3") dp <- mst.prelimFit(x, y, quick=NULL)$dp  
+    if(Mx == "M2") dp <- mst.prelimFit(x, y, quick=TRUE, verbose=verbose)$dp
+    if(Mx == "M3") dp <- mst.prelimFit(x, y, quick=NULL, verbose=verbose)$dp  
+    if(trace) cat("starting dp values obtained from mst.prelimFit\n")
   }
   else {
     if (all(dim(start[[2]]) == c(d,d), length(start[[3]]) == d))  dp <- start
     else stop("argument 'start' is not in the form that I expected")
     }
+  beta <- dp[[1]] 
+  Omega=dp[[2]]  
   alpha <- if(symmetr)  rep(0,d) else dp[[3]]
   nu <- if(!is.null(fixed.nu)) fixed.nu else dp[[4]]
-  dp <- list(beta=dp[[1]], Omega=dp[[2]], alpha=alpha, nu=nu)
-  if (trace) cat("mst.mple: starting dp = (",
-       c(beta, Omega[!upper.tri(Omega)], alpha, nu),  ")\n")
+  dp <- list(beta=beta, Omega=Omega, alpha=alpha, nu=nu)
+  if (trace) cat("[mst.mple] starting values for dp: ",
+       c(beta, Omega[!upper.tri(Omega)], alpha, nu),  "\n")
   param <- dplist2optpar(dp[1:3])
   if(symmetr) param <- param[-(p*d + d*(d+1)/2 + (1:d))]
   if(is.null(fixed.nu)) param <- c(param, log(nu))
@@ -3363,13 +3379,10 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
       # info <- opt$hessian/2
       }
   dev   <- opt$value
+  logL <- dev/(-2)
   param <- opt$par
   opt$method <- opt.method
   opt$called.by <- "mst.mple"
-  if (trace) {
-      cat("Message from optimization routine:", opt$message, "\n")
-      cat("(penalized) deviance:", format(dev), "\n")
-  }
   par <- opt$par 
   npar0 <- (p*d + d*(d+1)/2)
   vp <- par[1:npar0]
@@ -3389,8 +3402,13 @@ mst.mple <- function (x, y, start=NULL, w, fixed.nu = NULL, symmetr=FALSE,
   aux <- list(fixed.nu=fixed.nu, symmetr=symmetr, alpha.star=sqrt(alpha2), 
               delta.star=delta.star)
   boundary <- ((1 - delta.star) < .Machine$double.eps^(1/4))
-  if(is.null(fixed.nu)) boundary <- (boundary | dp$nu > 1e3)     
-  list(call=match.call(), dp=dp, dp.complete=dp.complete, logL=dev/(-2),
+  if(is.null(fixed.nu)) boundary <- (boundary | dp$nu > 1e3)  
+  if (trace) {
+    cat("[mst.mple] function is completing\n")
+    cat("message from optimization routine (maybe empty):", opt$message, "\n")
+    cat("(penalized) log-likelihood:", format(logL, nsmall=2), "\n")
+  }   
+  list(call=match.call(), dp=dp, dp.complete=dp.complete, logL=logL,
     boundary=boundary, aux=aux, opt.method = opt)
 }
 
@@ -3801,6 +3819,7 @@ st.infoMv <- function(dp, x=NULL, y, w, fixed.nu=NULL, symmetr=FALSE,
 sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE, 
   opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG", "SANN"), control=list()) 
 {# MPLE for CP of univariate SN (not intendend for ESN)
+  if(trace) cat("[sn.mple] function is starting\n")
   if(missing(y)) stop("required argument y is missing")
   y.name <- deparse(substitute(y))
   if(!is.vector(y)) y <- as.vector(y)
@@ -3821,7 +3840,15 @@ sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE,
     s <- sqrt(sum(qr.resid(qr.x, y)^2)/n)
     gamma1 <- sum(qr.resid(qr.x, y)^3)/(n*s^3)
     if(abs(gamma1) > max.gamma1) gamma1 <- sign(gamma1)*0.9*max.gamma1
-    cp <- as.numeric(c(qr.coef(qr.x, y), s, gamma1))
+    cp1 <- as.numeric(c(qr.coef(qr.x, y), s, gamma1))
+    dp1 <- cp2dp(cp1, family="SN")
+    logL1 <- sum(dsn(y, x %*% dp1[1:p], dp1[p+1], dp1[p+2], log=TRUE))
+    sn.prelim <- st.prelimFit(x, y, verbose=as.numeric(trace), SN=TRUE)
+    logL2 <- sn.prelim$logLik
+    if(logL2 > logL1) {dp <- sn.prelim$dp; type <- 2} else {dp <- dp1; type <-1}
+    cp <- dp2cp(dp, family="SN")
+    if(trace) 
+      cat("[sn.mple] initial CP estimates, type", type, "=", format(cp), "\n")
     }
   else{ 
     if(length(cp)!= (p+2)) stop("ncol(x)+2 != length(cp)")}
@@ -3845,9 +3872,10 @@ sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE,
   logL <- (-opt$value)/2
   boundary <- as.logical(abs(cp[p+2]) >= max.gamma1)
   if(trace) {
-    cat("Message from function", opt.method, ": ", opt$message, "\n")
-    cat("estimates (cp):", format(cp), "\n")
-    cat("(penalized) log-likelihood:", format(logL), "\n")
+    cat("[sn.mple] function is closing\n")
+    cat("message from optimizer", opt.method, "(maybe empty):", opt$message, "\n")
+    cat("estimates (cp) =", format(cp), "\n")
+    cat("(penalized) log-likelihood =", format(logL, nsmall=2), "\n")
     }
   opt$method <- opt.method
   opt$called.by <- "sn.mple"  
@@ -4024,6 +4052,7 @@ msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
                 opt.method=c("nlminb", "Nelder-Mead", "BFGS", "CG",  "SANN"),
                 control=list() )
 {
+  if(trace) cat("[msn.mple] function is starting\n")
   y <- data.matrix(y)
   n <- nrow(y)
   if(missing(x)) x <- rep(1, n)
@@ -4038,9 +4067,9 @@ msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
   y.names <- dimnames(y)[[2]] 
   x.names <- dimnames(x)[[2]]
   opt.method <- match.arg(opt.method)
-  if(is.null(start))  start <- msn.mle(x, y, NULL, w)$dp
+  if(is.null(start))  start <- msn.mle(x, y, NULL, w, trace=trace)$dp
   if(trace){  
-    cat("msn.mple initial parameters:\n")
+    cat("[msn.mple] initial parameters:\n")
     print(cbind(t(start[[1]]), start$Omega, start$alpha))
     }
   param <- dplist2optpar(start) 
@@ -4055,8 +4084,6 @@ msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
    opt <- optim(param, fn=msn.pdev, method=opt.method,
                control=control, x=x, y=y, w=w, penalty=penalty, trace=trace)
    }
-  if(trace) 
-    cat(paste("Message from optimization routine:", opt$message,"\n"))
   logL <- opt$value/(-2) 
   dp.list <- optpar2dplist(opt$par, d, p)
   beta <- dp.list$beta
@@ -4072,6 +4099,11 @@ msn.mple <- function(x, y, start=NULL, w, trace=FALSE, penalty=NULL,
   opt$method <- opt.method
   opt$called.by <- "msn.mple"
   aux <- list(penalty=penalty, alpha.star=sqrt(alpha2), delta.star=delta.star)
+  if(trace) {
+    if(trace) cat("[msn.mple] function is closing\n")
+    cat("message from optimization routine (maybe empty):", opt$message,"\n")
+    cat("(penalized) log-likelikood:", format(logL, nsmall=2), "\n")
+    }
   list(call=match.call(), dp=dp, logL=logL, aux=aux, opt.method=opt)
 }
 
@@ -4085,7 +4117,8 @@ msn.pdev <- function(param, x, y, w, penalty=NULL, trace=FALSE)
   logL <- sum(w * dmsn(y, x %*% dp.$beta, dp.$Omega, dp.$alpha, log=TRUE))
   Q <- if(is.null(penalty)) 0 else penalty(list(dp.$alpha,dp.$Omega), der=0)
   pdev <- (-2)*(logL-Q)
-  if(trace) cat("opt param:", format(param), "\nmsn.pdev:", format(pdev),"\n")
+  if(trace) 
+    cat("[msn.pdev] opt param:", format(param), "\nmsn.pdev:", format(pdev),"\n")
   return(pdev)
 }
  
@@ -4438,7 +4471,7 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
     cex.id = 0.75, identline = TRUE, add.smooth = getOption("add.smooth"), 
     label.pos = c(4, 2), cex.caption = 1) 
 {
-    if(class(x) != "selm") stop("object not of class 'selm'")
+    if(!(is(x, "selm"))) stop("object not of class 'selm'")
     show <- rep(FALSE, 4)
     show[which] <- TRUE
     dots <- list(...)
@@ -4974,7 +5007,7 @@ vcov.SECdistrMv <- function(object) dp2cp(object=object, upto=2)[[2]]
 profile.selm <- function(fitted, param.type, param.name, param.values, npt,
   opt.control=list(), plot.it=TRUE, log=TRUE, levels, trace=FALSE, ...)
 { obj <- fitted
-  if(class(obj) != "selm")  
+  if(!is(obj, "selm"))
     stop(gettextf("wrong object class: '%s'", class(obj)), domain = NA)
   param.type <- match.arg(toupper(param.type), c("DP", "CP"))
   family <- slot(obj, "family")
@@ -5239,7 +5272,7 @@ discreteSpiral <- function(s, maxX, maxY)
 constrained.logLik <- function(free.param, param.type, x, y, weights, family, 
   constr.comp=NA, constr.values=NA, penalty=NULL, trace=FALSE, negative=FALSE)
 {
-  if(trace) cat("constrained.logLik, free.param:", format(free.param))
+  if(trace) cat("[constrained.logLik] free.param:", format(free.param))
   n <- sum(weights)
   p <- ncol(x)
   param <- numeric(length(free.param) + length(constr.values))
@@ -5688,7 +5721,7 @@ galton_moors2alpha_nu <-
     9.9456, 8.5883, 7.1096, 5.5251, 4.5430, 3.8879, 3.0876, 2.6296, 
 	2.3393, 2.1417, 2.0000, 1.6522, 1.5167, 1.4033, 1.3542, 1.3269, 
 	1.2977, 1.2771, 1.2618, 1.2544, 1.2471, 1.2436, 1.2414, 1.2372, 1.2331)
-  galtonInf <- c(# Galton values at nu=Inf, from galtonM[,npt2]
+  galtonInf <- c(# Galton-Bowley values at nu=Inf, from galtonM[,npt2]
     0, 2.4746e-05, 2.0388e-04, 7.2391e-04, 1.8496e-03, 4.0097e-03, 7.9865e-03, 
     1.5413e-02, 3.0388e-02, 6.6491e-02, 0.10594, 0.14343, 0.144292171045)
   moorsInf <- c(# Moors values at nu=Inf, from moorsM[,npt2]
@@ -5766,9 +5799,9 @@ galton_moors2alpha_nu <-
     galton.new <- sign(galton)* 0.95 * bound.GB[k]
     moors.new <- if(k < length(dist)) 1.05*bound.Moors[k] 
                  else moors.new <- max(moorsInf) + 0.01
-    note <- paste("(galton,moors) reset to:", format(galton.new), ",",
+    note <- paste("(galton, moors) reset to:", format(galton.new), ",",
         format(moors.new))
-    if(verbose > 0) message(note)  
+    if(verbose > 0) cat("[galton_moors2alpha_nu]", note)  
     out <- galton_moors2alpha_nu(galton.new, moors.new, quick, move.in, verbose)
     attr(out, "note") <- paste("unfeasible input values,", note)
     return(out)
@@ -5791,13 +5824,14 @@ galton_moors2alpha_nu <-
 	 }   
   out <- c(alpha=alpha, nu=exp(log.nu))
   attr(out, "method") <- "quick match"
-  if(quick) return(out)
-  if(verbose > 0) 
-    cat("(GaltonBowley, Moors) quick match:", format(out), "\n")
+  if(verbose > 0) cat("[galton_moors2alpha_nu] quick match:", format(out), "\n")
+  if(quick) return(out)  
   log.nu <- min(log.nu, 5)  # avoid huge log.nu at start, especially Inf 
-  if(verbose > 1) message("Second step of (GaltonBowley, Moors) inversion")
+  if(verbose > 1) 
+    cat("[galton_moors2alpha_nu] second step of (GaltonBowley, Moors) inversion")
   opt <- invert.GM(abs.galton, moors, abs(alpha), log.nu, verbose, abstol)
   if(verbose > 1) { 
+    cat("[galton_moors2alpha_nu] outcome from invert.GM")
     cat("opt$(message, convergence, par, value):")
     cat(opt$message,", ")
     cat(opt$convergence,", ")
@@ -5809,10 +5843,23 @@ galton_moors2alpha_nu <-
   attr(out, "method") <- "two-step match"
   return(out)
   }
-
 #---------
-st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
-{# inserted in version 1.6-0 (2020-03-28); quick values: (NULL, TRUE, FALSE)
+galton2alpha <- function(galton, move.in=TRUE) {
+  max.GB <- 0.144292171 # 0.144292171045
+  deltaV <- c(seq(0, 0.9, by=0.1), 0.95, 0.99, 0.99999)
+  alphaV <- deltaV/sqrt(1-deltaV^2) 
+  galtonV <- c(# Galton-Bowley values for SN distributions
+    0, 2.4746e-05, 2.0388e-04, 7.2391e-04, 1.8496e-03, 4.0097e-03, 7.9865e-03, 
+    1.5413e-02, 3.0388e-02, 6.6491e-02, 0.10594, 0.14343, max.GB)
+  interp.alpha <- splinefun(galtonV, alphaV, method="hyman")
+  alpha0 <- if(abs(galton) < max.GB) interp.alpha(abs(galton)) 
+        else { if(move.in) 10 else Inf}
+  alpha <- sign(galton) * alpha0
+  return(alpha)
+}  
+#---------
+st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30, SN=FALSE)
+{# inserted in version 1.6-0 (2020-03-28); updated in v.2.1.0
   y <- c(y)
   n <- length(y)
   if(missing(x)) x <- rep(1, n)
@@ -5823,14 +5870,14 @@ st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
   if(missing(w)) w <- rep(1, n)
   if(n != length(w)) stop("dimension mismatch of w,y")
   if(p==1) {
-    beta <- stats::median(y, na.rm=TRUE)
+    beta <- stats::median(rep(y, w), na.rm=TRUE)   
     resid <- (y-beta)
     } else { 
     beta.fit <- quantreg::rq.wfit(x, y, tau=0.5, weights=w, method="br")
     beta <- coef(beta.fit)
     resid <- c(residuals(beta.fit))
     }
-  q.measures <- fournum(resid)
+  q.measures <- fournum(rep(resid, w))  
   if(is.null(quick)) {
     alpha <- 0
     nu <- 10
@@ -5838,11 +5885,17 @@ st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
   else {
     galton <- q.measures[3]
     moors <- q.measures[4]
-    alpha_nu <- galton_moors2alpha_nu(galton, moors, quick=quick, move.in=TRUE,
-                 verbose=verbose, abstol=1e-4)     
-    alpha <- alpha_nu[1]
-    nu    <- min(alpha_nu[2], max.nu)  
-    }         
+    if(SN) {
+        alpha <- galton2alpha(galton, move.in=TRUE)
+        nu <- Inf
+      } else {
+        alpha_nu <- galton_moors2alpha_nu(galton, moors, quick=quick, 
+                    move.in=TRUE, verbose=verbose, abstol=1e-4)     
+        alpha <- alpha_nu[1]
+        nu    <- min(alpha_nu[2], max.nu)  
+      }  
+    }   
+  if(verbose > 0) cat("[st.prelimFit] c(alpha, nu) = ", alpha, nu, "\n")      
   omega <- 2 * q.measures[2]/diff(qst(c(0.25, 0.75), 0, 1, alpha, nu))
   shift <- qst(0.5, 0, omega, alpha, nu)
   beta[1] <- beta[1] - shift
@@ -5853,11 +5906,13 @@ st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
   if(p == 1)  names.x <- "xi"   
   names(dp) <- c(names.x, "omega", "alpha", "nu")
   logL <- sum(dst(resid, 0, omega, alpha, nu, log=TRUE))
+  if(SN) dp <- dp[-length(dp)]
+  if(verbose > 1) cat("[st.prelimFit] c(dp, logL) = ", dp, logL, "\n") 
   return(list(dp=dp, residuals=resid, logLik=logL))
 }
 #----
-mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30) 
-{# inserted in version 1.6-0 (2020-03-28)
+mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30, SN=FALSE) 
+{# inserted in version 1.6-0 (2020-03-28), updated in version 2.1.0
   matchMedian <- function(omega.bar, nu, obs.median) {
     if(any(abs(omega.bar) >= 1)) return(NA)
     pprodt2(obs.median, omega.bar, nu) - 0.5
@@ -5871,7 +5926,7 @@ mst.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30)
   dp.marg <- matrix(NA, p+3, d)
   z <- matrix(NA, n, d)
   for(j in 1:d)  {
-    fit <- st.prelimFit(x, y=y[,j], w, quick, verbose, max.nu)
+    fit <- st.prelimFit(x, y=y[,j], w, quick, verbose, max.nu, SN=SN)
     dp.marg[,j] <- fit$dp
     z[,j] <- fit$residuals/dp.marg[p+1,j]
     } 
@@ -6010,4 +6065,244 @@ pprodn2 <- function(x, rho)
     }
   return(p)
 }
- 
+#----------------------------------------------------------------------------
+# 2022-07-21, introduce fitdistr.grouped and related methods
+fitdistr.grouped <- function (breaks, counts, family, weights, 
+   trace = FALSE, wpar = NULL) 
+{
+  if(!missing(weights)) {if(missing(counts)) counts <- weights else 
+    stop("you cannot set both counts and weights")} # (counts = weights)  
+  nf <- length(counts)
+  if(any(counts < 0)) stop("negative counts")
+  if(any(counts != round(counts))) stop("non-integer counts")
+  if(any(is.na(c(breaks, counts)))) stop("NAs in breaks or counts")
+  if(any(diff(breaks) <= 0)) stop("'breaks' not in increasing order") 
+  if(length(breaks) != (nf+1)) stop('mismatch of the input vector sizes')
+  if(tolower(family) == "gaussian") family <- "normal"
+  fam.rv <- c("normal", "logistic", "t", "Cauchy", "SN", "ST", "SC") # real-valued families  
+  fam.pv <- c("gamma", "Weibull")  # positive-valued families
+  fam <- c(fam.rv, fam.pv)
+  fam.funct <-  c("norm", "logis", "t", "cauchy", "sn", "st", "sc", "gamma", "weibull")
+  family <- match.arg(family, fam, several.ok=FALSE)
+  if((family %in% fam.pv) & any(breaks < 0)) stop('negative breaks')
+  fam.npar <- c(2, 2, 3, 2, 3, 4, 3, 2, 2)
+  which.fam <- which(family==fam)[1]
+  family.bn <- fam.funct[which.fam]  # family function basename
+  npar <- fam.npar[which.fam]
+  pos <- # TRUE for intrinsically-positive parameter components  
+         if(family %in% fam.pv) rep(TRUE, npar)  
+            else {if(family=='t') c(FALSE, TRUE, TRUE) 
+              else c(FALSE, TRUE, FALSE, TRUE)[1:npar]}
+  br <- breaks
+  width <- diff(br)
+  if(is.infinite(breaks[1]) | is.infinite(breaks[nf+1])) {
+    br <- c(br[2] - 3*width[2], br[2:nf], br[nf] + 3*width[nf-1])
+    if(family %in% fam.pv) br[1] <- max(br[1], 0)
+    }
+  if(is.null(wpar)) {
+    # midpts <- (br[-1]+ br[-(nf+1)])/2
+    spread.x <- spread.grouped(br, counts, "centre")
+    if(trace) cat("[fitdistr.grouped] obtaining initial working parameters:\n")
+    if(family %in% c("SN", "ST", "SC")) {
+      fit <- st.prelimFit(y=spread.x, max.nu=20, verbose=2*as.numeric(trace))
+      dp <- fit$dp
+      wpar <-  c(dp[1], log(dp[2]), dp[3])
+      if(family=="ST") wpar <- c(wpar, log(dp[4])) 
+      }
+    else {
+      m <- mean(spread.x)
+      s <- sd(spread.x)
+      wpar <- switch(family,
+        "normal"= c(m, log(s)),
+        "logistic"=  c(m, log(sqrt(3)* s/pi)),
+        "t" = c(m, log(s*sqrt(5/3)), log(5)),  
+        "Cauchy" = {mq <- mqCauchy(spread.x); c(mq[1], log(mq[2]))},
+        "gamma" = {a <- (m/s)^2; log(c(a, a/m))},
+        "Weibull"= log(mmWeibull(m, s))
+        )   
+      }  
+    if(trace) 
+      cat("[fitdistr.grouped] initial working parameters:", format(wpar),"\n")  
+    } 
+    else {if(length(wpar) != npar) stop("wrong number of 'wpar' components")}
+  breaks.full <- breaks  
+  counts.full <- counts  
+  id.orig <- rep(TRUE, length(counts))
+  if((family %in% fam.pv) & (breaks[1] > 0)) { 
+    breaks.full <- c(0, breaks)
+    counts.full <- c(0, counts)
+    id.orig <- c(FALSE, rep(TRUE, length(counts)))
+    } 
+  if((family %in% fam.rv) & (breaks[1] > -Inf)) { 
+    breaks.full <- c(-Inf, breaks)
+    counts.full <- c(0, counts)
+    id.orig <- c(FALSE, rep(TRUE, length(counts)))
+    }
+  if(breaks[length(breaks)] < Inf) {
+    breaks.full <- c(breaks.full, Inf)
+    counts.full <- c(counts.full, 0)
+    id.orig <- c(id.orig, FALSE)
+    }  # range(breaks.full) now spans the entire support of 'family'  
+  if(!(length(breaks.full) > npar)) stop("too few intervals for this family")     
+  opt <- optim(wpar, logL.grouped, method="Nelder-Mead",  
+     control=list(fnscale=-1), breaks = breaks.full, counts = counts.full,  
+     family=family, trace = trace, fitted=FALSE, hessian=TRUE)
+  wpar <- opt$par  
+  dp <- ifelse(pos, exp(wpar), wpar)
+  u <- ifelse(pos, 1/dp, 1)
+  names(dp) <- { if(family == "t") c("location", "scale", "df") else 
+    formalArgs(paste("d", family.bn, sep=""))[2:(npar+1)] }
+  logL <- logL.grouped(wpar, breaks.full, counts.full, family, fitted=TRUE)
+  fitted <- attr(logL, "fitted")
+  info <- diag(u) %*% (-opt$hessian) %*% diag(u)
+  dimnames(info) <- list(names(dp), names(dp))
+  v <- try(solve(info))
+  vcov <- if(inherits(v, "try-error")) NULL else v
+  input <- list(counts=counts, breaks=breaks, family=family, family.bn=family.bn, 
+     breaks.plot=br, breaks.full=breaks.full, id.orig=id.orig)
+  structure(
+    list(call=match.call(), family=family, logL=logL, param=dp, vcov=vcov,  
+    fitted=fitted, input=input, opt=opt), class="fitdistr.grouped")
+}
+#
+logL.grouped <- function(wpar, breaks, counts, family, trace = FALSE, fitted=FALSE) 
+{
+  br <- breaks[-c(1, length(breaks))] # assume outer breaks are support boundaries
+  cdf <- switch(family, 
+     "normal" = pnorm(br, wpar[1], exp(wpar[2])),
+     "logistic" = plogis(br, wpar[1], exp(wpar[2])),
+     "t" = pt((br - wpar[1])/exp(wpar[2]), exp(wpar[3])),
+     "Cauchy" = pcauchy(br, wpar[1], exp(wpar[2])),
+     "SN" = psn(br, wpar[1], exp(wpar[2]), wpar[3]),
+     "ST" = pst(br, wpar[1], exp(wpar[2]), wpar[3], exp(wpar[4])),
+     "SC" = psc(br, wpar[1], exp(wpar[2]), wpar[3]),
+     "gamma" = pgamma(br, exp(wpar[1]), exp(wpar[2])),
+     "Weibull" = pweibull(br, exp(wpar[1]), exp(wpar[2]))
+     )
+  prob <- pmax(diff(c(0, cdf, 1)), 0)
+  n <- sum(counts)
+  if(any(is.na(prob))) return(NA)
+  logL <- try(dmultinom(counts, n, prob, log=TRUE))
+  if(inherits(logL, "try-error")) return(NA)
+  if (trace) cat("[logL.grouped] (working parameters, logLik):", 
+     format(c(wpar, logL)),"\n") 
+  if(fitted) attr(logL, "fitted") <- prob * n
+  logL
+}
+#---
+coef.fitdistr.grouped <- function(object, ...) object$param
+vcov.fitdistr.grouped <- function(object,  ...) object$vcov
+logLik.fitdistr.grouped <- function(object, ...) {
+  logL <- object$logL 
+  attr(logL,"df") <- length(object$param)
+  class(logL) <- "logLik"
+  return(logL)
+  }
+  
+fitted.fitdistr.grouped <- function(object, full=FALSE, ...) 
+  if(full) object$fitted else object$fitted[object$input$id.orig]   
+  
+summary.fitdistr.grouped <- function(object, cor=FALSE, ...){
+  obj.name <- deparse(substitute(object))
+  cat(obj.name, "- fitted", object$family, "distribution from grouped data\n")
+  param <- coef.fitdistr.grouped(object)
+  vcov <- vcov.fitdistr.grouped(object)
+  std.err <- sqrt(diag(vcov))
+  input <- object$input
+  cat("number of observed counts:", length(input$counts), "\n")
+  cat("number of full-range intervals:", length(input$breaks.full) -1 , "\n")
+  cat("total number of observations:", sum(input$counts), "\n")
+  logL <- object$logL
+  cat("log-likelihood:", format(logL, nsmall=2), "\n")
+  print(cbind(param, std.err, "z-value"=param/std.err))
+  if(cor) {cat("correlation matrix of the estimates:\n"); print(cov2cor(vcov))}
+  invisible(list(param=param, std.err=std.err, vcov=vcov, logL=logL))
+}
+
+print.fitdistr.grouped <- function(x, ...){
+  object <- x
+  print(object$call)
+  # cat("family:", object$family, "\n")
+  cat("fitted parameters:", format(object$param, ...), "\n")
+  cat("log-likelihood:", format(object$logL, nsmall=2), "\n")
+}
+#---
+plot.fitdistr.grouped <- function(x, freq=FALSE,   
+   col="grey90", border="grey80", pdfcol="blue", main, sub=NULL,
+   xlab, ylab, xlim, ylim, axes=TRUE, labels=FALSE, ...) {
+  x.name <- deparse(substitute(x)) 
+  object <- x
+  input <- object$input
+  breaks <- if(all(is.finite(input$breaks))) input$breaks 
+    else {
+      warning("Inf(s) in 'breaks' are replaced by constructed values")
+      input$breaks.plot }
+  widths <- diff(breaks)     
+  if(freq & var(widths) > 0 ) 
+    stop("Arguments not suitable for plot.histogram; rather use 'freq=FALSE'")  
+  width <- if(var(widths) == 0) widths[1] else NA
+  dp <- object$param
+  if(missing(xlim)) xlim <- range(pretty(breaks))  
+  x <- seq(xlim[1], xlim[2], length=201)
+  if(missing(main)) main <- paste(
+    x.name, "- histogram and fitted family", object$family, "for grouped data")
+  if(missing(xlab)) xlab <- "" 
+  if(missing(ylab)) ylab <- if(freq) "frequencies" else "density function" 
+  pdf <- if(input$family == "t") dt((x - dp[1])/dp[2], dp[3]) 
+    else {
+      dp.char <- paste(paste("dp[", 1:length(dp), "]", sep=""),  collapse=", ")
+      pdf.char <- paste("d", input$family.bn, "(x, ", dp.char, ")", sep="")
+      eval(parse(text=pdf.char))
+      }
+  counts <- input$counts
+  n <- sum(counts)
+  rel.freq <- counts/(n*widths) 
+  if(missing(ylim)) ylim=c(0, max(rel.freq, pdf) * if(freq) n*width else 1)   
+  # see graphics:::plot.histogram, hist.default
+  r <- structure(list(breaks = breaks, counts = counts, density = rel.freq, 
+        mids = NULL, xname = NULL), class = "histogram")
+  plot(r, freq=freq, col = col, border = border, 
+        angle = NULL, density = NULL, main = main, xlim = xlim, ylim = ylim, 
+        xlab = xlab, ylab = ylab, axes = axes, labels = NULL, ...)
+  y <- if(freq) n*width*pdf else pdf       
+  lines(x, y, col=pdfcol)   
+  invisible(list(hist=r, x=x, y=y))
+}
+#---
+mmWeibull <- function(mu, sigma, ...) {
+# estimate Weibull parameters with the method of moments 
+  fn <- function(a, r2) gamma(1+2/a)/gamma(1+1/a)^2 -1 - r2
+  root <- uniroot(fn, interval=c(0.5, 5), extendInt="yes", r2=(sigma/mu)^2, ...)
+  a <- root$root
+  b <- sigma/sqrt(gamma(1+2/a) - gamma(1+1/a)^2)
+  c(shape=a, scale=b)
+}
+#---
+mqCauchy <- function(x, p=0.25) {
+# estimate Cauchy parameters from selected quantiles
+  tiny <- 1/length(x)
+  if((p <= tiny) | (p >= 0.5-tiny)) stop("unfeasible 'p'")
+  probs <- c(p, 0.5, 1-p)
+  qCauchy <- qcauchy(probs, 0, 1)
+  q <- quantile(x, probs)
+  s <- (q[3] - q[1])/(qCauchy[3] - qCauchy[1])
+  c(q[2], s)
+} 
+#---
+spread.grouped <- function(breaks, counts, shift="centre") {
+  if(any(is.na(c(breaks, counts)))) stop("NA in breaks or counts")
+  if(any(is.infinite(c(breaks, counts)))) stop("Inf in breaks or counts")
+  if(any(counts != round(counts))) stop("non-integer counts")
+  n <- length(counts)
+  if(length(breaks) != (n+1)) stop("incompatible size of (breaks, counts)")
+  shift <- match.arg(shift, c("left", "centre", "right"), several.ok=FALSE)
+  step <- switch(shift, "left" = 0, "centre" = 0.5, "right" = 1)
+  width <- diff(breaks)
+  if(any(width <= 0)) stop("breaks not (strictly) increasing")
+  x <- NULL
+  for(j in 1:n) {
+    x.j <- breaks[j]+ (seq_len(counts[j]) - 1 + step)*width[j]/counts[j]
+    x <- c(x, x.j)
+    }
+  return(x)
+}

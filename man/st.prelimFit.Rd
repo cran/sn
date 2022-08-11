@@ -17,8 +17,8 @@ maximization of the likelihood function.
 These functions are mainly intended for internal package use.}
 
 \usage{
-st.prelimFit(x, y, w, quick = TRUE, verbose = 0, max.nu = 30)
-mst.prelimFit(x, y, w, quick = TRUE, verbose = 0, max.nu = 30)
+st.prelimFit(x, y, w, quick = TRUE, verbose = 0, max.nu = 30, SN=FALSE)
+mst.prelimFit(x, y, w, quick = TRUE, verbose = 0, max.nu = 30, SN=FALSE)
 }
 
 \arguments{
@@ -29,11 +29,13 @@ mst.prelimFit(x, y, w, quick = TRUE, verbose = 0, max.nu = 30)
   \item{w}{a vector of non-negative integer weights of length \code{n}; 
     if missing, a vector of all 1's is generated.}
   \item{quick}{logical value which regulates whether a very quick estimate 
-     is produced (default value \code{TRUE}); 
-     see \sQuote{Details} for additional information.}
+    is produced (default value \code{TRUE}); 
+    see \sQuote{Details} for additional information.}
   \item{verbose}{an integer value which regulates the amount of messages
     printed out; default value is 0.}
   \item{max.nu}{threshold for the estimated degrees of freedom}
+  \item{SN}{logical value (default value: \code{FALSE}); 
+    if \code{TRUE}, a \acronym{SN} distribution is assumed.} 
 }
 
 \details{
@@ -47,7 +49,9 @@ after fitting a median regression.
 Argument \code{quick} selects whether the above-described matching is performed
 in a quick or in an accurate way. Since the output values of this function are 
 intended to be only initial values for subsequent likelihood maximization,
-this explains the default option \code{quick=TRUE}.
+this explains the default option \code{quick=TRUE}. Other possible values
+are \code{FALSE} and \code{NULL}; the latter simply sets \code{alpha=0}
+and \code{nu=10}.
 
 Since the methodology hinges on some selected sample quantiles, 
 it can occasionally be spoiled by poor behaviour of these basic quantiles,
