@@ -30,11 +30,10 @@ sunVcov(xi, Omega, Delta, tau, Gamma, dp = NULL, silent=FALSE, ...)
 sunMardia(xi, Omega, Delta, tau, Gamma, dp = NULL, silent=FALSE, ...)
 }
 \arguments{
-  \item{x}{a vector of length \code{d}, where \code{d=ncol(Omega)},
+  \item{x}{either a vector of length \code{d}, where \code{d=ncol(Omega)},
    with the coordinates of the point where the density or the
-   distribution function must be evaluated.
-   For \code{dsun} and  \code{psun} only, a matrix with \code{d} columns
-   representing multiple points is also allowed.}
+   distribution function must be evaluated, or alternatively
+   a \code{d}-column matrix whose rows represent a set of points.}
 
   \item{xi}{a numeric vector of length \code{d} representing the 
    location parameter of the distribution; see \sQuote{Background}.
@@ -42,7 +41,7 @@ sunMardia(xi, Omega, Delta, tau, Gamma, dp = NULL, silent=FALSE, ...)
    whose rows represent a set of location parameters;
    in this case, its dimensions must match those of \code{x}.}
 
-  \item{Omega}{a symmetric positive-definite matrix of dimension \code{(d,d)};
+  \item{Omega}{a symmetric positive definite matrix of dimension \code{(d,d)};
    see \sQuote{Details}.}
 
   \item{Delta}{a matrix of size \code{(d,m)}, where \code{m=length(tau)};
@@ -50,7 +49,7 @@ sunMardia(xi, Omega, Delta, tau, Gamma, dp = NULL, silent=FALSE, ...)
 
   \item{tau}{a vector of length \code{m}, say.}
   
-  \item{Gamma}{a symmetric positivedefinite matrix of dimension \code{(m,m)}
+  \item{Gamma}{a symmetric positive definite matrix of dimension \code{(m,m)}
    with 1's on its main diagonal, that is, a correlation matrix}
     
   \item{dp}{a list with five elements, representing \code{xi} 
@@ -149,8 +148,8 @@ and must satisfy the following  conditions:
 \item \eqn{\Omega} is a symmetric positive definite matrix;
 \item \eqn{\Gamma} is a symmetric positive definite matrix with 1's 
     on the main diagonal, hence a correlation matrix;
-\item if \eqn{\bar\Omega}{\Omega°} denotes the correlation matrix 
-  associated to \eqn{\Omega},  
+\item if \eqn{\bar\Omega}  % {\Omega°} 
+  denotes the correlation matrix associated to \eqn{\Omega},  
   the matrix of size \eqn{(d+m)\times(d+m)}{((d+m), (d+m))}
   \if{html}{formed by the \eqn{2 x 2} blocks}
   \ifelse{latex}{
@@ -160,7 +159,7 @@ and must satisfy the following  conditions:
             \end{array} \right)} 
        }{ % non-LaTeX
         \tabular{rrcc}{
-            \tab  \tab \eqn{\Omega°}  \tab  \eqn{\Delta} \cr
+            \tab  \tab \eqn{\bar\Omega}  \tab  \eqn{\Delta} \cr
             \tab  \tab \eqn{\Delta'}  \tab  \eqn{\Gamma}  }
        }
   must be a positive definite correlation matrix.}
@@ -198,13 +197,14 @@ by an orthant.
 \references{
 Arellano-Valle, R. B., and Azzalini, A. (2006).
 On the unification of families of skew-normal distributions.
-\emph{Scand. J. Stat.} \bold{33}. 561-574. 
+\emph{Scand. J. Stat.} \bold{33}, 561-574. 
+Corrigendum in  \bold{49} (2022), 1418-1419.
 
 Arellano-Valle, R. B. and Azzalini, A. (2021).
 Some properties of the unified skew-normal distribution.
-\emph{Statistical Papers}, 
-\doi{https://doi.org/10.1007/s00362-021-01235-2}
-and \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
+\emph{Statistical Papers} \bold{63}, 461-487,
+\doi{https://doi.org/10.1007/s00362-021-01235-2};
+see also \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
   
 Arellano-Valle, R. B. and Genton, M. G. (2005). 
 On fundamental skew distributions. 

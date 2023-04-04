@@ -11,11 +11,12 @@
 \title{Skew-\eqn{t} Distribution}
 
 \description{Density function, distribution function, quantiles and 
-  random number  generation for the skew-\eqn{t} (ST) distribution}
+  random number generation for the skew-\eqn{t} (\acronym{ST}) distribution.}
 
 \usage{
 dst(x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, log=FALSE) 
-pst(x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
+pst(x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, lower.tail=TRUE, 
+    log.p=FALSE, ...)
 qst(p, xi=0, omega=1, alpha=0, nu=Inf, tol=1e-08, dp=NULL, method=0, ...)
 rst(n=1, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL)
 }
@@ -39,18 +40,24 @@ it must be of length 1.}
 
 \item{n}{a positive integer representing the sample size.}
 
-\item{log}{logical; if TRUE, densities  are given as log-densities}
+\item{log, log.p}{logical; if \code{TRUE}, densities  are given as log-densities
+   and probabilities \code{p} are given as \code{log(p)}}
 
 \item{tol}{
   a scalar value which regulates the accuracy of the result of
   \code{qsn}, measured on the probability scale.
-}
+  }
 
-\item{method}{an integer value between \code{0} and \code{4} which selects 
+\item{method}{an integer value between \code{0} and \code{5} which selects 
   the computing method; see \sQuote{Details} below for the meaning of these
   values. If \code{method=0} (default value), an automatic choice is made
   among the four actual computing methods, depending on the other
   arguments.}
+
+\item{lower.tail}{
+  logical; if \code{TRUE} (default), probabilities are \eqn{P\{X\le x\}},
+  otherwise  \eqn{P\{X\ge x\}}
+  }
 
 \item{...}{additional parameters passed to \code{integrate} or \code{pmst}.}
 
@@ -87,26 +94,31 @@ A multivariate version of the distribution exists; see \code{dmst}.
 \section{Details}{
 For evaluation of \code{pst}, and so indirectly of
 \code{qst}, four different methods are employed.
+In all the cases, the actual computations are performed for the normalized 
+values \code{z=(x-xi)/omega}).
 Method 1 consists in using \code{pmst} with dimension \code{d=1}.
 Method 2 applies \code{integrate} to the density function \code{dst}.
 Method 3 again uses \code{integrate} too but with a different integrand,
-as given in Section 4.2 of Azzalini & Capitanio (2003), full version of
-the paper.
+as given in Section 4.2 of Azzalini & Capitanio (2003, full version of
+the paper).
 Method 4 consists in the recursive procedure of Jamalizadeh, Khosravi and
 Balakrishnan (2009), which is recalled in Complement 4.3 on 
 Azzalini & Capitanio (2014); the recursion over \code{nu} starts from 
 the explicit expression for \code{nu=1} given by \code{psc}.
-Of these, Method 1 and 4 are only suitable for integer values of \code{nu}.
+Method 5 is targeted to tail probabilities only, and it returns \code{NA}s
+for non-extreme \code{x} values (those with \code{abs(z)<=20}); 
+it is based on expressions given in Complement 4.4 of Azzalini and Capitanio (2014).
+Method 1 and 4 are only suitable for integer values of \code{nu}.
 Method 4 becomes progressively less efficient as \code{nu} increases,
 because the value of \code{nu} determines the number of nested calls, 
 but the decay of efficiency is slower for larger values of \code{length(x)}.
 If the default argument value \code{method=0} is retained, an automatic choice
 among the above four methods is made, which depends on the values of 
-\code{nu, alpha, length(x)}. The numerical accuracy of methods 1, 2 and 3 can 
+\code{nu, alpha, z}. The numerical accuracy of methods 1, 2 and 3 can 
 be regulated via the \code{...} argument, while method 4 is conceptually exact, 
 up to machine precision.
 
-If \code{qst} is called with \code{nu>1e4}, computation is transferred to
+If \code{qst} is called with \code{nu>1e4}, the computation is transferred to
 \code{qsn}. 
 }
 

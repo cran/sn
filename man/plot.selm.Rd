@@ -157,6 +157,12 @@ plot(m28, col=4)
 data(ais)
 m30 <-  selm(cbind(RCC, Hg, Fe) ~ 1, family="SN", data=ais)
 plot(m30, col=2, which=2)
+
+# multiple plots on the same sheet 
+par(mfcol=c(2,2)) 
+plot(m30, which=1:3)
+par(mfcol=c(1,1)) 
+
 }
 
 \author{Adelchi Azzalini}

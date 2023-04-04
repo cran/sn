@@ -1,48 +1,73 @@
 \name{NEWS}
 \title{News for Package \sQuote{sn}}
 \encoding{UTF-8}
+\section{Changes in sn version 2.1.1 (2023-04-04)}{
+  \itemize{
+  \item Coding of \code{pst} is improved for extreme \code{x} arguments
+    by employing asymptotic expressions of tail probabilites. 
+    As an implication, this change improves the working of \code{qst}.
+    Also, new arguments \code{lower.tail} and \code{log.p} are added.
+  \item 
+    Checking on the dimensionality \code{(d,m)} of calls to \code{{d,p}sun, 
+    sunMean, sunVcov, sunMardia} takes place before a call to a function of 
+    \pkg{mnormt} is issued. If the maximal dimensionality is exceeded, either 
+    a \code{stop} is generated, or \code{NA}s are returned, 
+    depending on the value of the \code{silent} argument.
+  \item
+    Fixed bugs affecting calls to \code{psn, pst} when \code{length(x)} was
+    shorter than the length of the parameters (among \code{xi, omega, alpha}).
+  }
+}
+
 \section{Changes in sn version 2.1.0 (2022-07-30)}{
   \itemize{
-    \item New function fitdistr.grouped, with pertaining class and methods.
-    \item More informative messages are issued when trace=TRUE, at several places.
-    \item An experimental way for initializing the parameters of sn.mple fitting is 
-      introduced; it only takes effect when it improves over the existing scheme. 
+    \item New function \code{fitdistr.grouped}, with pertaining class and methods.
+    \item More informative messages are issued when \code{trace=TRUE}, at several places.
+    \item An experimental way for initializing the parameters of \code{sn.mple} 
+          fitting is introduced; it only takes effect when it improves over 
+	  the existing scheme. 
     \item Some adjustments in the documenation on request of the CRAN group.
-    \item Fixed a bug affecting st.prelimFit when the argument 'w' was used. 
+    \item Fixed a bug affecting \code{st.prelimFit} when the argument \code{w}
+          was used.
+    \item The NEWS file is now in Rd format. 
   }
 }
 \section{Changes in sn version 2.0.2 (2022-03-07)}{
   \itemize{
-    \item Calling rmsn, rmst, rmsc with parameters for distributions with dimension 1 
-      now works. 
-    \item The same feature applies to mst.prelimFit with one column matrix y.
-    \item In psn, improved handling of non-finite x values (NA, NaN, Inf's), which led
-      to crashes; also, streamlined coding of qsn. 
+    \item Calling \code{rmsn, rmst, rmsc} with parameters for distributions 
+      with dimension \code{1} now works. 
+    \item The same feature applies to \code{mst.prelimFit} with one column 
+       matrix \code{y}.
+    \item In \code{psn}, improved handling of non-finite \code{x} values 
+      \code{(NA, NaN, Inf)}, which led to crashes; 
+      also, streamlined coding of \code{qsn}. 
     \item Minor fixes in the documentation of zeta and qsn; improved wording elsewhere.
   }
 }
 \section{Changes in sn version 2.0.1 (2021-11-26)}{
   \itemize{
-    \item Change of the tuning arguments when numDeriv::hessian is called, to improve
-      computation of the information matrix following a ST model fitting. 
+    \item Change of the tuning arguments when \code{numDeriv::hessian} is called, 
+      to improve computation of the information matrix following a ST model fitting. 
     \item Fixed bug which in some cases prevented the use of the 'start' argument. 
     \item Re-organization of some internal functions computing SUN summary quantities.
-    \item Improved documentation for selm, selm.fit and SUNdistr-base.
+    \item Improved documentation for \code{selm, selm.fit} and \code{SUNdistr-base}.
   }
 }
 \section{Changes in sn version 2.0.0 (2021-03-28)}{
   \itemize{
     \item Support for the SUN family is introduced, as for probability distribution
       operations. Two modes of working are envisaged: 
-      - using classic-style functions for probability distributions, 
-        plus some functions of similar style;
-      - using S4 objects of the new class SUNdist. For mode (i), the functions
-        \{d,p,r\}sun, sun\{Mean,Vcov,Mardia\} are provided. For mode (ii), there are 
-        \{make, marginal, conditional, affineTrans, join, convolution, summary\}SUNdistr, 
-        and related S4 methods. 
-    \item Additional facilities include convertSN2SUNdistr, convertCSN2SUNpar and 
-       two matrix operations (tr and blockDiag).  
-    \item Fixed a bug in plot.SECdistr affecting the plot of a subset of the variables.
+      (i) using classic-style functions for probability distributions, 
+         plus some functions of similar style;
+      (ii) using S4 objects of the new class \code{SUNdistr}. 
+      For mode (i), the functions \code{{d,p,r}sun, sun{Mean,Vcov,Mardia}} are provided. 
+      For mode (ii), there are \code{{make, marginal, conditional, affineTrans, join, 
+      convolution, summary}SUNdistr}, and related S4 methods. 
+    \item Additional facilities include 
+      \code{convertSN2SUNdistr}, \code{convertCSN2SUNpar} and 
+      two matrix operations (\code{tr} and \code{blockDiag}).  
+    \item Fixed a bug in \code{plot.SECdistr} affecting the plot of a subset 
+      of the variables.
   }
 }
 \section{Changes in sn version 1.6-2 (2020-05-26)}{

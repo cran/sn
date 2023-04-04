@@ -26,11 +26,10 @@ dsn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, log=FALSE)
     alpha <- dp[3]
     tau <- if(length(dp) > 3) dp[4] else 0
     }
-  z <- (x-xi)/omega
-  logN <- (-log(sqrt(2*pi)) -logb(omega) - z^2/2)
-  za <- cbind(z, alpha)
+  za <- cbind((x-xi)/omega, alpha)
   z <- za[,1]
   alpha <- za[,2]
+  logN <- (-log(sqrt(2*pi)) -logb(omega) - z^2/2)
   logS <- numeric(length(z))
   ok <- (abs(alpha) < Inf)   
   logS[ok] <- pnorm(tau * sqrt(1+alpha[ok]^2) + (alpha*z)[ok], log.p=TRUE)
@@ -38,7 +37,9 @@ dsn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, log=FALSE)
   logPDF <- as.numeric(logN + logS - pnorm(tau, log.p=TRUE))
   logPDF <- replace(logPDF, abs(x) == Inf, -Inf)
   logPDF <- replace(logPDF, omega <= 0, NaN)
-  if(log) logPDF else exp(logPDF)
+  out <- if(log) logPDF else exp(logPDF)
+  names(out) <- names(x)
+  return(out)
 }
 
 psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
@@ -49,22 +50,23 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
     xi <- dp[1]
     omega <- dp[2]
     alpha <- dp[3]
-    tau <- if(length(dp)>3) dp[4] else 0L
+    tau <- if(length(dp)>3) dp[4] else 0
    }
-  prob <- numeric(length(x))
-  names(prob) <- names(x)
-  ok <- is.finite(x) & (omega > 0)
-  if(any(!ok)) {
-    prob <- replace(prob, x==-Inf, 0)
-    prob <- replace(prob, x==Inf, 1) 
-    prob <- replace(prob, is.na(x) | (omega <= 0), NA)
+  z <- (x-xi)/omega
+  prob <- rep(NA, length(z))
+  plain <- is.finite(z) & (omega > 0)
+  if(any(!plain)) {
+    prob <- replace(prob, z==-Inf, 0)
+    prob <- replace(prob, z==Inf, 1) 
+    prob <- replace(prob, is.na(z) | (omega <= 0), NA)
     } 
-  if(sum(ok) == 0) return(prob)  
-  z <- as.numeric((x[ok] - xi)/omega)
-  nz <- length(z)
+  if(sum(plain) == 0) return(prob)  
   na <- length(alpha)
+  za <- matrix(cbind(z, alpha), ncol=2)[plain,,drop=FALSE]
+  z <- za[,1]  # z re-defined here
+  nz <- length(z)
   if(missing(engine)) engine <- 
-    if(na == 1 & nz > 3 & all(alpha*z > -5) & (tau == 0L)) 
+    if(na == 1 & nz > 3 & all(z*za[,2] > -5) & (tau == 0)) 
       "T.Owen" else "biv.nt.prob"
   if(engine == "T.Owen") {
     if(tau != 0 | na > 1) 
@@ -73,17 +75,15 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
     }
   else{ #  engine="biv.nt.prob"
     p <- numeric(nz)
-    alpha <- cbind(z, alpha)[,2]
+    alpha <- za[,2]
     delta <- delta.etc(alpha)
     p.tau <- pnorm(tau) 
     for(k in seq_len(nz)) {
       if(abs(z[k])==Inf) p[k] <- (sign(z[k]) + 1)/2
       else {
       if(abs(alpha[k]) == Inf){
-       p[k] <- if(alpha[k] > 0)
-             (pnorm(pmax(z[k],-tau)) - pnorm(-tau))/p.tau
-           else
-             1 - (pnorm(tau) - pnorm(pmin(z[k], tau)))/p.tau
+        p[k] <- if(alpha[k] > 0) (pnorm(pmax(z[k], -tau)) - pnorm(-tau))/p.tau
+                        else {1 - (pnorm(tau) - pnorm(pmin(z[k], tau)))/p.tau}
       }
     else { # SNbook: (2.48), p.40
       R <- matrix(c(1, -delta[k], -delta[k], 1), 2, 2)
@@ -91,7 +91,8 @@ psn <- function(x, xi=0, omega=1, alpha=0, tau=0, dp=NULL, engine, ...)
       }}
     }}
   p <- pmin(1, pmax(0, as.numeric(p)))
-  replace(prob, ok, p)
+  names(prob) <- names(x)
+  replace(prob, plain, p)
 }
 
 #
@@ -177,6 +178,7 @@ qsn <- function(p, xi = 0, omega = 1, alpha = 0, tau=0, dp=NULL, tol = 1e-08,
     q <- as.numeric(xi + omega * Sign(alpha)* x)		
   } else stop("unknown solver")}
   q.all[ok] <- q
+  names(q.all) <- names(q)
   return(q.all)
 }
   
@@ -316,7 +318,7 @@ dst <-  function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, log=FALSE)
 { 
   if(!is.null(dp)) {
      if(!missing(alpha)) 
-        stop("You cannot set both component parameters and dp")
+        stop("You cannot set both the component parameters and dp")
      xi <- dp[1]
      omega <- dp[2]
      alpha <- dp[3]
@@ -324,13 +326,18 @@ dst <-  function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, log=FALSE)
     }
   if (nu == Inf) return(dsn(x, xi, omega, alpha, log=log))
   if (nu == 1) return(dsc(x, xi, omega, alpha, log=log))
-  z   <- (x - xi)/omega
-  pdf <- dt(z, df=nu, log=log)
-  cdf <- pt(alpha*z*sqrt((nu+1)/(z^2+nu)), df=nu+1, log.p=log)
-  if(log)
-    logb(2) + pdf + cdf -logb(omega)
-  else
-    2 * pdf * cdf / omega
+  if (nu <= 0) stop("'nu' must be positive")
+  za <- cbind((x-xi)/omega, omega, alpha)
+  z <- za[,1]
+  omega <- za[,2]
+  alpha <- za[,3]
+  ok <- (omega>0)
+  pdf <- ifelse(ok, dt(z, df=nu, log=log), NaN)
+  cdf <- ifelse(ok, pt(alpha*z*sqrt((nu+1)/(z^2+nu)), df=nu+1, log.p=log), NaN)
+  out <- if(log) logb(2) + pdf + cdf -logb(omega)
+           else 2 * pdf * cdf / omega
+  names(out) <- names(x)       
+  return(out)  
 }
 
 rst <- function (n=1, xi = 0, omega = 1, alpha = 0, nu=Inf, dp=NULL)
@@ -356,7 +363,8 @@ rst <- function (n=1, xi = 0, omega = 1, alpha = 0, nu=Inf, dp=NULL)
   return(y)
 }
 
-pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...) 
+pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, 
+                lower.tail=TRUE, log.p=FALSE, ...) 
 {     
   if(!is.null(dp)) {
     if(!missing(alpha)) 
@@ -366,20 +374,21 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
     alpha <- dp[3]
     nu <- dp[4]
    }
-  dp.std <- c(0, 1, alpha, nu) 
-  delta <- alpha/sqrt(1+alpha^2)
   if(length(alpha) > 1) stop("'alpha' must be a single value")  
   if(length(nu) > 1) stop("'nu' must be a single value") 
-  if(nu <= 0) return(rep(NaN, length(x))) 
+  if(nu <= 0)  stop("'nu' must be positive") 
+  dp.std <- c(0, 1, alpha, nu) 
+  delta <- alpha/sqrt(1+alpha^2)
   if (nu == Inf) return(psn(x, xi, omega, alpha))
   if (nu == 1) return(psc(x, xi, omega, alpha))
   int.nu <- (round(nu) == nu)
-  if(method<0 | method>4) stop("invalid 'method' value")
+  if(method<0 | method>5 | method != round(method)) stop("invalid 'method' value")
   if((method == 1 | method ==4) & !int.nu) 
     stop("selected 'method' does not work for non-integer nu")
-  pr <- rep(NA, length(x))  
-  ok <- !(is.na(x) | (x==Inf) | (x==-Inf) | (omega<=0))
-  z <- ((x-xi)/omega)[ok]
+  z <- (x-xi)/omega
+  pr <- rep(NA, length(z))
+  ok <- !(is.na(z) | (z==Inf) | (z==-Inf) | (omega<=0))
+  z <- z[ok]
   nu0 <- (8.2 + 3.55* log(log(length(z)+1)))
   if(alpha == 0) p <- pt(z, df=nu) 
   else if(abs(alpha) == Inf) {
@@ -390,16 +399,29 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
   else {  
   fp <- function(v, alpha, nu, t.value) 
           psn(sqrt(v) * t.value, 0, 1, alpha) * dchisq(v * nu, nu) * nu  
-  if(method == 4 || (method==0  && int.nu &&  (nu <= nu0)))    # method 4
-    p <- pst_int(z, 0, 1, alpha, nu)  
+  if(method == 4 || (method==0  && int.nu &&  (nu <= nu0))) {
+    # method 4 (recursive formula, for integer nu)
+    p. <- pst_int(z, 0, 1, alpha, nu) 
+    p <- if(lower.tail) p. else 1-p.
+    p <- if(log.p) log(p) else p
+    }
   else  {
     p <- numeric(length(z))
     for (i in seq_len(length(z))) {
       if(abs(z[i]) == Inf)  p[i] <- (1 + sign(z[i]))/2
+      if(method==5 | method==0 & abs(z[i])> (30+1/sqrt(nu))) {
+        lp <- st_tails(z[i], alpha, nu, lower.tail=lower.tail)
+        # lp <- if(z[i]<0) lp else log(1-exp(lp))
+        # p[i] <- if(log.p) lp else exp(lp) 
+        p[i] <- if(log.p) {if(z[i]<0) lp else log(1-exp(lp))} 
+                 else {if(z[i]<0) exp(lp) else 1-exp(lp)}
+        }
       else {      
         if(method==1 || (method==0  && int.nu &&  (nu > nu0))) { # method 1
         out <- try(pmst(z[i], 0, matrix(1,1,1), alpha, nu, ...), silent=TRUE) 
-        p[i] <- if(inherits(out, "try-error"))  NA else  p[i] <- out
+        p. <- if(inherits(out, "try-error")) NA else out
+        ## p[i] <- if(lower.tail) p. else 1-p.
+        ## p[i] <- if(log.p) log(p[i]) else max(0, min(1, p[i]))
         }
       else {
       # upper <- if(absalpha> 1) 5/absalpha + 25/(absalpha*nu) else 5+25/nu
@@ -408,19 +430,47 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0, ...)
         {# method 2         
          p0 <- acos(delta)/pi  # CDF at x=0 
          int <- integrate(dst, min(0,z[i]), max(0,z[i]), dp=dp.std, stop.on.error=FALSE, ...) 
-         p[i] <- p0 + sign(z[i]) * int$value
+         p. <- p0 + sign(z[i]) * int$value
+         ## p[i] <- if(lower.tail) p. else 1-p.
+         ## p[i] <- if(log.p) log(p[i]) else max(0, min(1, p[i]))
         } 
-        else # method 3 
-          p[i] <- integrate(fp, 0, Inf, alpha, nu, z[i], stop.on.error=FALSE, ...)$value           
-      }}}}}
+        else {# method 3 
+          p. <- integrate(fp, 0, Inf, alpha, nu, z[i], stop.on.error=FALSE, ...)$value  
+          ## p[i] <- if(lower.tail) p. else 1-p.
+          ## p[i] <- if(log.p) log(p[i]) else  max(0, min(1, p[i]))
+          }         
+        }
+       p[i] <- if(lower.tail) p. else 1-p.
+       p[i] <- if(log.p) log(p[i]) else max(0, min(1, p[i]))
+      }}}}
   pr[ok] <- p
-  pr[x == Inf] <- 1
-  pr[x == -Inf] <- 0
+  pr[x == Inf] <- if(log.p) 0 else 1
+  pr[x == -Inf] <- if(log.p) -Inf else 0
   pr[omega <= 0] <- NaN
-  return(pmax(0, pmin(1, pr)))
+  names(pr) <- names(x)
+  return(pr)
 }
 
-
+st_tails <- function(x, alpha, nu, lower.tail=TRUE, threshold=20) 
+{
+ # log-probabilities of ST tails, using Azzalini & Capitanio (2014, top p.122):
+ # (upper prob if x>threshold, lower prob if x< -threshold,  NA otherwise).
+  if(length(alpha) > 1) stop("alpha must be a scalar value") 
+  if(length(nu) > 1) stop("nu must be a scalar value")    
+  pos <- (x > threshold)
+  neg <- (x < -threshold)  
+  lp <- rep(NA, length(x))  # will collect log-probabilities
+  if(alpha >= 0) {
+    log.c <- (log(2) + lgamma((nu+1)/2) + (nu/2)*log(nu) + 
+              pt(c(-1,1)*alpha*sqrt(nu+1), nu+1, log.p=TRUE)
+              -lgamma(nu/2) - 0.5*log(pi)  )  
+    lp <- replace(lp, neg, log.c[1] -log(nu)- nu*log(-x[neg])) # lower tail           
+    lp <- replace(lp, pos, log.c[2]-log(nu)- nu*log(x[pos])) # upper tail 
+    }  
+  else lp <- st_tails(-x, -alpha, nu)
+  return(lp)
+  }
+  
 pst_int <- function (x, xi=0, omega=1, alpha=0, nu=Inf) 
 {# Jamalizadeh, Khosravi and Balakrishnan (2009, CSDA)
   if(nu != round(nu) | nu < 1) stop("'nu' is not a positive integer")
@@ -4406,6 +4456,7 @@ plot.SECdistrBv <- function(x, range, probs, npt=rep(101,2), compNames,
   Omega.bar <- cov2cor(Omega)
   alpha <- dp[[3]]
   alpha.star <- sqrt(sum(alpha * as.vector(Omega.bar %*% alpha)))
+  if(missing(probs) | is.null(probs)) probs <- c(0.25, 0.50, 0.75, 0.95)    
   omega <- sqrt(diag(Omega))
   if(lc.family == "sn") {
     k.tau <- if (length(dp) == 4) (zeta(2,dp[[4]])*pi)^2/4 else 1
@@ -6245,7 +6296,7 @@ plot.fitdistr.grouped <- function(x, freq=FALSE,
   if(missing(xlim)) xlim <- range(pretty(breaks))  
   x <- seq(xlim[1], xlim[2], length=201)
   if(missing(main)) main <- paste(
-    x.name, "- histogram and fitted family", object$family, "for grouped data")
+    x.name, ": histogram and fitted", object$family, "family for grouped data")
   if(missing(xlab)) xlab <- "" 
   if(missing(ylab)) ylab <- if(freq) "frequencies" else "density function" 
   pdf <- if(input$family == "t") dt((x - dp[1])/dp[2], dp[3]) 

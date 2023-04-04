@@ -78,6 +78,8 @@ dsun <- function(x, xi, Omega, Delta, tau, Gamma, dp=NULL, log=FALSE, silent=FAL
     stop("mismatch of dimensions")
   x <- if(is.vector(x)) matrix(x, 1, d) else data.matrix(x) 
   n <- nrow(x)
+  if(m > 20) 
+    {if(silent) return(rep(NA, n)) else stop("m exceeds the admissible size")}
   if (is.vector(xi)) xi <- outer(rep(1, n), as.vector(matrix(xi, 1, d)))
   tz <- t(x-xi)/omega
   D.Oinv <- t(Delta) %*% O.inv
@@ -106,22 +108,25 @@ psun <- function(x, xi, Omega, Delta, tau, Gamma, dp=NULL, log=FALSE, silent=FAL
     }
   if(!all.numeric(x, xi, Omega, Delta, tau, Gamma)) stop("non-numeric argument(s)")    
   d <- dim(Omega)[1]
-  if(length(xi)!= d | dim(Omega)[2] != d)  stop("mismatch of dimensions")
+  if(dim(Omega)[2] != d)  stop("mismatch of dimensions")
   omega <- sqrt(diag(Omega))
   Omega.bar <- cov2cor(Omega)
   O.inv <- solve(Omega.bar)  
   m <- length(tau)
   if(m==1 & !silent)
-    warning("When m=1, functions for the SN/ESN distr'n are preferable")
+    warning("When m=1, functions for the SN/ESN distribution are preferable")
   if(any(dim(Gamma) != c(m,m) | dim(Delta) != c(d,m)))
     stop("mismatch of dimensions")
   x <- if(is.vector(x)) matrix(x, 1, d) else data.matrix(x) 
   n <- nrow(x)
+  if((d+m) > 20) 
+    {if(silent) return(rep(NA, n)) else stop("(d+m) exceeds the admissible size")}
   if (is.vector(xi)) xi <- outer(rep(1, n), as.vector(matrix(xi, 1, d)))
+  if(ncol(x) != ncol(xi)) stop("mismatch of dimensions")
   tz <- t(x-xi)/omega  
   y <- cbind(t(tz), outer(rep(1, n), tau))
   Omega.starNeg <- rbind(cbind(Omega.bar, -Delta),  cbind(t(-Delta), Gamma))
-  p1 <- pmnorm(y, mean=rep(0,m+d), varcov=Omega.starNeg, ...)
+  p1 <- pmnorm(y, mean=rep(0, m+d), varcov=Omega.starNeg, ...)
   p2 <- pmnorm(tau, rep(0,m), Gamma, ...)
   if(n==1) {
     if(any(c(attr(p1,"status"), attr(p2,"status")) != "normal completion"))
@@ -184,7 +189,9 @@ sunMean <- function(xi, Omega, Delta, tau, Gamma, dp=NULL, silent=FALSE, ...)
   if(m==1 & !silent) 
     warning("When m=1, functions for the SN/ESN family are preferable")
   if(any(dim(Gamma) != c(m,m) | dim(Delta) != c(d,m)))
-    stop("mismatch of dimensions")  
+    stop("mismatch of dimensions") 
+  if(m > 20) 
+    {if(silent) return(NA) else stop("m exceeds the admissible size")}   
   prob <- mnormt::pmnorm(tau, rep(0, m), Gamma, ...)
   if(m > 3  &&  (attr(prob,"status") != "normal completion") & !silent)
     warning("return status from pmnorm is not 'normal completion'")
@@ -219,6 +226,8 @@ sunVcov <- function(xi, Omega, Delta, tau, Gamma, dp=NULL, silent=FALSE, ...)
   Omega.bar <- cov2cor(Omega)
   O.inv <- solve(Omega.bar)  
   m <- length(tau)
+  if(m > 20) 
+    {if(silent) return(NA) else stop("m exceeds the admissible size")}  
   if(m==1 & !silent) 
     warning("When m=1, functions for the SN/ESN family are preferable")
   if(any(dim(Gamma) != c(m,m) | dim(Delta) != c(d,m))) 
@@ -585,9 +594,10 @@ summary.SUNdistr <- function(object, ...)
     cum3=u$cum3,  mardia=u$mardia)
 }
 
-sunValues <- function(dp, compNames, HcompNames, ...) 
+sunValues <- function(dp, compNames, HcompNames, silent=FALSE, ...) 
 {# Some moments and other characteristics values of a SUN distribution. 
  # Computations are based on Proposition 1 and 2 of RAV&AA-2020
+ # This function is *not* exported in NAMESPACE.
   if (length(dp) != 5)  stop("wrong length of non-null 'dp'")
   xi <- drop(dp[[1]])
   Omega <- dp[[2]]
@@ -597,6 +607,8 @@ sunValues <- function(dp, compNames, HcompNames, ...)
   if(!all.numeric(xi, Omega, Delta, tau, Gamma)) stop("non-numeric argument(s)")   
   d <- length(xi)
   m <- length(tau)
+  if(m > 20) 
+    {if(silent) return(NA) else stop("m exceeds the admissible size")}  
   if(missing(compNames)) compNames <- paste("V", 1:d, sep="")
   if(missing(HcompNames)) HcompNames <- paste("H", 1:m, sep="")
   omega <- sqrt(diag(Omega))
