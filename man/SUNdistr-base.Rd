@@ -1,6 +1,6 @@
 %  file sn/man/SUNdistr-vase.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2013-2021 Adelchi Azzalini
+%  copyright (C) 2013-2023 Adelchi Azzalini
 %---------------------
 \name{SUNdistr-base}
 \encoding{UTF-8}
@@ -84,7 +84,7 @@ The five parameters can be supplied by combining them in a list, denoted
 supplied. The elements of \code{dp} must appear in the above-indicated order
 and must be named.
 
-The optional arguments in \code{...} passed to \code{\link[mnormt]{pmnorm}},
+The optional arguments in \code{...} are passed to \code{\link[mnormt]{pmnorm}},
 which uses \code{\link[mnormt]{ptriv.nt}} when \code{d=3}, 
 \code{\link[mnormt]{biv.nt.prob}} when \code{d=2} and 
 and \code{\link[mnormt]{sadmvn}} when \code{d>2}.
@@ -102,6 +102,10 @@ the specific parameter values.
 Consider the \sQuote{Warning} section in \code{\link[mnormt]{recintab}}
 which is used by \code{\link[mnormt]{mom.mtruncnorm}}. 
 
+Note that the Mardia measures are computed in their \eqn{\gamma}-form, not the 
+\eqn{\beta}-form; in practice, these only differ by a \eqn{d(d+2)} shift 
+in the measure of kurtosis, if \eqn{d} denotes the dimension.
+
 The above-described functions operate following the traditional \R scheme for 
 probability distributions. Another scheme, coexisting with the classical one, 
 works with \code{SUNdistr-class} objects, which represent \acronym{SUN} 
@@ -110,6 +114,16 @@ These objects are created by \code{\link{makeSUNdistr}}, and various methods
 exist for them; see \code{\link{SUNdistr-class}}. 
 Moreover these objects can be manipulated by a number of tools, described 
 in \code{\link{SUNdistr-op}}, leading to new objects of the same class.
+
+Given the constraints on the terms \code{Omega, Delta, Gamma}, 
+\emph{it is advisable}
+to always use the function \code{\link{makeSUNdistr}} to check the joint 
+admissibility of the component parameters, \emph{even if} one is not going
+to actually use the returned object and the related methods and functions. 
+Consider that, for efficiency reasons, the functions following the 
+traditional \R scheme for probability distributions  
+(\code{dsun}, ..., \code{sunMean}, ...)
+do not perform those admissibility checks.
 }
 
 \value{
@@ -151,7 +165,7 @@ and must satisfy the following  conditions:
 \item if \eqn{\bar\Omega}  % {\Omega°} 
   denotes the correlation matrix associated to \eqn{\Omega},  
   the matrix of size \eqn{(d+m)\times(d+m)}{((d+m), (d+m))}
-  \if{html}{formed by the \eqn{2 x 2} blocks}
+  \if{html}{formed by the \eqn{2 \times 2} blocks}
   \ifelse{latex}{
          \deqn{\left(\begin{array}{cc} 
             \bar\Omega  & \Delta \\
@@ -203,8 +217,10 @@ Corrigendum in  \bold{49} (2022), 1418-1419.
 Arellano-Valle, R. B. and Azzalini, A. (2021).
 Some properties of the unified skew-normal distribution.
 \emph{Statistical Papers} \bold{63}, 461-487,
-\doi{https://doi.org/10.1007/s00362-021-01235-2};
-see also \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
+\doi{https://doi.org/10.1007/s00362-021-01235-2}.
+Corrigendum in \bold{65} (2024), 1133, 
+\doi{https://doi.org/10.1007/s00362-023-01412-5}
+% see also \href{https://arxiv.org/abs/2011.06316}{arXiv:2011.06316}
   
 Arellano-Valle, R. B. and Genton, M. G. (2005). 
 On fundamental skew distributions. 

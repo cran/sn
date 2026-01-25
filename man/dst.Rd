@@ -1,6 +1,6 @@
 %  file sn/man/dst.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2002-2014 Adelchi Azzalini
+%  copyright (C) 2002-2023 Adelchi Azzalini
 %---------------------
 \name{dst}
 \alias{dst}
@@ -59,7 +59,8 @@ it must be of length 1.}
   otherwise  \eqn{P\{X\ge x\}}
   }
 
-\item{...}{additional parameters passed to \code{integrate} or \code{pmst}.}
+\item{...}{additional parameters passed to \code{integrate}; 
+           see \sQuote{Details} for further information.}
 
 }
 
@@ -114,9 +115,13 @@ because the value of \code{nu} determines the number of nested calls,
 but the decay of efficiency is slower for larger values of \code{length(x)}.
 If the default argument value \code{method=0} is retained, an automatic choice
 among the above four methods is made, which depends on the values of 
-\code{nu, alpha, z}. The numerical accuracy of methods 1, 2 and 3 can 
-be regulated via the \code{...} argument, while method 4 is conceptually exact, 
-up to machine precision.
+\code{nu, alpha, z}.  
+
+The \code{pst} argument \code{...} can be used to set values of \code{rel.tol} 
+and \code{rel.tol} passed to \code{integrate}, which is used if \code{method=2}
+or \code{method=3}, or possibly when \code{method=0} selects one of these options.
+For other values of \code{method}, use of \code{...} has no effect. 
+This mechanism also regulates \code{qst}, since this function hinges on \code{pst}.
 
 If \code{qst} is called with \code{nu>1e4}, the computation is transferred to
 \code{qsn}. 
@@ -140,7 +145,8 @@ Jamalizadeh, A., Khosravi, M., and Balakrishnan, N. (2009).
 }
   
 
-\seealso{\code{\link{dmst}}, \code{\link{dsn}}, \code{\link{dsc}}}
+\seealso{\code{\link{dmst}}, \code{\link{dsn}}, \code{\link{dsc}}, 
+         \code{\link[stats]{integrate}}}
 
 \examples{
 pdf <- dst(seq(-4, 4, by=0.1), alpha=3, nu=5)

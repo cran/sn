@@ -377,6 +377,7 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0,
   if(length(alpha) > 1) stop("'alpha' must be a single value")  
   if(length(nu) > 1) stop("'nu' must be a single value") 
   if(nu <= 0)  stop("'nu' must be positive") 
+  dots <- list(...)
   dp.std <- c(0, 1, alpha, nu) 
   delta <- alpha/sqrt(1+alpha^2)
   if (nu == Inf) return(psn(x, xi, omega, alpha))
@@ -417,25 +418,31 @@ pst <- function (x, xi=0, omega=1, alpha=0, nu=Inf, dp=NULL, method=0,
                  else {if(z[i]<0) exp(lp) else 1-exp(lp)}
         }
       else {      
-        if(method==1 || (method==0  && int.nu &&  (nu > nu0))) { # method 1
-        out <- try(pmst(z[i], 0, matrix(1,1,1), alpha, nu, ...), silent=TRUE) 
-        p. <- if(inherits(out, "try-error")) NA else out
-        ## p[i] <- if(lower.tail) p. else 1-p.
-        ## p[i] <- if(log.p) log(p[i]) else max(0, min(1, p[i]))
-        }
-      else {
+        if(method==1 || (method==0  && int.nu &&  (nu > nu0))) 
+          { # method 1
+          out <- try(pmst(z[i], 0, matrix(1,1,1), alpha, nu), silent=TRUE) 
+          p. <- if(inherits(out, "try-error")) NA else out
+          ## p[i] <- if(lower.tail) p. else 1-p.
+          ## p[i] <- if(log.p) log(p[i]) else max(0, min(1, p[i]))
+          }
+      else { # method = 2 or 3
       # upper <- if(absalpha> 1) 5/absalpha + 25/(absalpha*nu) else 5+25/nu
       upper <- 10 + 50/nu
+      abs.tol <- rel.tol <- .Machine$double.eps^0.25 
+      if(!is.null(dots$rel.tol)) rel.tol <- dots$rel.tol
+      if(!is.null(dots$abs.tol)) abs.tol <- dots$abs.tol
       if(method==2 || (method==0 & (z[i] < upper) )) 
         {# method 2         
          p0 <- acos(delta)/pi  # CDF at x=0 
-         int <- integrate(dst, min(0,z[i]), max(0,z[i]), dp=dp.std, stop.on.error=FALSE, ...) 
+         int <- integrate(dst, min(0,z[i]), max(0,z[i]), rel.tol=rel.tol,
+                         abs.tol=abs.tol, dp=dp.std, stop.on.error=FALSE) 
          p. <- p0 + sign(z[i]) * int$value
          ## p[i] <- if(lower.tail) p. else 1-p.
          ## p[i] <- if(log.p) log(p[i]) else max(0, min(1, p[i]))
         } 
         else {# method 3 
-          p. <- integrate(fp, 0, Inf, alpha, nu, z[i], stop.on.error=FALSE, ...)$value  
+          p. <- integrate(fp, 0, Inf, alpha, nu, z[i], rel.tol=rel.tol, 
+                          abs.tol=abs.tol, stop.on.error=FALSE)$value  
           ## p[i] <- if(lower.tail) p. else 1-p.
           ## p[i] <- if(log.p) log(p[i]) else  max(0, min(1, p[i]))
           }         
@@ -530,7 +537,7 @@ qst <- function (p, xi = 0, omega = 1, alpha = 0, nu=Inf, tol = 1e-8,
     xc[nc] <- if(regula.falsi) 
        xb[nc] - fb[nc] * (xb[nc] - xa[nc])/(fb[nc] - fa[nc])    else
        (xb[nc] + xa[nc])/2      
-    fc[nc] <- pst(xc[nc], 0, 1, abs.alpha, nu, method=method) - p[nc]
+    fc[nc] <- pst(xc[nc], 0, 1, abs.alpha, nu, method=method, ...) - p[nc]
     pos <- (fc[nc] > 0)
     xa[nc][!pos] <- xc[nc][!pos]
     fa[nc][!pos] <- fc[nc][!pos]
@@ -665,6 +672,7 @@ pmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL, ...)
   if(any(abs(alpha) == Inf)) stop("Inf's in alpha are not allowed")
   if(nu == Inf) return(pmsn(x, xi, Omega, alpha))
   d <- length(alpha)
+  dots <- list(...)
   Omega<- matrix(Omega,d,d) 
   omega<- sqrt(diag(Omega))
   Ocor <- cov2cor(Omega)
@@ -685,7 +693,7 @@ pmst <- function(x, xi=rep(0,length(alpha)), Omega, alpha, nu=Inf, dp=NULL, ...)
             pv <-  numeric(length(v))
             for(k in seq_len(length(v))) pv[k] <- (dchisq(v[k] * nu, nu) * nu *
                  pmsn(sqrt(v[k]) * t.value, rep(0,d), Ocor, alpha) )
-            pv}
+            pv}      
     p <- integrate(fp, 0, Inf, Ocor, alpha, nu, z, ...)$value
     }
   p
@@ -1438,7 +1446,7 @@ msn.cp2dp <- function(cp, silent=FALSE) {
   alpha <- Obar.inv.delta/sqrt(1-delta.sq)
   if(is.vector(beta)) {
     beta <- beta - omega*mu.z
-    dp <- list(beta=beta, Omega=Omega, alpha=alpha)
+    dp <- list(xi=beta, Omega=Omega, alpha=alpha)
     }
   else {
     beta[1,] <- beta[1,] - omega*mu.z
@@ -4676,9 +4684,9 @@ plot.selm <- function(x, param.type="CP", which = c(1:4), caption,
   }
 
 
-print.summary.selm <- function(object)
+print.summary.selm <- function(x, ...)
 {
-    obj <- object
+    obj <- x
     digits = max(3, getOption("digits") - 3)
     cat("Call: ")
     print(slot(obj, "call"))
@@ -4699,7 +4707,7 @@ print.summary.selm <- function(object)
     cat(logL.name, format(slot(obj,"logL"), nsmall=2), "\n")
     param.type <- slot(obj, "param.type")
     cat("Parameter type:", param.type,"\n") 
-    if((note <- slot(object,"note")) != "") cat(paste("Note:", note, "\n"))
+    if((note <- slot(obj,"note")) != "") cat(paste("Note:", note, "\n"))
     if(obj@boundary) 
       cat("Estimates on/near the boundary of the parameter space\n")
     resid <- slot(obj, "resid")
@@ -4728,7 +4736,7 @@ print.summary.selm <- function(object)
       cat("\nCovariances of parameter estimates:\n")
       print(obj@aux$param.cov)
       } 
-  invisible(object)
+  invisible(obj)
 }
 
 
@@ -4868,9 +4876,9 @@ plot.mselm <- function (x, param.type="CP", which, caption,
   }
 
 
-print.summary.mselm <-  function(object)
+print.summary.mselm <-  function(x, ...)
 {
-    obj <- object
+    obj <- x
     digits = max(3, getOption("digits") - 3)
     # cat("Obj: ", deparse(substitute(obj)),"\n")
     cat("Call: ")
@@ -4883,7 +4891,7 @@ print.summary.mselm <-  function(object)
     if(n != nw)  cat("Weighted number of observations:", nw, "\n")
     family <- slot(obj, "family")
     cat("Family:", family, "\n")
-    method <- slot(object, "method") 
+    method <- slot(obj, "method") 
     u <- if(length(method)==1) NULL else 
          paste(", penalty function:", method[2])
     cat("Estimation method: ", method[1], u, "\n", sep="")
@@ -4893,7 +4901,7 @@ print.summary.mselm <-  function(object)
       cat("Fixed parameters:", fixed.char, "\n") }
     cat("Log-likelihood:", format(slot(obj,"logL"), nsmall=2), "\n")
     cat("Parameter type:", obj@param.type,"\n") 
-    if((note <- slot(object, "note")) != "") cat(paste("Note:", note, "\n"))
+    if((note <- slot(obj, "note")) != "") cat(paste("Note:", note, "\n"))
     if(obj@boundary) 
       cat("Estimates on/near the boundary of the parameter space\n")
     names <- dimnames(obj@scatter$matrix)[[1]]
@@ -4933,6 +4941,7 @@ print.summary.mselm <-  function(object)
       cat("\nVar-covariance matrix of parameter estimates:\n")
       print(obj@aux$param.cov)
       }
+  invisible(obj)      
 }
 
 dp2op <- function(dp, family)
@@ -6312,9 +6321,9 @@ plot.fitdistr.grouped <- function(x, freq=FALSE,
   # see graphics:::plot.histogram, hist.default
   r <- structure(list(breaks = breaks, counts = counts, density = rel.freq, 
         mids = NULL, xname = NULL), class = "histogram")
-  plot(r, freq=freq, col = col, border = border, 
-        angle = NULL, density = NULL, main = main, xlim = xlim, ylim = ylim, 
-        xlab = xlab, ylab = ylab, axes = axes, labels = NULL, ...)
+  plot(r, freq=freq, col = col, border = border, angle = NULL, density = NULL, 
+       main = main, sub=sub, xlim = xlim, ylim = ylim, 
+       xlab = xlab, ylab = ylab, axes = axes, labels = NULL, ...)
   y <- if(freq) n*width*pdf else pdf       
   lines(x, y, col=pdfcol)   
   invisible(list(hist=r, x=x, y=y))

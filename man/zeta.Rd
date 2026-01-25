@@ -9,7 +9,7 @@
 \title{Function \eqn{\log(2\,\Phi(x))}{log(2 Phi(x))} and its derivatives}
 
 \description{The function \code{log(2*pnorm(x))} and its derivatives, 
-  including inverse Mills ratio.}
+  including the inverse Mills ratio.}
   
 \usage{zeta(k, x)}
 

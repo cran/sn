@@ -383,8 +383,8 @@ setMethod("plot", signature(x="SECdistrMv", y="missing"), plot.SECdistrMv)
 setMethod("plot", signature(x="selm"), plot.selm) # y="missing" not required?
 setMethod("plot", signature(x="mselm"), plot.mselm)
 
-setMethod("show", signature(object="summary.selm"),  print.summary.selm)
-setMethod("show", signature(object="summary.mselm"),  print.summary.mselm)
+# setMethod("show", signature(object="summary.selm"),  print.summary.selm)
+# setMethod("show", signature(object="summary.mselm"),  print.summary.mselm)
 
 setMethod("summary", signature(object="SECdistrUv"), summary.SECdistrUv)
 setMethod("summary", signature(object="SECdistrMv"), summary.SECdistrMv)

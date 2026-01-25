@@ -96,9 +96,9 @@ using the response variable instead of the residuals. Default value for
 \code{which} is \code{1:4}.
 
 In the multivariate case, \code{which=1} is feasible only if \code{p=1} and it
-displays the data scatter with superimposed the fitted distribution. Value
-\code{which=2} produces a similar plot but for residuals instead of
-data. Default value for code{which} is \code{2:4} if \code{p>1}, otherwise
+displays the data scatter with superimposed the fitted distribution. 
+Value \code{which=2} produces a similar plot but for residuals instead of data. 
+Default value for \code{which} is \code{2:4} if \code{p>1}, otherwise
 \code{c(1,3,4)}. 
 
 Value \code{which=3} produces a QQ-plot, both in the univariate and in the

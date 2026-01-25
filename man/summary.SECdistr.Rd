@@ -47,7 +47,10 @@ kurtosis refer to the  Bowley and Moors measures, respectively;
 see Groeneveld (2006) and Moors (1988) for their specifications.
 In the multivariate case, the Mardia's measures of skewness and kurtosis
 are computed from the expressions given on p.153 and p.178 of
-Azzalini and Capitanio (2014).
+Azzalini and Capitanio (2014). 
+Note that the Mardia measures are computed in their \eqn{\gamma}-form, not the 
+\eqn{\beta}-form; in practice, these only differ by a \eqn{d(d+2)} shift 
+in the measure of kurtosis, if \eqn{d} denotes the dimension.
 
 In the univariate case, \code{delta} is a simple transformation of the 
 slant parameter \code{alpha}; it takes values in \eqn{(-1, 1)}. 

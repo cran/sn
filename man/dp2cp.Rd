@@ -86,21 +86,21 @@ extension for the \acronym{SN} distribution, Section 6.2.5 for the
 multivariate \acronym{ST} case. 
 For a more detailed discussion, see Arellano-Valle & Azzalini (2013).
 
-The \acronym{OP} parameterization is very similar to \acronym{DP}, from which 
-it differs only for the components which regulate dispersion (or scatter) 
-and slant.  Its relevance lies essentially in the multivariate case, where 
-the components of the slant parameter can be interpreted component-wise and
-remain unaffected if marginalization with respect to some other components 
-is performed. 
+In the univariate case, the \acronym{OP} parameterization is very similar to 
+\acronym{DP}, from which  it differs only for the components which regulate 
+dispersion (or scatter) and slant.  
+The real of relevance the \acronym{OP} parameterization appears in the 
+multivariate case, where  the components of the slant parameter can be 
+interpreted component-wise and remain unaffected if marginalization 
+with respect to some other components  is performed. 
 In the multivariate \acronym{SN} case, the components of \acronym{OP}, denoted
 \eqn{\xi, \Psi, \lambda}, are associated to the expression of the density
-function (5.30) of Azzalini & Capitanio (2014); see pp.128--131 for more
-information. In the univariate case, the slant component of \acronym{DP}
-and the one of \acronym{OP} coincide, that is, \eqn{\alpha=\lambda},
-Parameter \eqn{\xi} and other parameters which may exist with other families 
-remain the same of the \acronym{DP} set. The term \acronym{OP} stands for
-`original parameterization' since this is, up to a negligible difference, 
-the parameterization adopted by Azzalini & Dalla Valle (1996).
+function (5.30) of Azzalini & Capitanio (2014); see the discussion on p.131 
+for more information. In the univariate case, the slant components of 
+\acronym{DP} and \acronym{OP} coincide, that is, \eqn{\alpha=\lambda}.
+The term \acronym{OP} stands for `original parameterization' since this is, 
+up to a very minor difference, the parameterization adopted by Azzalini & 
+Dalla Valle (1996).
 }
 
 \section{Details}{

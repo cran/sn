@@ -77,6 +77,8 @@ f <- cut(logPrice, breaks = breaks)
 freq <- tabulate(f, length(levels(f))) 
 logPrice.grouped <- fitdistr.grouped(breaks, freq, family='ST')
 plot(logPrice.grouped)
+plot(logPrice.grouped, col="grey80", border="white", pdfcol="red",
+     main="log(price) grouped data", sub="with fitted ST",  xlab="log(price)")
 }
 
 \keyword{distribution}
