@@ -432,16 +432,17 @@ convolutionSUNdistr <- function(object1, object2,  name, compNames, HcompNames)
     as.vector(outer("V", as.character(1:length(dp1$xi)), paste, sep=""))
   if(missing(HcompNames))  HcompNames <- 
     c(paste(name1, slot(object1, "HcompNames"), sep="."), 
-      paste(name2, slot(object2, "HcompNames"), sep="."))            
+      paste(name2, slot(object2, "HcompNames"), sep=".")) 
+  dimnames(Delta) <- list(compNames, HcompNames)             
+  xi <- dp1$xi + dp2$xi     
   names(xi) <- compNames
   Omega <- Omega1 + Omega2
   dimnames(Omega) <- list(compNames, compNames)    
-  dimnames(Delta) <- list(compNames, HcompNames)   
   tau <- c(dp1$tau, dp2$tau)
-  Gamma <- blockDiag(dp1$Gamma, dp2$Gamma)
   names(tau) <- HcompNames
+  Gamma <- blockDiag(dp1$Gamma, dp2$Gamma)
   dimnames(Gamma) <- list(HcompNames, HcompNames)    
-  dp <- list(xi=dp1$xi+dp2$xi, Omega=Omega, Delta=Delta, tau=tau, Gamma=Gamma)
+  dp <- list(xi=xi, Omega=Omega, Delta=Delta, tau=tau, Gamma=Gamma)
   obj <- makeSUNdistr(dp=dp, name, compNames, HcompNames)
   return(obj)
 }

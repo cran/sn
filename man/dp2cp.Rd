@@ -98,7 +98,7 @@ In the multivariate \acronym{SN} case, the components of \acronym{OP}, denoted
 function (5.30) of Azzalini & Capitanio (2014); see the discussion on p.131 
 for more information. In the univariate case, the slant components of 
 \acronym{DP} and \acronym{OP} coincide, that is, \eqn{\alpha=\lambda}.
-The term \acronym{OP} stands for `original parameterization' since this is, 
+The acronym \acronym{OP} stands for `original parameterization' since this is, 
 up to a very minor difference, the parameterization adopted by Azzalini & 
 Dalla Valle (1996).
 }

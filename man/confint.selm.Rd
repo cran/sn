@@ -5,7 +5,8 @@
 
 \name{confint.selm}
 \alias{confint.selm}
-\alias{confint.selm-method}
+\alias{confint,selm-method}           
+% \alias{confint.selm-class}
 \concept{confidence interval}
 \title{Confidence intervals for parameters of a selm-class object}
 
@@ -13,7 +14,7 @@
 Computes confidence intervals for parameters in a selm-class object produces
 by \code{selm} fit when the response variable is univariate.}
 \usage{
-  \S3method{confint}{selm}(object, parm, level=0.95, param.type, tol=1e-3, ...)
+  \S4method{confint}{selm}(object, parm, level=0.95, param.type, tol=1e-3, ...)
 
 }
 
@@ -42,9 +43,9 @@ by \code{selm} fit when the response variable is univariate.}
 
 \details{
 A description of the methodology underlying \code{confint.selm} is provided 
-in the technical note of Azzalini (2016).
-That document also explains why in certain cases an interval is not 
-constructed and \code{NA}'s are returned as endpoint.}
+in the technical note by Azzalini (2016).
+This document also explains why in certain cases an interval is not 
+produced and \code{NA}'s are returned as endpoint.}
 
 \value{An invisible list whose components, described below, are partly 
 different in the one- and the two-parameter cases.

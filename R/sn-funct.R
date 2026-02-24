@@ -2726,6 +2726,7 @@ sn.infoMv <- function(dp, x=NULL, y, w, penalty=NULL, norm2.tol=1e-6, at.MLE=TRU
   i3 <- max(i2) + 1:d
   # ind <- list(i1=i1, i2=i2, i3=i3)
   O.inv <- pd.solve(Omega, silent=TRUE)
+  if(is.null(O.inv)) stop("Numerical problem in sn.infoMv, please report")
   if(type == "observed"){ 
     y0 <- y - x %*% beta
     S0 <- t(y0) %*% (w*y0) / nw
@@ -2926,7 +2927,7 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
     alpha <- start$alpha
     omega <- sqrt(diag(Omega)) 
     }
-  eta <-alpha/omega
+  eta <- alpha/omega
   if(trace){ 
     cat("initial parameters:\n")
     print(cbind(t(beta),eta,Omega))
@@ -2947,6 +2948,7 @@ msn.mle <- function(x, y, start=NULL, w, trace=FALSE,
   eta   <- opt$par[(p*d+1):(p*d+d)]
   xi    <- x %*% beta
   Omega <- t(y-xi) %*% (w*(y-xi))/n
+  Omega <- (Omega + t(Omega))/2
   omega <- sqrt(diag(Omega))
   alpha <- eta*omega
   # param <- cbind(omega,alpha)
@@ -2979,6 +2981,7 @@ msn.dev <- function(param, x, y, w, trace=FALSE)
   eta <- param[(p*d+1):(p*d+d)]
   y0 <- y-x %*% beta
   Omega <- (t(y0) %*% (y0*w))/n  
+  Omega <- (Omega + t(Omega))/2
   D <- diag(qr(2*pi*Omega)[[1]])
   logDet <- sum(log(abs(D)))
   dev <- n*logDet - 2*sum(zeta(0, y0 %*% eta) * w) + n*d
@@ -2999,6 +3002,7 @@ msn.dev.grad <- function(param, x, y, w, trace=FALSE)
   eta <- param[(p*d+1):(p*d+d)]
   y0 <- y-x %*% beta
   Omega <- (t(y0) %*% (w*y0))/n
+  Omega <- (Omega + t(Omega))/2
   p1 <- zeta(1,as.vector(y0 %*% eta)) * w
   Omega.inv <- pd.solve(Omega, silent=TRUE)
   if(is.null(Omega.inv)) return(rep(NA, p*d+d))
@@ -3887,7 +3891,7 @@ sn.mple <- function(x, y, cp=NULL, w, penalty=NULL, trace=FALSE,
   if(nrow(x) != n)  stop("incompatible dimensions")
   y.name <- deparse(substitute(y))
   x.name <- deparse(substitute(x))
-  if (missing(w)) w <- rep(1,n)
+  if(missing(w)) w <- rep(1, n)
   if(length(w) != n)  stop("incompatible dimensions")
   x.name <- deparse(substitute(x)) 
   p <- ncol(x)
@@ -4309,7 +4313,7 @@ plot.SECdistrUv <- function(x, range, probs, main, npt=251, data=NULL, ...)
     if (is.null(main))  mar[3L] <- 2
     }     
   omar <- par()$mar
-  on.exit(par(omar))
+  on.exit(par(mar=omar))
   par(mar=mar)    
   x <- seq(min(range), max(range), length=npt)
   pdf <- d.fn(x, dp=dp)
@@ -4739,6 +4743,7 @@ print.summary.selm <- function(x, ...)
   invisible(obj)
 }
 
+show.summary.selm <- function(object) print.summary.selm(x=object)
 
 plot.mselm <- function (x, param.type="CP", which, caption, 
     panel = if (add.smooth) panel.smooth else points, main = "", 
@@ -4876,7 +4881,7 @@ plot.mselm <- function (x, param.type="CP", which, caption,
   }
 
 
-print.summary.mselm <-  function(x, ...)
+print.summary.mselm <- function(x, ...)
 {
     obj <- x
     digits = max(3, getOption("digits") - 3)
@@ -4943,6 +4948,9 @@ print.summary.mselm <-  function(x, ...)
       }
   invisible(obj)      
 }
+
+show.summary.mselm <- function(object) print.summary.mselm(x=object)
+
 
 dp2op <- function(dp, family)
 {
@@ -5932,8 +5940,9 @@ st.prelimFit <- function(x, y, w, quick=TRUE, verbose=0, max.nu=30, SN=FALSE)
   if(p==1) {
     beta <- stats::median(rep(y, w), na.rm=TRUE)   
     resid <- (y-beta)
-    } else { 
-    beta.fit <- quantreg::rq.wfit(x, y, tau=0.5, weights=w, method="br")
+    } 
+  else { 
+    beta.fit <- quantreg::rq.wfit(x, y, tau=0.5, weights=w, method="fn") # >= 2.1.3
     beta <- coef(beta.fit)
     resid <- c(residuals(beta.fit))
     }

@@ -7,8 +7,10 @@
 \alias{pprodn2}
 \concept{bivariate normal distribution}
 \concept{bivariate Student's t distribution}
+\concept{product of two random variables} 
+
 \title{
-The distribution of the product of two jointly normal or \emph{t} variables
+The distribution function of the product of two jointly normal or Student's \emph{t} variables
 }
 \description{
 Consider the product \eqn{W=X_1 X_2} from a bivariate random variable 
@@ -34,13 +36,13 @@ qprodt2(p, rho, nu, tol=1e-5, trace=0)
        passed on to \code{uniroot}}
 }
 \details{
+Function \code{pprodn2} implements results for the central case in
+Theorem 1 of Aroian \emph{et al.} (1978).
+
 Function \code{pprodt2} implements formulae in Theorem 1 of Wallgren (1980).
 Corresponding quantiles are obtained by \code{qprodt2} by solving the 
 pertaining non-linear equations with the aid of \code{\link[stats]{uniroot}},
 one such equation for each element of \code{p}. 
- 
-Function \code{pprodn2} implements results for the central case in
-Theorem 1 of Aroian et al. (1978).
 }
 \value{a numeric vector}
 \references{
@@ -64,4 +66,4 @@ qprodt2(p, 0.5, 8)
 }
 %
 \keyword{distribution} % use one of  RShowDoc("KEYWORDS")
- 
+

@@ -6,36 +6,40 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{selm-class}               
-%\alias{coef,selm-method}           % superseded by coef.selm.Rd
+% \alias{coef,selm-method}           % declared in coef.selm.Rd
 \alias{logLik,selm-method}
 \alias{plot,selm,ANY-method}
 \alias{plot,selm,missing-method}
 \alias{show,selm-method}
-% \alias{fitted,selm-method}       % superseded by residuals.selm.Rd
-% \alias{residuals,selm-method}    % superseded by residuals.selm.Rd
+%\alias{fitted,selm-method}          % declared in residuals.selm.Rd
+%\alias{residuals,selm-method}       % declared  in residuals.selm.Rd
 \alias{vcov,selm-method}
 \alias{weights,selm-method}
-\alias{confint,selm-method}
-\alias{predict,selm-method}
+%\alias{confint,selm-method}         % declared in confint.selm.Rd
+%\alias{predict,selm-method}         % declared in predict.selm.Rd
+%\alias{profile,selm-method}         % declared in profile.selm.Rd
 %
 \alias{mselm-class}
-% \alias{coef,mselm-method}        % superseded by coef.selm.Rd
+% \alias{coef,mselm-method}          % declared in coef.selm.Rd
 \alias{logLik,mselm-method}
 \alias{plot,mselm,ANY-method}
 \alias{plot,mselm,missing-method}
 \alias{show,mselm-method}
-%\alias{fitted,mselm-method}       % superseded by residuals.selm.Rd
-%\alias{residuals,mselm-method}    % superseded by residuals.selm.Rd
+%\alias{fitted,mselm-method}         % declared in residuals.selm.Rd
+%\alias{residuals,mselm-method}      % declared in residuals.selm.Rd
 \alias{vcov,mselm-method}
 \alias{weights,mselm-method}
 
 \title{Classes \code{selm} and \code{mselm} of objects created by 
 function \code{selm}}
 
-\description{A successful call to function \code{selm} creates an object of
-either of these classes, having a structure described in section
-\sQuote{Slots}. A set of methods for these classes of objects exist, listed in
-section \sQuote{Methods}.}
+\description{A successful call to function \code{selm} creates an object 
+of class either \code{selm} or \code{mselm}, whose structure is described 
+in section \sQuote{Slots}. 
+A set of methods for object of these classes exist, which are listed 
+in the section \sQuote{Methods}. 
+Specific documentation is provided separately for the methods involving 
+a more extended description; see the section \sQuote{See also}. }
 
 \section{Objects from the class}{
 An object can be created by a successful call to function \code{selm}.}
@@ -58,7 +62,8 @@ An object can be created by a successful call to function \code{selm}.}
     \item{\code{fitted.values.dp}:}{fitted values, for DP-type parameters.}
     \item{\code{control}:}{a list with control parameters.}
     \item{\code{input}:}{a list of selected input values.}
-    \item{\code{opt.method}:}{a list with details on the optimization method.}
+    \item{\code{opt.method}:}{a list with details on the numerical optimization 
+          method used in the fitting process.}
   }
 }
 \section{Methods}{
@@ -74,9 +79,9 @@ An object can be created by a successful call to function \code{selm}.}
     \code{fitted} \tab \code{signature(object = "selm")}: ... \cr
     \code{vcov} \tab \code{signature(object = "selm")}: ... \cr
     \code{weights} \tab \code{signature(object = "selm")}: ... \cr
-    \code{profile} \tab \code{signature(fitted = "selm")}: ... \cr
     \code{confint} \tab \code{signature(object = "selm")}: ... \cr
     \code{predict} \tab \code{signature(object = "selm")}: ... \cr
+    \code{profile} \tab \code{signature(fitted = "selm")}: ... \cr
     \tab \cr
     \code{coef} \tab \code{signature(object = "mselm")}: ... \cr
     \code{logLik} \tab \code{signature(object = "mselm")}: ... \cr
@@ -101,9 +106,13 @@ method, the value reported is actually the \emph{penalized} log-likelihood.
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{See also  
-  \code{\link{selm}} function,  \code{\link{plot.selm}},
-  \code{\linkS4class{summary.selm}},  \code{\link{dp2cp}}
+\seealso{See also  the  \code{\link{selm}} function,  
+  and related methods \code{\link[=plot.selm]{plot}},
+  \code{\link[=summary.selm]{summary}}, % \code{\linkS4class{summary.selm}},  
+  % \code{\link{dp2cp}},
+  \code{\link[=profile.selm]{profile}}, 
+  \code{\link[=confint.selm]{confint}}, 
+  \code{\link[=predict.selm]{predict}}
 }
 
 \examples{

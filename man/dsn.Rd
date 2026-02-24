@@ -7,8 +7,9 @@
 \alias{psn}
 \alias{qsn}
 \alias{rsn}
-\title{Skew-Normal Distribution}
+\concept{skew-normal distribution}
 
+\title{Skew-Normal Distribution}
 \description{Density function, distribution function, quantiles and random
  number generation for the skew-normal (\acronym{SN}) and the extended 
  skew-normal (\acronym{ESN}) distribution.}

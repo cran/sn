@@ -105,8 +105,8 @@ cum.percent <- c(0, prob, 1)*100
 fitSN <- fitdistr.grouped(breaks, counts=diff(cum.percent), family="SN") 
 print(coef(fitSN))
 print(rbind(target=c(prob, 1)*100, fitted=cumsum(fitted(fitSN))), digits=5)
-# Note: given the nature of these data (i.e. probabilities, not counts), 
-#       there is no point to use vcov, logLik and summary on the fitted object.
+# Note: given the nature of these data (i.e. probabilities, not counts), there
+#       is no point in using vcov, logLik and summary on the fitted object.
 }
 
 \keyword{classes}

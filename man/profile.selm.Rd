@@ -1,28 +1,29 @@
 %  file sn/man/profile.selm.Rd  
 %  This file is a component of the package 'sn' for R
-%  copyright (C) 2015 Adelchi Azzalini
+%  copyright (C) 2015-2026 Adelchi Azzalini
 %---------------------
 
 \name{profile.selm}
 \alias{profile.selm}
-\alias{profile.selm-method}
+\alias{profile,selm-method}      
+\concept{profile log-likelihood function}
 \concept{confidence interval}
 \concept{confidence region}
+
 \title{Profile log-likelihood function of selm-class objects}
 
 \description{
-One- or two-dimensional profile (penalized) log-likelihood function of a 
-\code{selm} fit and corresponding confidence interval or regions
+One- or two-dimensional profile (penalized) log-likelihood function 
+of a \code{selm} fit and corresponding confidence interval or regions.
 }
 \usage{
-  \S3method{profile}{selm}(fitted, param.type, param.name, param.values, npt, 
-   opt.control = list(), plot.it = TRUE, log = TRUE, levels, 
-   trace = FALSE, ...)
+  \S4method{profile}{selm}(fitted, param.type, param.name, param.values, npt, 
+   opt.control = list(), plot.it = TRUE, log = TRUE, levels, trace = FALSE, ...)
 }
 
 \arguments{
   \item{fitted}{an object of class \code{selm} as produced by a call to
-   function \code{selm} with univariate response.}
+   function \code{selm} with a univariate response.}
   
   \item{param.type}{
    a character string with the required parameterization; it must be either
@@ -71,7 +72,9 @@ One- or two-dimensional profile (penalized) log-likelihood function of a
    
   \item{levels}{a single probability value (in the one-parameter case) or a 
    vector of such values (in the two-parameter case) for which the confidence
-   interval or region is requited; see \sQuote{Details} for more information.}
+   interval or region is requited; if missing, the default value is \code{0.95}
+   in the one-parameter case and \code{c(0.25, 0.5, 0.75, 0.9, 0.95, 0.99)}
+   in the two-parameter case.}
    
   \item{trace}{a logical value (default: \code{FALSE}) to activate printing
    of intermediate outcome of the log-likelihood optimization process}
@@ -103,6 +106,9 @@ likelihood estimates (\acronym{MLE} or \acronym{MPLE}) by an adequate extent
 such that suitable confidence intervals or regions can be established from
 standard asymptotic theory. If this condition does not hold, the function
 still proceeds, but no confidence interval or region is delivered.
+Appropriate ranges of the parameters can be selected with the help of a 
+preliminary call to \code{\link[=confint.selm]{confint}}.
+
 For the \acronym{SN} family and \acronym{DP} parameterization, the asymptotic
 theory is actually non-standard near the important point \eqn{\alpha=0}, 
 but the correspondence with the regular case of the \acronym{CP} 
@@ -126,7 +132,7 @@ different in the one- and the two-parameter cases.
   \item{deviance.contour}{in the two-parameter case, a list of lists whose
     elements identify each curve of the contour plot}
   }
-  
+   
 
 \author{Adelchi Azzalini}
 
@@ -149,7 +155,8 @@ are produced.
 }} 
 
 \seealso{
-\code{\link{selm}}, \code{\link{summary.selm}},
+\code{\link{selm}} and related \sQuote{methods} for the 
+  \code{\linkS4class{selm}-class}, notably \code{\link[=confint.selm]{confint}}.
 
 \code{\link{makeSECdistr}} for the \acronym{CP}/\acronym{DP} parameterizations,
 
@@ -164,7 +171,7 @@ pll <- profile(m1, "dp", param.name="alpha", param.val=c(-3,2))
 
 profile(m1, "cp", param.name="gamma1", param.val=seq(-0.7, 0.4, by=0.1))
 
-# in the next example, we reduce the grid points to save execution time
+# in the next example, the grid points are reduced to save execution time
 pll <- profile(m1, "cp", param.name=c("(Intercept.CP)", "gamma1"),
            param.val = list(c(1.5, 4), c(-0.8, 0.5)), npt=c(11,11) )
 }

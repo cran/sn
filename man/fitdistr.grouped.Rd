@@ -110,12 +110,14 @@ elaborated on below.
 data(barolo)
 attach(barolo)
 A75 <- (reseller=="A" & volume==75)
-logPrice <- log(price[A75], 10) # used in documentation of 'selm'; see its fitting
+logPrice <- log(price[A75], 10) # original data fitting, as in documentation of 'selm' 
 detach(barolo)
+#  now construct grouped data  
 breaks<- seq(1, 3, by=0.25)
 f <- cut(logPrice, breaks = breaks)
 counts <- tabulate(f, length(levels(f))) 
-logPrice.grouped <- fitdistr.grouped(breaks, counts, family='ST')
+# grouped data fitting
+logPrice.grouped <- fitdistr.grouped(breaks, counts, family='ST') 
 summary(logPrice.grouped) # compare this fit with the ungrouped data fitting 
 }
 

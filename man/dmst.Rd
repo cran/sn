@@ -9,6 +9,9 @@
 \alias{dmsc}
 \alias{pmsc}
 \alias{rmsc}
+\concept{skew-t distribution}
+\concept{multivariate skew-t distribution}
+
 \title{Multivariate skew-\eqn{t} distribution and skew-Cauchy distribution}
 
 \description{Probability density function, distribution function and random 

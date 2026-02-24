@@ -7,9 +7,9 @@
 \alias{pst}
 \alias{qst}
 \alias{rst}
+\concept{skew-t distribution}
 
 \title{Skew-\eqn{t} Distribution}
-
 \description{Density function, distribution function, quantiles and 
   random number generation for the skew-\eqn{t} (\acronym{ST}) distribution.}
 

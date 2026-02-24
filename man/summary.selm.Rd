@@ -5,7 +5,7 @@
 \name{summary.selm}
 \alias{summary.selm}
 \alias{summary.mselm}
-\alias{summary,selm-method}
+\alias{summary,selm-method}    
 \alias{summary,mselm-method}
 \alias{summary.selm-class}
 \alias{summary.mselm-class}
@@ -91,7 +91,10 @@ when we are effectively approaching the \code{SN} case). }
 \seealso{
   \code{\link{selm}} function,  
   \code{\linkS4class{selm}} (and \code{mselm}) class, 
-  \code{\link{plot.selm}}, \code{\link{dp2cp}}
+  \code{\link{plot.selm}}, \code{\link{dp2cp}},
+  \code{\link[=profile.selm]{profile}}, 
+  \code{\link[=confint.selm]{confint}}, 
+  \code{\link[=predict.selm]{predict}}
 }
 
 \examples{ 

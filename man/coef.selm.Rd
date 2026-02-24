@@ -5,7 +5,7 @@
 \name{coef.selm}
 \alias{coef.selm}
 \alias{coef.mselm}
-\alias{coef,selm-method}
+\alias{coef,selm-method}              % declared in selm-class.Rd
 \alias{coef,mselm-method}
 
  

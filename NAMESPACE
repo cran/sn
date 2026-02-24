@@ -45,8 +45,9 @@ S3method(residuals, mselm)
 S3method(profile, selm)
 S3method(confint, selm)
 S3method(predict, selm)
+# S3method(summary, selm, summary.selm)
+# S3method(summary, mselm, summary.mselm)
 S3method(print, summary.selm, print.summary.selm)
-S3method(print, summary.mselm, print.summary.mselm)
 S3method(sd, default)
 S3method(logLik, fitdistr.grouped)
 S3method(plot, fitdistr.grouped, plot.fitdistr.grouped)
@@ -79,7 +80,7 @@ export(
   dSymmModulated, rSymmModulated, dmSymmModulated, rmSymmModulated,
   plot2D.SymmModulated,
   fournum, st.prelimFit, mst.prelimFit, galton_moors2alpha_nu, 
-  pprodt2, pprodn2, qprodt2,
+  pprodn2, pprodt2, qprodt2,
   tr, blockDiag,
   dsun, psun, rsun, sunMean, sunVcov, sunMardia,
   makeSUNdistr, #  plot.SUNdistr, summary.SUNdistr,

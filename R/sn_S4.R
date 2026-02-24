@@ -286,7 +286,7 @@ setMethod("show", "selm",
 setClass("summary.selm",
    representation(call="call", family="character", logL="numeric",
      method="character",
-     param.type="character",   param.table="matrix", param.fixed="list",
+     param.type="character", param.table="matrix", param.fixed="list",
      resid="numeric",  control="list", aux="list",
      size="vector", boundary="logical", note="character"),
    validity=function(object){
@@ -383,8 +383,8 @@ setMethod("plot", signature(x="SECdistrMv", y="missing"), plot.SECdistrMv)
 setMethod("plot", signature(x="selm"), plot.selm) # y="missing" not required?
 setMethod("plot", signature(x="mselm"), plot.mselm)
 
-# setMethod("show", signature(object="summary.selm"),  print.summary.selm)
-# setMethod("show", signature(object="summary.mselm"),  print.summary.mselm)
+setMethod("show", signature(object="summary.selm"), show.summary.selm)    
+setMethod("show", signature(object="summary.mselm"), show.summary.mselm)  
 
 setMethod("summary", signature(object="SECdistrUv"), summary.SECdistrUv)
 setMethod("summary", signature(object="SECdistrMv"), summary.SECdistrMv)
@@ -397,7 +397,7 @@ setMethod("fitted", signature(object="mselm"), fitted.mselm)
 setMethod("residuals", signature(object="selm"), residuals.selm)
 setMethod("residuals", signature(object="mselm"), residuals.mselm)
  
-# setMethod("profile", signature(object="selm"), profile.selm)
 setMethod("confint", signature(object="selm"), confint.selm)
 setMethod("predict", signature(object="selm"), predict.selm)
+setMethod("profile", signature(fitted="selm"), profile.selm)
 

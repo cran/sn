@@ -5,14 +5,15 @@
 \name{residuals.selm}
 \alias{residuals.selm}
 \alias{residuals.mselm}
-\alias{residuals,selm-method}
+\alias{residuals,selm-method}             
 \alias{residuals,mselm-method}
 \alias{fitted.selm}
 \alias{fitted.mselm}
-\alias{fitted,selm-method}
+\alias{fitted,selm-method}               
 \alias{fitted,mselm-method}
+\concept{residual values}
+\concept{fitted values}
  
-
 \title{Residuals and fitted values from \code{selm} fits}
 
 \description{

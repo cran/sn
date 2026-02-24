@@ -7,9 +7,9 @@
 \alias{pmsn}
 \alias{rmsn}
 \concept{skew-normal distribution}
+\concept{multicariate skew-normal distribution}
 
 \title{Multivariate skew-normal distribution}
-
 \description{
 Probability density function, distribution function and random number 
 generation for the multivariate skew-normal (\acronym{SN}) distribution.

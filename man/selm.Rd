@@ -7,6 +7,7 @@
 \alias{selm}
 \concept{regression}
 \concept{skew-elliptical distribution}
+
 \title{Fitting linear models with skew-elliptical error term}
 
 \description{Function \code{selm} fits a \code{l}inear \code{m}odel
@@ -394,9 +395,11 @@ component can be useful in problematic cases.
    \code{\link{residuals.selm}} for residuals and fitted values
 
 \item
-  the generic functions \code{\link{coef}}, \code{\link{logLik}}, 
-  \code{\link{vcov}}, \code{\link{profile}}, \code{\link{confint}}, 
-  \code{\link{predict}}
+  the generic functions \code{\link[=coef.selm]{coef}}, 
+  \code{\link{logLik}}, \code{\link{vcov}}, 
+  \code{\link[=profile.selm]{profile}}, 
+  \code{\link[=confint.selm]{confint}}, 
+  \code{\link[=predict.selm]{predict}}
 
 \item
   the underlying function \code{\link{selm.fit}} and those further down

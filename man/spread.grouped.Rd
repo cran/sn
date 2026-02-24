@@ -1,7 +1,8 @@
 \name{spread.grouped}
 \alias{spread.grouped}
-\title{Spreading grouped data over intervals}
+\concept{grouped data}
 
+\title{Spreading grouped data over intervals}
 \description{
 Assuming that \code{counts} represents the frequencies of observations
 falling into intervals identified by \code{breaks}, the function returns
@@ -30,7 +31,7 @@ over the pertaining interval.
 
 \author{Adelchi Azzalini}
 
-\seealso{fitdistr.grouped}
+\seealso{\code{\link{fitdistr.grouped}}, \code{\link{fitdistr.grouped-class}} }
 
 \examples{
 breaks <- c(10, 12, 15, 20)
@@ -38,6 +39,5 @@ counts <- c(3, 2, 4)
 spread.grouped(breaks, counts)
 spread.grouped(breaks, counts, "l")
 }
-
 \keyword{manip}
-\concept{grouped data}
+

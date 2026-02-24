@@ -5,7 +5,7 @@
 
 \name{predict.selm}
 \alias{predict.selm}
-\alias{predict.selm-method}
+\alias{predict,selm-method}   
 \concept{confidence interval}
 \concept{tolerance interval}
 \title{Predict method for selm-class objects}
@@ -15,7 +15,7 @@ Predicted values based on a model object produced by \code{selm} with
 univariate response. 
 }
 \usage{
-  \S3method{predict}{selm}(object, newdata, param.type = "CP",
+  \S4method{predict}{selm}(object, newdata, param.type = "CP",
            interval = "none", level = 0.95, na.action = na.pass, ...) 
 }
 
